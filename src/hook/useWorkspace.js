@@ -47,7 +47,7 @@ export const useWorkspace = () => {
 
   const WorkspaceDetail = (id) => {
     return useQuery({
-      queryKey: ["workspace", id],
+      queryKey: ["workspaces", id],
       queryFn: () => getWorkspaceById(id),
       enabled: !!id,
     });

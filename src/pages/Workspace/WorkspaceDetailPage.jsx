@@ -13,10 +13,11 @@ const WorkspaceDetailPage = () => {
   const { setSelectedWorkspaceId } = useSelectedWorkspace();
 
   useEffect(() => {
-    if (id) {
-      setSelectedWorkspaceId(id);
+    if (setSelectedWorkspaceId) {
+      workspaceQuery.refetch();
     }
-  }, [id, setSelectedWorkspaceId]);
+  }, [setSelectedWorkspaceId]);
+
   const navigate = useNavigate();
 
   const handleAddProject = (e) => {
