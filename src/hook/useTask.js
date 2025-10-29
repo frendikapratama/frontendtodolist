@@ -32,7 +32,7 @@ export const useTask = (groupId) => {
     mutationFn: ({ groupId, data }) => updateTask(groupId, data),
     onSuccess: () => {
       toast.success("succes edit"),
-        queryClient.invalidateQueries({ queryKeyL: ["task", groupId] });
+        queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
       if (error.response?.data?.error) {

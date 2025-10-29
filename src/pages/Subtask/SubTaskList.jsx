@@ -1,16 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSubTask } from "../../hook/useSubTask";
 import { Plus } from "lucide-react";
 
 const SubtaskList = ({ taskId, subtasks, groupId }) => {
-  const { addSubTaskMutation, updateSubTaskMutation } = useSubTask(
-    taskId,
-    groupId
-  );
+  const {
+    addSubTaskMutation,
+    updateSubTaskMutation,
+    updatePositionSubTaskMutation,
+  } = useSubTask(taskId, groupId);
   const [subtaskName, setSubtaskName] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingSubtaskId, setEditingSubtaskId] = useState(null);
   const [editedName, setEditedName] = useState("");
+  const [localSubtasks, setLocalSubtasks] = useState(subtasks);
+  const [draggedItem, setDraggedItem] = useState(null);
+
+  useEffect(() => {
+    setLocalSubtasks(subtasks);
+  }, [subtasks]);
+
+  const handleDragStart = (e, index) => {
+    setDraggedItem(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedItem === null || draggedItem === index) return;
+
+    const newSubtasks = [...localSubtasks];
+    const [removed] = newSubtasks.splice(draggedItem, 1);
+    newSubtasks.splice(index, 0, removed);
+
+    setLocalSubtasks(newSubtasks);
+    setDraggedItem(index);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (draggedItem === null) return;
+
+    updatePositionSubTaskMutation.mutate({
+      taskId,
+      data: { subTaskId: localSubtasks.map((s) => s._id) },
+    });
+
+    setDraggedItem(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+  };
 
   const handleEdit = (subtaskId) => {
     if (!editedName.trim()) return;
@@ -52,15 +92,41 @@ const SubtaskList = ({ taskId, subtasks, groupId }) => {
 
   return (
     <div className="ml-12 mt-1 mb-2">
-      {subtasks.map((s) => (
+      {localSubtasks.map((s, index) => (
         <div
           key={s._id}
-          className="flex items-center gap-3 py-2 px-4 hover:bg-gray-50 rounded"
+          draggable
+          onDragStart={(e) => handleDragStart(e, index)}
+          onDragOver={(e) => handleDragOver(e, index)}
+          onDrop={handleDrop}
+          onDragEnd={handleDragEnd}
+          className={`flex items-center gap-3 py-2 px-4 hover:bg-gray-50 rounded transition-opacity ${
+            draggedItem === index
+              ? "opacity-40"
+              : "cursor-grab active:cursor-grabbing"
+          }`}
         >
+          <div className="cursor-grab active:cursor-grabbing">
+            <svg
+              className="w-4 h-4 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8h16M4 16h16"
+              />
+            </svg>
+          </div>
+
           <input
             type="checkbox"
             className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
+
           {editingSubtaskId === s._id ? (
             <input
               type="text"
@@ -84,7 +150,6 @@ const SubtaskList = ({ taskId, subtasks, groupId }) => {
           )}
         </div>
       ))}
-
       {showForm ? (
         <div className="flex gap-2 px-4 py-2">
           <input
