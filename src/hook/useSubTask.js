@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addSubTask } from "../services/subtask";
 import toast from "react-hot-toast";
 
-export const useSubTask = (taskId) => {
+export const useSubTask = (taskId, groupId) => {
   const queryClient = useQueryClient();
 
   // const taskByGroup = useQuery({
@@ -11,12 +11,11 @@ export const useSubTask = (taskId) => {
   //   queryFn: () => getByGroup(taskId),
   //   enabled: !!taskId,
   // });
-
   const addSubTaskMutation = useMutation({
     mutationFn: ({ taskId, data }) => addSubTask(taskId, data),
     onSuccess: () => {
       toast.success("succes");
-      queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
       if (error.response?.data?.error) {

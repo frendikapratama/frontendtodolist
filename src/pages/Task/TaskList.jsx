@@ -10,6 +10,8 @@ const TaskList = ({ groupId }) => {
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskName, setTaskName] = useState("");
 
+  const [hoveredTask, setHoveredTask] = useState(null);
+
   const toggleSubtasks = (taskId) => {
     setOpenSubtasks((prev) => ({
       ...prev,
@@ -63,23 +65,39 @@ const TaskList = ({ groupId }) => {
           {data &&
             data.map((task) => (
               <div key={task._id}>
-                <div className="flex items-center hover:bg-gray-50 transition">
+                <div
+                  className="flex items-center hover:bg-gray-50 transition"
+                  onMouseEnter={() => setHoveredTask(task._id)}
+                  onMouseLeave={() => setHoveredTask(null)}
+                >
                   <div className="flex-1 flex items-center gap-3 px-6 py-3.5 border-b border-gray-100">
-                    {task.subtask && task.subtask.length > 0 && (
-                      <button
-                        onClick={() => toggleSubtasks(task._id)}
-                        className="p-0.5 hover:bg-gray-200 rounded transition"
-                      >
-                        {openSubtasks[task._id] ? (
-                          <ChevronDown className="w-4 h-4 text-gray-500" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-gray-500" />
-                        )}
-                      </button>
-                    )}
-                    {(!task.subtask || task.subtask.length === 0) && (
-                      <div className="w-5"></div>
-                    )}
+                    <button
+                      onClick={() => toggleSubtasks(task._id)}
+                      className={`p-0.5 hover:bg-gray-200 rounded transition ${
+                        hoveredTask === task._id ||
+                        (task.subtask && task.subtask.length > 0)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }`}
+                    >
+                      {openSubtasks[task._id] ? (
+                        <ChevronDown
+                          className={`w-4 h-4 ${
+                            task.subtask && task.subtask.length > 0
+                              ? "text-gray-700"
+                              : "text-gray-400"
+                          }`}
+                        />
+                      ) : (
+                        <ChevronRight
+                          className={`w-4 h-4 ${
+                            task.subtask && task.subtask.length > 0
+                              ? "text-gray-700"
+                              : "text-gray-400"
+                          }`}
+                        />
+                      )}
+                    </button>
                     <input
                       type="checkbox"
                       className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -107,13 +125,15 @@ const TaskList = ({ groupId }) => {
                     No date
                   </div>
                 </div>
-                {openSubtasks[task._id] &&
-                  task.subtask &&
-                  task.subtask.length > 0 && (
-                    <div className="border-b border-gray-100">
-                      <SubtaskList taskId={task._id} subtasks={task.subtask} />
-                    </div>
-                  )}
+                {openSubtasks[task._id] && (
+                  <div className="border-b border-gray-100">
+                    <SubtaskList
+                      taskId={task._id}
+                      subtasks={task.subtask || []}
+                      groupId={groupId}
+                    />
+                  </div>
+                )}
               </div>
             ))}
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useSubTask } from "../../hook/useSubTask";
 import { Plus } from "lucide-react"; //
-const SubtaskList = ({ taskId, subtasks }) => {
-  const { addSubTaskMutation } = useSubTask(taskId);
+const SubtaskList = ({ taskId, subtasks, groupId }) => {
+  const { addSubTaskMutation } = useSubTask(taskId, groupId);
   const [subtaskName, setSubtaskName] = useState("");
   const [showForm, setShowForm] = useState(false);
 

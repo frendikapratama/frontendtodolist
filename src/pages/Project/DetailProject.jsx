@@ -11,7 +11,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import TaskList from "../Task/TaskList";
-
+import GroupCard from "./GroupCard";
 const ProjectDetailPage = () => {
   const { projectDetail } = useProject();
   const { id } = useParams();
@@ -170,38 +170,7 @@ const ProjectDetailPage = () => {
         <div className="space-y-3">
           {data.groups &&
             data.groups.map((group, index) => (
-              <div
-                key={group._id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
-              >
-                {/* Group Header */}
-                <div
-                  className="px-6 py-3.5 flex items-center justify-between cursor-pointer"
-                  style={{
-                    background:
-                      index % 3 === 0
-                        ? "#579bfc"
-                        : index % 3 === 1
-                        ? "#00c875"
-                        : "#fdab3d",
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <ChevronDown className="w-5 h-5 text-white" />
-                    <h3 className="text-white font-semibold text-base">
-                      {group.nama}
-                    </h3>
-                    <span className="text-xs text-white bg-white bg-opacity-20 px-2.5 py-1 rounded-full font-medium">
-                      {group.tasks?.length || 0} items
-                    </span>
-                  </div>
-                  <button className="p-1.5 hover:bg-white hover:bg-opacity-20 rounded transition">
-                    <MoreHorizontal className="w-5 h-5 text-white" />
-                  </button>
-                </div>
-
-                <TaskList groupId={group._id} />
-              </div>
+              <GroupCard key={group._id} group={group} index={index} />
             ))}
 
           {(!data.groups || data.groups.length === 0) && (
