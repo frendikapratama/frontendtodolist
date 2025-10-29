@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 // import { getByGroup } from "../services/task";
-import { addSubTask } from "../services/subtask";
+import { addSubTask, updateSubTask } from "../services/subtask";
 import toast from "react-hot-toast";
 
 export const useSubTask = (taskId, groupId) => {
@@ -28,5 +28,22 @@ export const useSubTask = (taskId, groupId) => {
     },
   });
 
-  return { addSubTaskMutation };
+  const updateSubTaskMutation = useMutation({
+    mutationFn: ({ subtaskId, data }) => updateSubTask(subtaskId, data),
+    onSuccess: () => {
+      toast.success("updated");
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Gagal menambah project");
+      }
+    },
+  });
+
+  return { addSubTaskMutation, updateSubTaskMutation };
 };

@@ -9,3 +9,8 @@ export async function addTask(groupId, data) {
   const res = await api.post(`task/${groupId}`, data);
   return res.data.data;
 }
+
+export async function updateTask(groupId, data) {
+  const res = await api.put(`task/${groupId}`, data);
+  return res.data.data;
+}

@@ -1,19 +1,53 @@
 import { useState } from "react";
 import { useSubTask } from "../../hook/useSubTask";
-import { Plus } from "lucide-react"; //
+import { Plus } from "lucide-react";
+
 const SubtaskList = ({ taskId, subtasks, groupId }) => {
-  const { addSubTaskMutation } = useSubTask(taskId, groupId);
+  const { addSubTaskMutation, updateSubTaskMutation } = useSubTask(
+    taskId,
+    groupId
+  );
   const [subtaskName, setSubtaskName] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingSubtaskId, setEditingSubtaskId] = useState(null);
+  const [editedName, setEditedName] = useState("");
 
-  const handleAddSubtask = (e) => {
-    e.preventDefault();
-    addSubTaskMutation.mutate({
-      taskId,
-      data: { nama: subtaskName },
+  const handleEdit = (subtaskId) => {
+    if (!editedName.trim()) return;
+    updateSubTaskMutation.mutate({
+      subtaskId,
+      data: { nama: editedName.trim() },
     });
-    setSubtaskName("");
-    setShowForm(false);
+    setEditingSubtaskId(null);
+  };
+
+  const handleEditKeyDown = (e, subtaskId) => {
+    if (e.key === "Enter") handleEdit(subtaskId);
+    if (e.key === "Escape") setEditingSubtaskId(null);
+  };
+
+  const handleAdd = () => {
+    if (!subtaskName.trim()) return;
+    addSubTaskMutation.mutate(
+      { taskId, data: { nama: subtaskName.trim() } },
+      {
+        onSuccess: () => {
+          setSubtaskName("");
+          setShowForm(false);
+        },
+      }
+    );
+  };
+
+  const handleAddKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAdd();
+    }
+    if (e.key === "Escape") {
+      setSubtaskName("");
+      setShowForm(false);
+    }
   };
 
   return (
@@ -27,9 +61,30 @@ const SubtaskList = ({ taskId, subtasks, groupId }) => {
             type="checkbox"
             className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700">{s.nama}</span>
+          {editingSubtaskId === s._id ? (
+            <input
+              type="text"
+              className="text-sm border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
+              value={editedName}
+              autoFocus
+              onChange={(e) => setEditedName(e.target.value)}
+              onBlur={() => handleEdit(s._id)}
+              onKeyDown={(e) => handleEditKeyDown(e, s._id)}
+            />
+          ) : (
+            <span
+              className="text-sm text-gray-700 hover:bg-gray-100 px-1 rounded cursor-pointer"
+              onClick={() => {
+                setEditingSubtaskId(s._id);
+                setEditedName(s.nama);
+              }}
+            >
+              {s.nama}
+            </span>
+          )}
         </div>
       ))}
+
       {showForm ? (
         <div className="flex gap-2 px-4 py-2">
           <input
@@ -38,21 +93,12 @@ const SubtaskList = ({ taskId, subtasks, groupId }) => {
             className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={subtaskName}
             onChange={(e) => setSubtaskName(e.target.value)}
-            required
+            onKeyDown={handleAddKeyDown}
+            onBlur={() =>
+              subtaskName.trim() ? handleAdd() : setShowForm(false)
+            }
             autoFocus
           />
-          <button
-            onClick={handleAddSubtask}
-            className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          >
-            Save
-          </button>
-          <button
-            onClick={() => setShowForm(false)}
-            className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
-          >
-            Cancel
-          </button>
         </div>
       ) : (
         <button

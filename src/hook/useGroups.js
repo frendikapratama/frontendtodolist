@@ -7,7 +7,7 @@ export const useGroup = () => {
     mutationFn: ({ projectId, data }) => addGroupToProject(projectId, data),
     onSuccess: () => {
       toast.success("berhasil membuat group");
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["project"] });
     },
     onError: (error) => {
       if (error.response?.data?.error) {

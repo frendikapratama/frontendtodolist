@@ -4,13 +4,14 @@ import { useTask } from "../../hook/useTask";
 import SubtaskList from "../Subtask/SubTaskList";
 
 const TaskList = ({ groupId }) => {
-  const { taskByGroup, addTaskMutation } = useTask(groupId);
+  const { taskByGroup, addTaskMutation, updateTaskMutation } = useTask(groupId);
   const { data, isLoading, isError } = taskByGroup;
   const [openSubtasks, setOpenSubtasks] = useState({});
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskName, setTaskName] = useState("");
-
   const [hoveredTask, setHoveredTask] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editedName, setEditedName] = useState("");
 
   const toggleSubtasks = (taskId) => {
     setOpenSubtasks((prev) => ({
@@ -19,14 +20,42 @@ const TaskList = ({ groupId }) => {
     }));
   };
 
-  const handleAddTask = (e) => {
-    e.preventDefault();
-    addTaskMutation.mutate({
+  const handleAdd = () => {
+    if (!taskName.trim()) return;
+    addTaskMutation.mutate(
+      { groupId, data: { nama: taskName.trim() } },
+      {
+        onSuccess: () => {
+          setTaskName("");
+          setShowAddTask(false);
+        },
+      }
+    );
+  };
+
+  const handleAddKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAdd();
+    }
+    if (e.key === "Escape") {
+      setTaskName("");
+      setShowAddTask(false);
+    }
+  };
+
+  const handleEdit = (groupId) => {
+    if (!editedName.trim()) return;
+    updateTaskMutation.mutate({
       groupId,
-      data: { nama: taskName },
+      data: { nama: editedName.trim() },
     });
-    setTaskName("");
-    setShowAddTask(false);
+    setEditingTaskId(null);
+  };
+
+  const handleEditKeyDown = (e, groupId) => {
+    if (e.key === "Enter") handleEdit(groupId);
+    if (e.key === "Escape") setEditingTaskId(null);
   };
 
   if (!groupId)
@@ -102,9 +131,27 @@ const TaskList = ({ groupId }) => {
                       type="checkbox"
                       className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="text-sm text-gray-900 font-medium flex-1">
-                      {task.nama}
-                    </span>
+                    {editingTaskId === task._id ? (
+                      <input
+                        type="text"
+                        className="text-sm border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
+                        value={editedName}
+                        autoFocus
+                        onChange={(e) => setEditedName(e.target.value)}
+                        onBlur={() => handleEdit(task._id)}
+                        onKeyDown={(e) => handleEditKeyDown(e, task._id)}
+                      />
+                    ) : (
+                      <span
+                        className="text-sm text-gray-700 hover:bg-gray-100 px-1 rounded cursor-pointer"
+                        onClick={() => {
+                          setEditingTaskId(task._id);
+                          setEditedName(task.nama);
+                        }}
+                      >
+                        {task.nama}
+                      </span>
+                    )}
                   </div>
                   <div className="w-32 px-6 py-3.5 border-b border-gray-100">
                     <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold">
@@ -152,23 +199,11 @@ const TaskList = ({ groupId }) => {
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
                 autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleAddTask(e);
-                  if (e.key === "Escape") setShowAddTask(false);
-                }}
+                onKeyDown={handleAddKeyDown}
+                onBlur={() =>
+                  taskName.trim() ? handleAdd() : setShowAddTask(false)
+                }
               />
-              <button
-                onClick={handleAddTask}
-                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setShowAddTask(false)}
-                className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
-              >
-                Cancel
-              </button>
             </div>
           ) : (
             <div className="px-6 py-3 border-b border-gray-100">

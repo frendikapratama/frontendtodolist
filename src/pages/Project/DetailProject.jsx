@@ -1,16 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useProject } from "../../hook/useProject";
 import { useGroup } from "../../hook/useGroups";
-import { useState } from "react";
-import {
-  Plus,
-  MoreHorizontal,
-  Star,
-  Users,
-  Calendar,
-  ChevronDown,
-} from "lucide-react";
-import TaskList from "../Task/TaskList";
+import { Plus, Star, Users, Calendar, ChevronDown } from "lucide-react";
 import GroupCard from "./GroupCard";
 const ProjectDetailPage = () => {
   const { projectDetail } = useProject();
@@ -18,8 +9,6 @@ const ProjectDetailPage = () => {
   const { addGroupMutation } = useGroup();
   const projectQuery = projectDetail(id);
   const { data, isLoading, isError } = projectQuery;
-  const [groupName, setGroupName] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -43,59 +32,13 @@ const ProjectDetailPage = () => {
   }
 
   const handleAddProject = (e) => {
-    e.preventDefault();
     addGroupMutation.mutate({
       projectId: id,
-      data: { nama: groupName },
     });
-    setGroupName("");
-    setIsModalOpen(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Add New Group
-              </h3>
-            </div>
-            <div className="p-6">
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Group Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter group name"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex justify-end gap-3">
-                <button
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium transition"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
-                  onClick={handleAddProject}
-                >
-                  Create Group
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-full px-8 py-4">
@@ -134,7 +77,7 @@ const ProjectDetailPage = () => {
               </button>
               <div className="h-6 w-px bg-gray-300"></div>
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => handleAddProject()}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" />
@@ -188,7 +131,7 @@ const ProjectDetailPage = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => handleAddProject()}
                   className="mt-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
