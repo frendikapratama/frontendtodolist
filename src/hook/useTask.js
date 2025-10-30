@@ -1,49 +1,53 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getByGroup } from "../services/task";
-import { addTask, updateTask } from "../services/task";
+import { getByGroup, addTask, updateTask } from "../services/task";
 import toast from "react-hot-toast";
 
 export const useTask = (groupId) => {
   const queryClient = useQueryClient();
+
+  // Query untuk fetch tasks
   const taskByGroup = useQuery({
     queryKey: ["task", groupId],
     queryFn: () => getByGroup(groupId),
     enabled: !!groupId,
   });
 
+  // Mutation untuk add task
   const addTaskMutation = useMutation({
-    mutationFn: ({ groupId, data }) => addTask(groupId, data),
+    mutationFn: (taskData) => addTask(groupId, taskData),
     onSuccess: () => {
-      toast.success("succes");
+      toast.success("Task berhasil ditambahkan");
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
-      if (error.response?.data?.error) {
-        error.response.data.error.forEach((msg) => {
-          toast.error(msg);
-        });
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
       } else {
-        toast.error("Gagal menambah project");
+        toast.error("Gagal menambahkan task");
       }
     },
   });
 
   const updateTaskMutation = useMutation({
-    mutationFn: ({ groupId, data }) => updateTask(groupId, data),
+    mutationFn: ({ taskId, data }) => updateTask(taskId, data),
     onSuccess: () => {
-      toast.success("succes edit"),
-        queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+      toast.success("Task berhasil diupdate");
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
-      if (error.response?.data?.error) {
-        error.response.data.error.forEach((msg) => {
-          toast.error(msg);
-        });
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
       } else {
-        toast.error("Gagal menambah project");
+        toast.error("Gagal mengupdate task");
       }
     },
   });
 
-  return { taskByGroup, addTaskMutation, updateTaskMutation };
+  return {
+    taskByGroup,
+    addTaskMutation,
+    updateTaskMutation,
+  };
 };

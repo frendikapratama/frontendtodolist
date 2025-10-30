@@ -1,7 +1,9 @@
 import { Plus, ChevronDown, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useTask } from "../../hook/useTask";
 import SubtaskList from "../Subtask/SubTaskList";
+import PopupSelect from "./PopupSelect";
+import DatePickerPopup from "./DatePickerPopup";
 
 const TaskList = ({ groupId }) => {
   const { taskByGroup, addTaskMutation, updateTaskMutation } = useTask(groupId);
@@ -10,8 +12,14 @@ const TaskList = ({ groupId }) => {
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [hoveredTask, setHoveredTask] = useState(null);
-  const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editedName, setEditedName] = useState("");
+  const [editingField, setEditingField] = useState(null);
+  const [editedValue, setEditedValue] = useState("");
+  const [activePopup, setActivePopup] = useState(null);
+
+  const buttonRefs = useRef({});
+
+  const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked"];
+  const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
 
   const toggleSubtasks = (taskId) => {
     setOpenSubtasks((prev) => ({
@@ -20,43 +28,87 @@ const TaskList = ({ groupId }) => {
     }));
   };
 
-  const handleAdd = () => {
-    if (!taskName.trim()) return;
-    addTaskMutation.mutate(
-      { groupId, data: { nama: taskName.trim() } },
-      {
-        onSuccess: () => {
-          setTaskName("");
-          setShowAddTask(false);
-        },
-      }
-    );
-  };
+  const handleAddTask = useCallback(() => {
+    const trimmedName = taskName.trim();
+    if (!trimmedName) return;
+    const newTaskData = {
+      nama: trimmedName,
+      status: "To Do",
+      priority: "Medium",
+      start_date: "",
+    };
 
-  const handleAddKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAdd();
-    }
-    if (e.key === "Escape") {
-      setTaskName("");
-      setShowAddTask(false);
-    }
-  };
-
-  const handleEdit = (groupId) => {
-    if (!editedName.trim()) return;
-    updateTaskMutation.mutate({
-      groupId,
-      data: { nama: editedName.trim() },
+    addTaskMutation.mutate(newTaskData, {
+      onSuccess: () => {
+        setTaskName("");
+        setShowAddTask(false);
+      },
     });
-    setEditingTaskId(null);
-  };
+  }, [taskName, addTaskMutation]);
 
-  const handleEditKeyDown = (e, groupId) => {
-    if (e.key === "Enter") handleEdit(groupId);
-    if (e.key === "Escape") setEditingTaskId(null);
-  };
+  const handleAddKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAddTask();
+      } else if (e.key === "Escape") {
+        setTaskName("");
+        setShowAddTask(false);
+      }
+    },
+    [handleAddTask]
+  );
+
+  const handleFieldEdit = useCallback(
+    (taskId, field, value) => {
+      const trimmedValue = value.trim();
+
+      if (!trimmedValue && field === "nama") {
+        setEditingField(null);
+        return;
+      }
+
+      updateTaskMutation.mutate({
+        taskId,
+        data: { [field]: trimmedValue },
+      });
+
+      setEditingField(null);
+    },
+    [updateTaskMutation]
+  );
+
+  const handleFieldKeyDown = useCallback(
+    (e, taskId, field) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleFieldEdit(taskId, field, editedValue);
+      } else if (e.key === "Escape") {
+        setEditingField(null);
+      }
+    },
+    [editedValue, handleFieldEdit]
+  );
+
+  const handlePopupChange = useCallback(
+    (taskId, field, value) => {
+      updateTaskMutation.mutate({
+        taskId,
+        data: { [field]: value },
+      });
+      setActivePopup(null);
+    },
+    [updateTaskMutation]
+  );
+
+  const startEditing = useCallback((taskId, field, currentValue) => {
+    setEditingField({ taskId, field });
+    setEditedValue(currentValue);
+  }, []);
+
+  const openPopup = useCallback((taskId, field) => {
+    setActivePopup({ taskId, field });
+  }, []);
 
   if (!groupId)
     return (
@@ -87,7 +139,7 @@ const TaskList = ({ groupId }) => {
               Priority
             </div>
             <div className="w-40 px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Date
+              Start Date
             </div>
           </div>
 
@@ -131,23 +183,27 @@ const TaskList = ({ groupId }) => {
                       type="checkbox"
                       className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    {editingTaskId === task._id ? (
+                    {editingField?.taskId === task._id &&
+                    editingField?.field === "nama" ? (
                       <input
                         type="text"
                         className="text-sm border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
-                        value={editedName}
+                        value={editedValue}
                         autoFocus
-                        onChange={(e) => setEditedName(e.target.value)}
-                        onBlur={() => handleEdit(task._id)}
-                        onKeyDown={(e) => handleEditKeyDown(e, task._id)}
+                        onChange={(e) => setEditedValue(e.target.value)}
+                        onBlur={() =>
+                          handleFieldEdit(task._id, "nama", editedValue)
+                        }
+                        onKeyDown={(e) =>
+                          handleFieldKeyDown(e, task._id, "nama")
+                        }
                       />
                     ) : (
                       <span
                         className="text-sm text-gray-700 hover:bg-gray-100 px-1 rounded cursor-pointer"
-                        onClick={() => {
-                          setEditingTaskId(task._id);
-                          setEditedName(task.nama);
-                        }}
+                        onClick={() =>
+                          startEditing(task._id, "nama", task.nama)
+                        }
                       >
                         {task.nama}
                       </span>
@@ -158,18 +214,89 @@ const TaskList = ({ groupId }) => {
                       UN
                     </div>
                   </div>
-                  <div className="w-40 px-6 py-3.5 border-b border-gray-100">
-                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                      Not Started
+                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 flex items-center">
+                    <span
+                      ref={(el) =>
+                        (buttonRefs.current[`status-${task._id}`] = el)
+                      }
+                      className="px-3 py-1.5 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200 transition"
+                      onClick={() => openPopup(task._id, "status")}
+                    >
+                      {task.status}
                     </span>
+
+                    {activePopup?.taskId === task._id &&
+                      activePopup?.field === "status" && (
+                        <PopupSelect
+                          value={task.status}
+                          options={STATUS_OPTIONS}
+                          onChange={(value) =>
+                            handlePopupChange(task._id, "status", value)
+                          }
+                          onClose={() => setActivePopup(null)}
+                          buttonRef={{
+                            current: buttonRefs.current[`status-${task._id}`],
+                          }}
+                        />
+                      )}
                   </div>
                   <div className="w-32 px-6 py-3.5 border-b border-gray-100">
-                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                      Low
+                    <span
+                      ref={(el) =>
+                        (buttonRefs.current[`priority-${task._id}`] = el)
+                      }
+                      className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200"
+                      onClick={() => openPopup(task._id, "priority")}
+                    >
+                      {task.priority}
                     </span>
+
+                    {activePopup?.taskId === task._id &&
+                      activePopup?.field === "priority" && (
+                        <PopupSelect
+                          value={task.priority}
+                          options={PRIORITY_OPTIONS}
+                          onChange={(value) =>
+                            handlePopupChange(task._id, "priority", value)
+                          }
+                          onClose={() => setActivePopup(null)}
+                          buttonRef={{
+                            current: buttonRefs.current[`priority-${task._id}`],
+                          }}
+                        />
+                      )}
                   </div>
-                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 text-sm text-gray-600">
-                    No date
+
+                  <div className="w-40 px-6 py-3.5 border-b border-gray-100">
+                    <span
+                      ref={(el) =>
+                        (buttonRefs.current[`date-${task._id}`] = el)
+                      }
+                      className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                      onClick={() => openPopup(task._id, "start_date")}
+                    >
+                      {task.start_date
+                        ? new Date(task.start_date).toLocaleString("id-ID", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })
+                        : "Set date"}
+                    </span>
+
+                    {activePopup?.taskId === task._id &&
+                      activePopup?.field === "start_date" && (
+                        <DatePickerPopup
+                          value={task.start_date}
+                          onChange={(value) =>
+                            handlePopupChange(task._id, "start_date", value)
+                          }
+                          onClose={() => setActivePopup(null)}
+                          buttonRef={{
+                            current: buttonRefs.current[`date-${task._id}`],
+                          }}
+                        />
+                      )}
                   </div>
                 </div>
                 {openSubtasks[task._id] && (
@@ -186,7 +313,7 @@ const TaskList = ({ groupId }) => {
 
           {showAddTask ? (
             <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
-              <div className="w-5"></div>
+              <div className="w-5" />
               <input
                 type="checkbox"
                 className="w-4 h-4 rounded border-gray-300"
@@ -194,14 +321,14 @@ const TaskList = ({ groupId }) => {
               />
               <input
                 type="text"
-                placeholder="Task name"
+                placeholder="Nama task"
                 className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
                 autoFocus
                 onKeyDown={handleAddKeyDown}
                 onBlur={() =>
-                  taskName.trim() ? handleAdd() : setShowAddTask(false)
+                  taskName.trim() ? handleAddTask() : setShowAddTask(false)
                 }
               />
             </div>
@@ -212,7 +339,7 @@ const TaskList = ({ groupId }) => {
                 className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition"
               >
                 <Plus className="w-4 h-4" />
-                Add task
+                Tambah task
               </button>
             </div>
           )}
