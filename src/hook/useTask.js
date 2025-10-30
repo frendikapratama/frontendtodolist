@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getByGroup, addTask, updateTask } from "../services/task";
+import {
+  getByGroup,
+  addTask,
+  updateTask,
+  updateTaskPositions,
+} from "../services/task";
 import toast from "react-hot-toast";
 
 export const useTask = (groupId) => {
@@ -33,7 +38,7 @@ export const useTask = (groupId) => {
     mutationFn: ({ taskId, data }) => updateTask(taskId, data),
     onSuccess: () => {
       toast.success("Task berhasil diupdate");
-      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["task"] });
     },
     onError: (error) => {
       const errors = error.response?.data?.error;
@@ -45,9 +50,20 @@ export const useTask = (groupId) => {
     },
   });
 
+  const updateTaskPositionsMutation = useMutation({
+    mutationFn: (taskIds) => updateTaskPositions(taskIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task"] });
+    },
+    onError: () => {
+      toast.error("Gagal mengupdate posisi task");
+    },
+  });
+
   return {
     taskByGroup,
     addTaskMutation,
     updateTaskMutation,
+    updateTaskPositionsMutation,
   };
 };

@@ -1,12 +1,19 @@
 import { Plus, ChevronDown, ChevronRight } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useTask } from "../../hook/useTask";
 import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
+import { useQueryClient } from "@tanstack/react-query";
 
 const TaskList = ({ groupId }) => {
-  const { taskByGroup, addTaskMutation, updateTaskMutation } = useTask(groupId);
+  const queryClient = useQueryClient();
+  const {
+    taskByGroup,
+    addTaskMutation,
+    updateTaskMutation,
+    updateTaskPositionsMutation,
+  } = useTask(groupId);
   const { data, isLoading, isError } = taskByGroup;
   const [openSubtasks, setOpenSubtasks] = useState({});
   const [showAddTask, setShowAddTask] = useState(false);
@@ -15,12 +22,20 @@ const TaskList = ({ groupId }) => {
   const [editingField, setEditingField] = useState(null);
   const [editedValue, setEditedValue] = useState("");
   const [activePopup, setActivePopup] = useState(null);
+  const [localTasks, setLocalTasks] = useState([]);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [dropPosition, setDropPosition] = useState(null);
 
   const buttonRefs = useRef({});
 
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
 
+  useEffect(() => {
+    if (data) {
+      setLocalTasks(data);
+    }
+  }, [data]);
   const toggleSubtasks = (taskId) => {
     setOpenSubtasks((prev) => ({
       ...prev,
@@ -110,6 +125,81 @@ const TaskList = ({ groupId }) => {
     setActivePopup({ taskId, field });
   }, []);
 
+  const handleTaskDragStart = (e, index) => {
+    setDraggedTask(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("taskId", localTasks[index]._id);
+    e.dataTransfer.setData("sourceGroupId", groupId);
+  };
+
+  const handleTaskDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
+    const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+
+    // Jika dari group lain, simpan posisi drop
+    if (sourceGroupId !== groupId) {
+      setDropPosition(index);
+      return;
+    }
+
+    // Jika dalam group yang sama, lakukan reorder
+    if (draggedTask === null || draggedTask === index) return;
+
+    const newTasks = [...localTasks];
+    const [removed] = newTasks.splice(draggedTask, 1);
+    newTasks.splice(index, 0, removed);
+
+    setLocalTasks(newTasks);
+    setDraggedTask(index);
+  };
+  const handleTaskDrop = (e, dropIndex = null) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const taskId = e.dataTransfer.getData("taskId");
+    const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+
+    if (sourceGroupId !== groupId) {
+      // Pindah ke group lain dengan posisi spesifik
+      const targetPosition =
+        dropIndex !== null
+          ? dropIndex
+          : dropPosition !== null
+          ? dropPosition
+          : localTasks.length;
+
+      updateTaskMutation.mutate(
+        {
+          taskId,
+          data: {
+            groupId: groupId,
+            position: targetPosition,
+          },
+        },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["task"] });
+            setDraggedTask(null);
+            setDropPosition(null);
+          },
+        }
+      );
+    } else {
+      // Reorder dalam group yang sama
+      const taskIds = localTasks.map((t) => t._id);
+      updateTaskPositionsMutation.mutate(taskIds, {
+        onSuccess: () => {
+          setDraggedTask(null);
+          setDropPosition(null);
+        },
+      });
+    }
+  };
+
+  const handleTaskDragEnd = () => {};
+
   if (!groupId)
     return (
       <p className="px-6 py-4 text-sm text-gray-500">Select a group first</p>
@@ -123,7 +213,13 @@ const TaskList = ({ groupId }) => {
 
   return (
     <>
-      <div className="overflow-x-auto">
+      <div
+        className="overflow-x-auto"
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+        }}
+      >
         <div className="min-w-full">
           <div className="flex bg-gray-50 border-b border-gray-200">
             <div className="flex-1 px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -143,11 +239,20 @@ const TaskList = ({ groupId }) => {
             </div>
           </div>
 
-          {data &&
-            data.map((task) => (
+          {localTasks &&
+            localTasks.map((task, index) => (
               <div key={task._id}>
                 <div
-                  className="flex items-center hover:bg-gray-50 transition"
+                  draggable
+                  onDragStart={(e) => handleTaskDragStart(e, index)}
+                  onDragOver={(e) => handleTaskDragOver(e, index)}
+                  onDrop={(e) => handleTaskDrop(e, index)}
+                  onDragEnd={handleTaskDragEnd}
+                  className={`flex items-center hover:bg-gray-50 transition ${
+                    draggedTask === index
+                      ? "opacity-40"
+                      : "cursor-grab active:cursor-grabbing"
+                  }`}
                   onMouseEnter={() => setHoveredTask(task._id)}
                   onMouseLeave={() => setHoveredTask(null)}
                 >
@@ -310,7 +415,18 @@ const TaskList = ({ groupId }) => {
                 )}
               </div>
             ))}
-
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+              if (sourceGroupId !== groupId) {
+                e.dataTransfer.dropEffect = "move";
+                setDropPosition(localTasks.length);
+              }
+            }}
+            onDrop={(e) => handleTaskDrop(e, localTasks.length)}
+            className="h-2 hover:bg-blue-50 transition"
+          />
           {showAddTask ? (
             <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
               <div className="w-5" />

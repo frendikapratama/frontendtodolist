@@ -1,8 +1,10 @@
 import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { useTask } from "../../hook/useTask";
 import TaskList from "../Task/TaskList";
+import { useQueryClient } from "@tanstack/react-query";
 const GroupCard = ({ group, index }) => {
-  const { taskByGroup } = useTask(group._id);
+  const queryClient = useQueryClient();
+  const { taskByGroup, updateTaskMutation } = useTask(group._id);
   const taskCount = taskByGroup.data?.length || 0;
 
   return (
@@ -29,7 +31,34 @@ const GroupCard = ({ group, index }) => {
           <MoreHorizontal className="w-5 h-5 text-white" />
         </button>
       </div>
-      <TaskList groupId={group._id} />
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const taskId = e.dataTransfer.getData("taskId");
+          const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+
+          if (sourceGroupId && sourceGroupId !== group._id) {
+            updateTaskMutation.mutate(
+              {
+                taskId,
+                data: { groupId: group._id },
+              },
+              {
+                onSuccess: () => {
+                  queryClient.invalidateQueries({ queryKey: ["task"] });
+                },
+              }
+            );
+          }
+        }}
+      >
+        <TaskList groupId={group._id} />
+      </div>
     </div>
   );
 };
