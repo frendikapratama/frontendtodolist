@@ -10,14 +10,12 @@ import toast from "react-hot-toast";
 export const useTask = (groupId) => {
   const queryClient = useQueryClient();
 
-  // Query untuk fetch tasks
   const taskByGroup = useQuery({
     queryKey: ["task", groupId],
     queryFn: () => getByGroup(groupId),
     enabled: !!groupId,
   });
 
-  // Mutation untuk add task
   const addTaskMutation = useMutation({
     mutationFn: (taskData) => addTask(groupId, taskData),
     onSuccess: () => {

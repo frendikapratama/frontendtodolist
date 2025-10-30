@@ -4,10 +4,8 @@ import { useTask } from "../../hook/useTask";
 import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
-import { useQueryClient } from "@tanstack/react-query";
 
 const TaskList = ({ groupId }) => {
-  const queryClient = useQueryClient();
   const {
     taskByGroup,
     addTaskMutation,
@@ -15,190 +13,88 @@ const TaskList = ({ groupId }) => {
     updateTaskPositionsMutation,
   } = useTask(groupId);
   const { data, isLoading, isError } = taskByGroup;
+
   const [openSubtasks, setOpenSubtasks] = useState({});
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskName, setTaskName] = useState("");
-  const [hoveredTask, setHoveredTask] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [editedValue, setEditedValue] = useState("");
   const [activePopup, setActivePopup] = useState(null);
   const [localTasks, setLocalTasks] = useState([]);
-  const [draggedTask, setDraggedTask] = useState(null);
-  const [dropPosition, setDropPosition] = useState(null);
+  const [draggedIndex, setDraggedIndex] = useState(null);
 
   const buttonRefs = useRef({});
-
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
 
   useEffect(() => {
-    if (data) {
-      setLocalTasks(data);
-    }
+    if (data) setLocalTasks(data);
   }, [data]);
-  const toggleSubtasks = (taskId) => {
-    setOpenSubtasks((prev) => ({
-      ...prev,
-      [taskId]: !prev[taskId],
-    }));
-  };
 
   const handleAddTask = useCallback(() => {
     const trimmedName = taskName.trim();
     if (!trimmedName) return;
-    const newTaskData = {
-      nama: trimmedName,
-      status: "To Do",
-      priority: "Medium",
-      start_date: "",
-    };
 
-    addTaskMutation.mutate(newTaskData, {
-      onSuccess: () => {
-        setTaskName("");
-        setShowAddTask(false);
+    addTaskMutation.mutate(
+      {
+        nama: trimmedName,
+        status: "To Do",
+        priority: "Medium",
+        start_date: "",
       },
-    });
-  }, [taskName, addTaskMutation]);
-
-  const handleAddKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleAddTask();
-      } else if (e.key === "Escape") {
-        setTaskName("");
-        setShowAddTask(false);
+      {
+        onSuccess: () => {
+          setTaskName("");
+          setShowAddTask(false);
+        },
       }
-    },
-    [handleAddTask]
-  );
+    );
+  }, [taskName, addTaskMutation]);
 
   const handleFieldEdit = useCallback(
     (taskId, field, value) => {
       const trimmedValue = value.trim();
-
       if (!trimmedValue && field === "nama") {
         setEditingField(null);
         return;
       }
-
-      updateTaskMutation.mutate({
-        taskId,
-        data: { [field]: trimmedValue },
-      });
-
+      updateTaskMutation.mutate({ taskId, data: { [field]: trimmedValue } });
       setEditingField(null);
     },
     [updateTaskMutation]
   );
 
-  const handleFieldKeyDown = useCallback(
-    (e, taskId, field) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleFieldEdit(taskId, field, editedValue);
-      } else if (e.key === "Escape") {
-        setEditingField(null);
-      }
-    },
-    [editedValue, handleFieldEdit]
-  );
-
   const handlePopupChange = useCallback(
     (taskId, field, value) => {
-      updateTaskMutation.mutate({
-        taskId,
-        data: { [field]: value },
-      });
+      updateTaskMutation.mutate({ taskId, data: { [field]: value } });
       setActivePopup(null);
     },
     [updateTaskMutation]
   );
 
-  const startEditing = useCallback((taskId, field, currentValue) => {
-    setEditingField({ taskId, field });
-    setEditedValue(currentValue);
-  }, []);
-
-  const openPopup = useCallback((taskId, field) => {
-    setActivePopup({ taskId, field });
-  }, []);
-
-  const handleTaskDragStart = (e, index) => {
-    setDraggedTask(index);
-    e.dataTransfer.effectAllowed = "move";
+  // Drag and Drop - Simplified
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
     e.dataTransfer.setData("taskId", localTasks[index]._id);
     e.dataTransfer.setData("sourceGroupId", groupId);
   };
 
-  const handleTaskDragOver = (e, index) => {
+  const handleDragOver = (e, index) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-
-    const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
-
-    // Jika dari group lain, simpan posisi drop
-    if (sourceGroupId !== groupId) {
-      setDropPosition(index);
-      return;
-    }
-
-    // Jika dalam group yang sama, lakukan reorder
-    if (draggedTask === null || draggedTask === index) return;
+    if (draggedIndex === null || draggedIndex === index) return;
 
     const newTasks = [...localTasks];
-    const [removed] = newTasks.splice(draggedTask, 1);
+    const [removed] = newTasks.splice(draggedIndex, 1);
     newTasks.splice(index, 0, removed);
-
     setLocalTasks(newTasks);
-    setDraggedTask(index);
-  };
-  const handleTaskDrop = (e, dropIndex = null) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const taskId = e.dataTransfer.getData("taskId");
-    const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
-
-    if (sourceGroupId !== groupId) {
-      // Pindah ke group lain dengan posisi spesifik
-      const targetPosition =
-        dropIndex !== null
-          ? dropIndex
-          : dropPosition !== null
-          ? dropPosition
-          : localTasks.length;
-
-      updateTaskMutation.mutate(
-        {
-          taskId,
-          data: {
-            groupId: groupId,
-            position: targetPosition,
-          },
-        },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["task"] });
-            setDraggedTask(null);
-            setDropPosition(null);
-          },
-        }
-      );
-    } else {
-      // Reorder dalam group yang sama
-      const taskIds = localTasks.map((t) => t._id);
-      updateTaskPositionsMutation.mutate(taskIds, {
-        onSuccess: () => {
-          setDraggedTask(null);
-          setDropPosition(null);
-        },
-      });
-    }
+    setDraggedIndex(index);
   };
 
-  const handleTaskDragEnd = () => {};
+  const handleDrop = () => {
+    if (draggedIndex === null) return;
+    updateTaskPositionsMutation.mutate(localTasks.map((t) => t._id));
+    setDraggedIndex(null);
+  };
 
   if (!groupId)
     return (
@@ -212,256 +108,235 @@ const TaskList = ({ groupId }) => {
     );
 
   return (
-    <>
-      <div
-        className="overflow-x-auto"
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = "move";
-        }}
-      >
-        <div className="min-w-full">
-          <div className="flex bg-gray-50 border-b border-gray-200">
-            <div className="flex-1 px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Task
-            </div>
-            <div className="w-32 px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Person
-            </div>
-            <div className="w-40 px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Status
-            </div>
-            <div className="w-32 px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Priority
-            </div>
-            <div className="w-40 px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Start Date
-            </div>
+    <div className="overflow-x-auto">
+      <div className="min-w-full">
+        <div className="flex bg-gray-50 border-b border-gray-200">
+          <div className="flex-1 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            Task
           </div>
+          <div className="w-32 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            Person
+          </div>
+          <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            Status
+          </div>
+          <div className="w-32 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            Priority
+          </div>
+          <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            Start Date
+          </div>
+        </div>
 
-          {localTasks &&
-            localTasks.map((task, index) => (
-              <div key={task._id}>
-                <div
-                  draggable
-                  onDragStart={(e) => handleTaskDragStart(e, index)}
-                  onDragOver={(e) => handleTaskDragOver(e, index)}
-                  onDrop={(e) => handleTaskDrop(e, index)}
-                  onDragEnd={handleTaskDragEnd}
-                  className={`flex items-center hover:bg-gray-50 transition ${
-                    draggedTask === index
-                      ? "opacity-40"
-                      : "cursor-grab active:cursor-grabbing"
+        {localTasks?.map((task, index) => (
+          <div key={task._id}>
+            <div
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDrop={handleDrop}
+              onDragEnd={() => setDraggedIndex(null)}
+              className={`flex items-center hover:bg-gray-50 cursor-move ${
+                draggedIndex === index ? "opacity-30" : ""
+              }`}
+            >
+              <div className="flex-1 flex items-center gap-3 px-6 py-3.5 border-b border-gray-100">
+                <button
+                  onClick={() =>
+                    setOpenSubtasks((prev) => ({
+                      ...prev,
+                      [task._id]: !prev[task._id],
+                    }))
+                  }
+                  className={`p-0.5 hover:bg-gray-200 rounded ${
+                    task.subtask?.length ? "opacity-100" : "opacity-0"
                   }`}
-                  onMouseEnter={() => setHoveredTask(task._id)}
-                  onMouseLeave={() => setHoveredTask(null)}
                 >
-                  <div className="flex-1 flex items-center gap-3 px-6 py-3.5 border-b border-gray-100">
-                    <button
-                      onClick={() => toggleSubtasks(task._id)}
-                      className={`p-0.5 hover:bg-gray-200 rounded transition ${
-                        hoveredTask === task._id ||
-                        (task.subtask && task.subtask.length > 0)
-                          ? "opacity-100"
-                          : "opacity-0"
-                      }`}
-                    >
-                      {openSubtasks[task._id] ? (
-                        <ChevronDown
-                          className={`w-4 h-4 ${
-                            task.subtask && task.subtask.length > 0
-                              ? "text-gray-700"
-                              : "text-gray-400"
-                          }`}
-                        />
-                      ) : (
-                        <ChevronRight
-                          className={`w-4 h-4 ${
-                            task.subtask && task.subtask.length > 0
-                              ? "text-gray-700"
-                              : "text-gray-400"
-                          }`}
-                        />
-                      )}
-                    </button>
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    {editingField?.taskId === task._id &&
-                    editingField?.field === "nama" ? (
-                      <input
-                        type="text"
-                        className="text-sm border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
-                        value={editedValue}
-                        autoFocus
-                        onChange={(e) => setEditedValue(e.target.value)}
-                        onBlur={() =>
-                          handleFieldEdit(task._id, "nama", editedValue)
-                        }
-                        onKeyDown={(e) =>
-                          handleFieldKeyDown(e, task._id, "nama")
-                        }
-                      />
-                    ) : (
-                      <span
-                        className="text-sm text-gray-700 hover:bg-gray-100 px-1 rounded cursor-pointer"
-                        onClick={() =>
-                          startEditing(task._id, "nama", task.nama)
-                        }
-                      >
-                        {task.nama}
-                      </span>
-                    )}
-                  </div>
-                  <div className="w-32 px-6 py-3.5 border-b border-gray-100">
-                    <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold">
-                      UN
-                    </div>
-                  </div>
-                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 flex items-center">
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`status-${task._id}`] = el)
-                      }
-                      className="px-3 py-1.5 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200 transition"
-                      onClick={() => openPopup(task._id, "status")}
-                    >
-                      {task.status}
-                    </span>
-
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "status" && (
-                        <PopupSelect
-                          value={task.status}
-                          options={STATUS_OPTIONS}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "status", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`status-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                  <div className="w-32 px-6 py-3.5 border-b border-gray-100">
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`priority-${task._id}`] = el)
-                      }
-                      className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200"
-                      onClick={() => openPopup(task._id, "priority")}
-                    >
-                      {task.priority}
-                    </span>
-
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "priority" && (
-                        <PopupSelect
-                          value={task.priority}
-                          options={PRIORITY_OPTIONS}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "priority", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`priority-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-
-                  <div className="w-40 px-6 py-3.5 border-b border-gray-100">
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`date-${task._id}`] = el)
-                      }
-                      className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-                      onClick={() => openPopup(task._id, "start_date")}
-                    >
-                      {task.start_date
-                        ? new Date(task.start_date).toLocaleString("id-ID", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })
-                        : "Set date"}
-                    </span>
-
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "start_date" && (
-                        <DatePickerPopup
-                          value={task.start_date}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "start_date", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`date-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                </div>
-                {openSubtasks[task._id] && (
-                  <div className="border-b border-gray-100">
-                    <SubtaskList
-                      taskId={task._id}
-                      subtasks={task.subtask || []}
-                      groupId={groupId}
-                    />
-                  </div>
+                  {openSubtasks[task._id] ? (
+                    <ChevronDown className="w-4 h-4 text-gray-700" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  )}
+                </button>
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300"
+                />
+                {editingField?.taskId === task._id &&
+                editingField?.field === "nama" ? (
+                  <input
+                    type="text"
+                    className="text-sm border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
+                    value={editedValue}
+                    autoFocus
+                    onChange={(e) => setEditedValue(e.target.value)}
+                    onBlur={() =>
+                      handleFieldEdit(task._id, "nama", editedValue)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter")
+                        handleFieldEdit(task._id, "nama", editedValue);
+                      if (e.key === "Escape") setEditingField(null);
+                    }}
+                  />
+                ) : (
+                  <span
+                    className="text-sm text-gray-700 hover:bg-gray-100 px-1 rounded cursor-pointer"
+                    onClick={() => {
+                      setEditingField({ taskId: task._id, field: "nama" });
+                      setEditedValue(task.nama);
+                    }}
+                  >
+                    {task.nama}
+                  </span>
                 )}
               </div>
-            ))}
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
-              if (sourceGroupId !== groupId) {
-                e.dataTransfer.dropEffect = "move";
-                setDropPosition(localTasks.length);
-              }
-            }}
-            onDrop={(e) => handleTaskDrop(e, localTasks.length)}
-            className="h-2 hover:bg-blue-50 transition"
-          />
-          {showAddTask ? (
-            <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
-              <div className="w-5" />
-              <input
-                type="checkbox"
-                className="w-4 h-4 rounded border-gray-300"
-                disabled
-              />
-              <input
-                type="text"
-                placeholder="Nama task"
-                className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-                autoFocus
-                onKeyDown={handleAddKeyDown}
-                onBlur={() =>
-                  taskName.trim() ? handleAddTask() : setShowAddTask(false)
+
+              <div className="w-32 px-6 py-3.5 border-b border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold">
+                  UN
+                </div>
+              </div>
+
+              <div className="w-40 px-6 py-3.5 border-b border-gray-100">
+                <span
+                  ref={(el) => (buttonRefs.current[`status-${task._id}`] = el)}
+                  className="px-3 py-1.5 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
+                  onClick={() =>
+                    setActivePopup({ taskId: task._id, field: "status" })
+                  }
+                >
+                  {task.status}
+                </span>
+                {activePopup?.taskId === task._id &&
+                  activePopup?.field === "status" && (
+                    <PopupSelect
+                      value={task.status}
+                      options={STATUS_OPTIONS}
+                      onChange={(value) =>
+                        handlePopupChange(task._id, "status", value)
+                      }
+                      onClose={() => setActivePopup(null)}
+                      buttonRef={{
+                        current: buttonRefs.current[`status-${task._id}`],
+                      }}
+                    />
+                  )}
+              </div>
+
+              <div className="w-32 px-6 py-3.5 border-b border-gray-100">
+                <span
+                  ref={(el) =>
+                    (buttonRefs.current[`priority-${task._id}`] = el)
+                  }
+                  className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200"
+                  onClick={() =>
+                    setActivePopup({ taskId: task._id, field: "priority" })
+                  }
+                >
+                  {task.priority}
+                </span>
+                {activePopup?.taskId === task._id &&
+                  activePopup?.field === "priority" && (
+                    <PopupSelect
+                      value={task.priority}
+                      options={PRIORITY_OPTIONS}
+                      onChange={(value) =>
+                        handlePopupChange(task._id, "priority", value)
+                      }
+                      onClose={() => setActivePopup(null)}
+                      buttonRef={{
+                        current: buttonRefs.current[`priority-${task._id}`],
+                      }}
+                    />
+                  )}
+              </div>
+
+              <div className="w-40 px-6 py-3.5 border-b border-gray-100">
+                <span
+                  ref={(el) => (buttonRefs.current[`date-${task._id}`] = el)}
+                  className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                  onClick={() =>
+                    setActivePopup({ taskId: task._id, field: "start_date" })
+                  }
+                >
+                  {task.start_date
+                    ? new Date(task.start_date).toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                    : "Set date"}
+                </span>
+                {activePopup?.taskId === task._id &&
+                  activePopup?.field === "start_date" && (
+                    <DatePickerPopup
+                      value={task.start_date}
+                      onChange={(value) =>
+                        handlePopupChange(task._id, "start_date", value)
+                      }
+                      onClose={() => setActivePopup(null)}
+                      buttonRef={{
+                        current: buttonRefs.current[`date-${task._id}`],
+                      }}
+                    />
+                  )}
+              </div>
+            </div>
+
+            {openSubtasks[task._id] && (
+              <div className="border-b border-gray-100">
+                <SubtaskList
+                  taskId={task._id}
+                  subtasks={task.subtask || []}
+                  groupId={groupId}
+                />
+              </div>
+            )}
+          </div>
+        ))}
+
+        {showAddTask ? (
+          <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
+            <div className="w-5" />
+            <input
+              type="checkbox"
+              className="w-4 h-4 rounded border-gray-300"
+              disabled
+            />
+            <input
+              type="text"
+              placeholder="Nama task"
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              value={taskName}
+              onChange={(e) => setTaskName(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAddTask();
+                if (e.key === "Escape") {
+                  setTaskName("");
+                  setShowAddTask(false);
                 }
-              />
-            </div>
-          ) : (
-            <div className="px-6 py-3 border-b border-gray-100">
-              <button
-                onClick={() => setShowAddTask(true)}
-                className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition"
-              >
-                <Plus className="w-4 h-4" />
-                Tambah task
-              </button>
-            </div>
-          )}
-        </div>
+              }}
+              onBlur={() =>
+                taskName.trim() ? handleAddTask() : setShowAddTask(false)
+              }
+            />
+          </div>
+        ) : (
+          <div className="px-6 py-3 border-b border-gray-100">
+            <button
+              onClick={() => setShowAddTask(true)}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah task
+            </button>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
+
 export default TaskList;
