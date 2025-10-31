@@ -17,16 +17,13 @@ const GroupCard = ({ group, index }) => {
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
 
     if (sourceGroupId !== group._id) {
-      updateTaskMutation.mutate(
-        {
-          taskId,
-          data: { groupId: group._id, position: taskByGroup.data?.length || 0 },
+      updateTaskMutation.mutate({
+        taskId,
+        data: {
+          groupId: group._id,
+          position: taskByGroup.data?.length || 0,
         },
-        {
-          onSuccess: () =>
-            queryClient.invalidateQueries({ queryKey: ["task"] }),
-        }
-      );
+      });
     }
   };
 
