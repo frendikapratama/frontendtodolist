@@ -3,28 +3,62 @@ import { useTask } from "../../hook/useTask";
 import TaskList from "../Task/TaskList";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useEffect } from "react";
 
 const GroupCard = ({ group, index }) => {
   const queryClient = useQueryClient();
   const { taskByGroup, updateTaskMutation } = useTask(group._id);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  useEffect(() => {
+    const handleTaskDrop = (event) => {
+      const { taskId, sourceGroupId, targetGroupId, targetIndex } =
+        event.detail;
+
+      if (targetGroupId === group._id && sourceGroupId !== group._id) {
+        console.log(`[DEBUG] GroupCard received drop event:`, {
+          targetGroup: group.nama,
+          targetIndex,
+          taskId,
+          currentTaskCount: taskByGroup.data?.length || 0,
+        });
+
+        updateTaskMutation.mutate(
+          {
+            taskId,
+            data: {
+              groupId: group._id,
+              position: targetIndex,
+            },
+          },
+          {
+            onSuccess: () => {
+              console.log(
+                `[DEBUG] Successfully moved task ${taskId} to group ${group._id} at position ${targetIndex}`
+              );
+            },
+            onError: (error) => {
+              console.error(`[DEBUG] Error moving task:`, error);
+            },
+            onSettled: () => {
+              console.log(`[DEBUG] Invalidating queries for tasks`);
+              queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            },
+          }
+        );
+      }
+    };
+
+    document.addEventListener("taskDrop", handleTaskDrop);
+
+    return () => {
+      document.removeEventListener("taskDrop", handleTaskDrop);
+    };
+  }, [group._id, updateTaskMutation, queryClient, taskByGroup.data?.length]);
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
-
-    const taskId = e.dataTransfer.getData("taskId");
-    const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
-
-    if (sourceGroupId !== group._id) {
-      updateTaskMutation.mutate({
-        taskId,
-        data: {
-          groupId: group._id,
-          position: taskByGroup.data?.length || 0,
-        },
-      });
-    }
   };
 
   const getHeaderColor = () => {
@@ -64,5 +98,4 @@ const GroupCard = ({ group, index }) => {
     </div>
   );
 };
-
 export default GroupCard;

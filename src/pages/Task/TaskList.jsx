@@ -33,6 +33,24 @@ const TaskList = ({ groupId }) => {
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
 
   useEffect(() => {
+    const handleGlobalDragEnd = () => {
+      setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
+    };
+
+    const handleGlobalDrop = () => {
+      setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
+    };
+
+    document.addEventListener("dragend", handleGlobalDragEnd);
+    document.addEventListener("drop", handleGlobalDrop);
+
+    return () => {
+      document.removeEventListener("dragend", handleGlobalDragEnd);
+      document.removeEventListener("drop", handleGlobalDrop);
+    };
+  }, []);
+
+  useEffect(() => {
     if (data) setLocalTasks(data);
   }, [data]);
 
@@ -108,7 +126,12 @@ const TaskList = ({ groupId }) => {
         const [removed] = newTasks.splice(currentDragIndex, 1);
         newTasks.splice(index, 0, removed);
       } else {
-        newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+        const alreadyHasPreview = newTasks.some(
+          (t) => t._id === draggedTaskData._id && t._isPreview
+        );
+        if (!alreadyHasPreview) {
+          newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+        }
       }
 
       return newTasks;
@@ -120,6 +143,7 @@ const TaskList = ({ groupId }) => {
   const handleDrop = (e, index) => {
     e.preventDefault();
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+    const draggedTaskId = e.dataTransfer.getData("taskId");
     const isSameGroup = sourceGroupId === groupId;
 
     setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
@@ -128,7 +152,18 @@ const TaskList = ({ groupId }) => {
       updateTaskPositionsMutation.mutate(
         localTasks.filter((t) => !t._isPreview).map((t) => t._id)
       );
+    } else {
+      const dropEvent = new CustomEvent("taskDrop", {
+        detail: {
+          taskId: draggedTaskId,
+          sourceGroupId,
+          targetGroupId: groupId,
+          targetIndex: index,
+        },
+      });
+      document.dispatchEvent(dropEvent);
     }
+
     setDragState({ index: null, task: null, fromGroup: null });
   };
 
@@ -362,35 +397,32 @@ const TaskList = ({ groupId }) => {
           );
         })}
 
-        {showAddTask ? (
-          <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
-            <div className="w-5" />
-            <input
-              type="checkbox"
-              className="w-4 h-4 rounded border-gray-300"
-              disabled
-            />
-            <input
-              type="text"
-              placeholder="Nama task"
-              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-text"
-              value={taskName}
-              onChange={(e) => setTaskName(e.target.value)}
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleAddTask();
-                if (e.key === "Escape") {
-                  setTaskName("");
-                  setShowAddTask(false);
-                }
-              }}
-              onBlur={() =>
-                taskName.trim() ? handleAddTask() : setShowAddTask(false)
+        {/* Area untuk drop di group kosong - hanya tampil ketika tidak ada tasks */}
+        {localTasks?.length === 0 && (
+          <div
+            className="px-6 py-3 border-b border-gray-100"
+            onDragOver={(e) => {
+              e.preventDefault();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+              const draggedTaskId = e.dataTransfer.getData("taskId");
+              const isSameGroup = sourceGroupId === groupId;
+
+              if (!isSameGroup) {
+                const dropEvent = new CustomEvent("taskDrop", {
+                  detail: {
+                    taskId: draggedTaskId,
+                    sourceGroupId,
+                    targetGroupId: groupId,
+                    targetIndex: 0,
+                  },
+                });
+                document.dispatchEvent(dropEvent);
               }
-            />
-          </div>
-        ) : (
-          <div className="px-6 py-3 border-b border-gray-100">
+            }}
+          >
             <button
               onClick={() => setShowAddTask(true)}
               className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600"
@@ -400,6 +432,70 @@ const TaskList = ({ groupId }) => {
             </button>
           </div>
         )}
+
+        {/* Area tambah task biasa - hanya tampil ketika ada tasks */}
+        {localTasks?.length > 0 &&
+          (showAddTask ? (
+            <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
+              <div className="w-5" />
+              <input
+                type="checkbox"
+                className="w-4 h-4 rounded border-gray-300"
+                disabled
+              />
+              <input
+                type="text"
+                placeholder="Nama task"
+                className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-text"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddTask();
+                  if (e.key === "Escape") {
+                    setTaskName("");
+                    setShowAddTask(false);
+                  }
+                }}
+                onBlur={() =>
+                  taskName.trim() ? handleAddTask() : setShowAddTask(false)
+                }
+              />
+            </div>
+          ) : (
+            <div
+              className="px-6 py-3 border-b border-gray-100"
+              onDragOver={(e) => {
+                e.preventDefault();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+                const draggedTaskId = e.dataTransfer.getData("taskId");
+                const isSameGroup = sourceGroupId === groupId;
+
+                if (!isSameGroup) {
+                  const dropEvent = new CustomEvent("taskDrop", {
+                    detail: {
+                      taskId: draggedTaskId,
+                      sourceGroupId,
+                      targetGroupId: groupId,
+                      targetIndex: localTasks?.length || 0,
+                    },
+                  });
+                  document.dispatchEvent(dropEvent);
+                }
+              }}
+            >
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600"
+              >
+                <Plus className="w-4 h-4" />
+                Tambah task
+              </button>
+            </div>
+          ))}
       </div>
     </div>
   );
