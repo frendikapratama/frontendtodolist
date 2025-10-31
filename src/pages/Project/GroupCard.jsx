@@ -4,11 +4,33 @@ import TaskList from "../Task/TaskList";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useEffect } from "react";
+import { useGroup } from "../../hook/useGroups";
 
 const GroupCard = ({ group, index }) => {
   const queryClient = useQueryClient();
   const { taskByGroup, updateTaskMutation } = useTask(group._id);
+  const { updateGroupMutation } = useGroup();
   const [isDragOver, setIsDragOver] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(group.nama);
+
+  const handleNameEdit = (e) => {
+    e.preventDefault();
+    const newName = editedName.trim();
+
+    if (!newName || newName === group.nama) {
+      setIsEditing(false);
+      setEditedName(group.nama);
+      return;
+    }
+
+    updateGroupMutation.mutate({
+      groupId: group._id,
+      data: { nama: newName },
+    });
+    setIsEditing(false);
+  };
 
   useEffect(() => {
     const handleTaskDrop = (event) => {
@@ -16,45 +38,19 @@ const GroupCard = ({ group, index }) => {
         event.detail;
 
       if (targetGroupId === group._id && sourceGroupId !== group._id) {
-        console.log(`[DEBUG] GroupCard received drop event:`, {
-          targetGroup: group.nama,
-          targetIndex,
+        updateTaskMutation.mutate({
           taskId,
-          currentTaskCount: taskByGroup.data?.length || 0,
-        });
-
-        updateTaskMutation.mutate(
-          {
-            taskId,
-            data: {
-              groupId: group._id,
-              position: targetIndex,
-            },
+          data: {
+            groupId: group._id,
+            position: targetIndex,
           },
-          {
-            onSuccess: () => {
-              console.log(
-                `[DEBUG] Successfully moved task ${taskId} to group ${group._id} at position ${targetIndex}`
-              );
-            },
-            onError: (error) => {
-              console.error(`[DEBUG] Error moving task:`, error);
-            },
-            onSettled: () => {
-              console.log(`[DEBUG] Invalidating queries for tasks`);
-              queryClient.invalidateQueries({ queryKey: ["tasks"] });
-            },
-          }
-        );
+        });
       }
     };
 
     document.addEventListener("taskDrop", handleTaskDrop);
-
-    return () => {
-      document.removeEventListener("taskDrop", handleTaskDrop);
-    };
-  }, [group._id, updateTaskMutation, queryClient, taskByGroup.data?.length]);
+    return () => document.removeEventListener("taskDrop", handleTaskDrop);
+  }, [group._id, updateTaskMutation]);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -74,7 +70,34 @@ const GroupCard = ({ group, index }) => {
       >
         <div className="flex items-center gap-3">
           <ChevronDown className="w-5 h-5 text-white" />
-          <h3 className="text-white font-semibold text-base">{group.nama}</h3>
+          {isEditing ? (
+            <form onSubmit={handleNameEdit} className="m-0">
+              <input
+                type="text"
+                className=" text-white placeholder-white placeholder-opacity-75 border-0 rounded px-2 py-1 focus:ring-2 focus:ring-white focus:ring-opacity-50 text-base font-semibold w-[200px]"
+                value={editedName}
+                autoFocus
+                onChange={(e) => setEditedName(e.target.value)}
+                onBlur={handleNameEdit}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setIsEditing(false);
+                    setEditedName(group.nama);
+                  }
+                }}
+              />
+            </form>
+          ) : (
+            <h3
+              className="text-white font-semibold text-base cursor-pointer hover:underline"
+              onClick={() => {
+                setIsEditing(true);
+                setEditedName(group.nama);
+              }}
+            >
+              {group.nama}
+            </h3>
+          )}
           <span className="text-xs text-white bg-opacity-20 px-2.5 py-1 rounded-full font-medium">
             {taskByGroup.data?.length || 0} items
           </span>

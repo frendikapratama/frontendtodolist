@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addGroupToProject } from "../services/group";
+import { addGroupToProject, updategroup } from "../services/group";
 import toast from "react-hot-toast";
 export const useGroup = () => {
   const queryClient = useQueryClient();
+
   const addGroupMutation = useMutation({
     mutationFn: ({ projectId, data }) => addGroupToProject(projectId, data),
     onSuccess: () => {
@@ -20,7 +21,24 @@ export const useGroup = () => {
     },
   });
 
+  const updateGroupMutation = useMutation({
+    mutationFn: ({ groupId, data }) => updategroup(groupId, data),
+    onSuccess: () => {
+      toast.success("Group berhasil diupdate");
+      queryClient.invalidateQueries({ queryKey: ["project"] });
+    },
+    onError: (error) => {
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
+      } else {
+        toast.error("Gagal mengupdate Group");
+      }
+    },
+  });
+
   return {
     addGroupMutation,
+    updateGroupMutation,
   };
 };

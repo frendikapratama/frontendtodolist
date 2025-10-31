@@ -397,7 +397,6 @@ const TaskList = ({ groupId }) => {
           );
         })}
 
-        {/* Area untuk drop di group kosong - hanya tampil ketika tidak ada tasks */}
         {localTasks?.length === 0 && (
           <div
             className="px-6 py-3 border-b border-gray-100"
@@ -423,17 +422,45 @@ const TaskList = ({ groupId }) => {
               }
             }}
           >
-            <button
-              onClick={() => setShowAddTask(true)}
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600"
-            >
-              <Plus className="w-4 h-4" />
-              Tambah task
-            </button>
+            {showAddTask ? (
+              <div className="flex items-center gap-3">
+                <div className="w-5" />
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300"
+                  disabled
+                />
+                <input
+                  type="text"
+                  placeholder="Nama task"
+                  className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-text"
+                  value={taskName}
+                  onChange={(e) => setTaskName(e.target.value)}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddTask();
+                    if (e.key === "Escape") {
+                      setTaskName("");
+                      setShowAddTask(false);
+                    }
+                  }}
+                  onBlur={() =>
+                    taskName.trim() ? handleAddTask() : setShowAddTask(false)
+                  }
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600"
+              >
+                <Plus className="w-4 h-4" />
+                Tambah task
+              </button>
+            )}
           </div>
         )}
 
-        {/* Area tambah task biasa - hanya tampil ketika ada tasks */}
         {localTasks?.length > 0 &&
           (showAddTask ? (
             <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
