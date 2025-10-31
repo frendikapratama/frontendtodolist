@@ -4,10 +4,8 @@ import { useTask } from "../../hook/useTask";
 import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
-import { useQueryClient } from "@tanstack/react-query";
 
 const TaskList = ({ groupId }) => {
-  const queryClient = useQueryClient();
   const {
     taskByGroup,
     addTaskMutation,
