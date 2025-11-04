@@ -2,11 +2,11 @@ import React from "react";
 import { useWorkspace } from "../../hook/useWorkspace";
 import { WorkspaceForm } from "./Form";
 import { useNavigate } from "react-router-dom";
-import { useSelectedWorkspace } from "../../context/WorkspaceContext"; // Import context
+import { useSelectedWorkspace } from "../../context/WorkspaceContext";
 const WorkspaceIndex = () => {
   const { workspacesQuery } = useWorkspace();
   const navigate = useNavigate();
-  const { setSelectedWorkspaceId } = useSelectedWorkspace(); // Gunakan context
+  const { setSelectedWorkspaceId } = useSelectedWorkspace();
 
   const openCreateModal = () => {
     document.getElementById("createModal").showModal();
@@ -17,7 +17,7 @@ const WorkspaceIndex = () => {
   };
 
   const handleSelectWorkspace = (workspaceId) => {
-    setSelectedWorkspaceId(workspaceId); // Set workspace yang dipilih
+    setSelectedWorkspaceId(workspaceId);
     navigate(`/workspaces/${workspaceId}`);
   };
 

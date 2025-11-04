@@ -246,15 +246,24 @@ export default function Sidebar() {
                         ws.projects?.length > 0 && (
                           <div key={ws._id} className="space-y-1">
                             {ws.projects.map((project) => (
-                              <button
+                              <NavLink
                                 key={project._id}
-                                onClick={() =>
-                                  navigate(`/project/${project._id}`)
+                                to={`/project/${project._id}`}
+                                onClick={() => {
+                                  // keep sidebar behaviour consistent
+                                  setIsSidebarOpen(false);
+                                  setSelectedWorkspaceId(ws._id);
+                                }}
+                                className={({ isActive }) =>
+                                  `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
+                                    isActive
+                                      ? "bg-blue-600 text-white"
+                                      : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                                  }`
                                 }
-                                className="block w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
                               >
                                 {project.nama}
-                              </button>
+                              </NavLink>
                             ))}
                           </div>
                         )

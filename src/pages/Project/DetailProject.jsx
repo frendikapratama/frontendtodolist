@@ -3,12 +3,22 @@ import { useProject } from "../../hook/useProject";
 import { useGroup } from "../../hook/useGroups";
 import { Plus, Star, Users, Calendar, ChevronDown } from "lucide-react";
 import GroupCard from "./GroupCard";
+import { useEffect } from "react";
+import { useSelectedWorkspace } from "../../context/WorkspaceContext";
 const ProjectDetailPage = () => {
   const { projectDetail } = useProject();
   const { id } = useParams();
   const { addGroupMutation } = useGroup();
   const projectQuery = projectDetail(id);
   const { data, isLoading, isError } = projectQuery;
+  const { setSelectedWorkspaceId } = useSelectedWorkspace();
+
+  useEffect(() => {
+    if (!data) return;
+    const workspaceId =
+      data.workspace?._id || data.workspaceId || data.workspaceId?._id || null;
+    if (workspaceId) setSelectedWorkspaceId(workspaceId);
+  }, [data, setSelectedWorkspaceId]);
 
   if (isLoading) {
     return (
