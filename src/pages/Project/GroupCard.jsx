@@ -7,7 +7,6 @@ import { useEffect } from "react";
 import { useGroup } from "../../hook/useGroups";
 
 const GroupCard = ({ group, index }) => {
-  const queryClient = useQueryClient();
   const { taskByGroup, updateTaskMutation } = useTask(group._id);
   const { updateGroupMutation } = useGroup();
   const [isDragOver, setIsDragOver] = useState(false);

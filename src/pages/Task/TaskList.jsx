@@ -1,9 +1,9 @@
-import { Plus, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useTask } from "../../hook/useTask";
 import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
+import { Plus, ChevronDown, ChevronRight, UserPlus, X } from "lucide-react";
 
 const TaskList = ({ groupId }) => {
   const {
@@ -11,6 +11,8 @@ const TaskList = ({ groupId }) => {
     addTaskMutation,
     updateTaskMutation,
     updateTaskPositionsMutation,
+    assignPicMutation,
+    removePicMutation,
   } = useTask(groupId);
   const { data, isLoading, isError } = taskByGroup;
 
@@ -31,6 +33,40 @@ const TaskList = ({ groupId }) => {
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
+  const [showPicInput, setShowPicInput] = useState(null);
+  const [picEmail, setPicEmail] = useState("");
+
+  const handleAssignPic = useCallback(
+    (taskId) => {
+      const trimmedEmail = picEmail.trim();
+      if (!trimmedEmail) return;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        toast.error("Format email tidak valid");
+        return;
+      }
+
+      assignPicMutation.mutate(
+        { taskId, picEmail: trimmedEmail },
+        {
+          onSuccess: () => {
+            setPicEmail("");
+            setShowPicInput(null);
+          },
+        }
+      );
+    },
+    [picEmail, assignPicMutation]
+  );
+
+  const handleRemovePic = useCallback(
+    (taskId, userId) => {
+      if (window.confirm("Hapus PIC dari task ini?")) {
+        removePicMutation.mutate({ taskId, userId });
+      }
+    },
+    [removePicMutation]
+  );
 
   useEffect(() => {
     const handleGlobalDragEnd = () => {
@@ -291,8 +327,69 @@ const TaskList = ({ groupId }) => {
                 </div>
 
                 <div className="w-32 px-6 py-3.5 border-b border-gray-100">
-                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold">
-                    UN
+                  <div className="flex items-center gap-2">
+                    {/* Show existing PICs */}
+                    {task.pic && task.pic.length > 0 ? (
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {task.pic.map((picUser, idx) => (
+                          <div
+                            key={idx}
+                            className="relative group"
+                            title={picUser.email || "PIC"}
+                          >
+                            <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold">
+                              {picUser.username
+                                ? picUser.username.substring(0, 2).toUpperCase()
+                                : "?"}
+                            </div>
+                            <button
+                              onClick={() =>
+                                handleRemovePic(task._id, picUser._id)
+                              }
+                              className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {/* Show input form if active */}
+                    {showPicInput === task._id ? (
+                      <input
+                        type="email"
+                        placeholder="email@example.com"
+                        className="w-40 px-2 py-1 text-xs border border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+                        value={picEmail}
+                        onChange={(e) => setPicEmail(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleAssignPic(task._id);
+                          if (e.key === "Escape") {
+                            setPicEmail("");
+                            setShowPicInput(null);
+                          }
+                        }}
+                        onBlur={() => {
+                          if (picEmail.trim()) {
+                            handleAssignPic(task._id);
+                          } else {
+                            setPicEmail("");
+                            setShowPicInput(null);
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      /* Show add button */
+                      <button
+                        onClick={() => setShowPicInput(task._id)}
+                        className="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                        title="Assign PIC"
+                      >
+                        <UserPlus className="w-4 h-4 text-gray-400 hover:text-blue-500" />
+                      </button>
+                    )}
                   </div>
                 </div>
 

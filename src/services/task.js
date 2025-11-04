@@ -16,6 +16,24 @@ export async function updateTask(taskId, data) {
 }
 
 export const updateTaskPositions = async (taskIds) => {
-  const res = await api.put(`/task/positions`, { taskIds });
+  const res = await api.put(`task/positions`, { taskIds });
   return res.data.data;
 };
+
+export async function assignPic(taskId, picEmail) {
+  const res = await api.put(`task/${taskId}`, { picEmail });
+  return res.data;
+}
+
+export async function removePic(taskId, userId) {
+  const res = await api.delete(`task/${taskId}/pic`, { data: { userId } });
+  return res.data;
+}
+
+export async function acceptPicInvite(taskId, token, userData = null) {
+  const res = await api.post(
+    `/task/${taskId}/accept-pic-invite?token=${token}`,
+    userData
+  );
+  return res.data;
+}

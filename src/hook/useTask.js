@@ -4,6 +4,8 @@ import {
   addTask,
   updateTask,
   updateTaskPositions,
+  assignPic,
+  removePic,
 } from "../services/task";
 import toast from "react-hot-toast";
 
@@ -58,10 +60,39 @@ export const useTask = (groupId) => {
     },
   });
 
+  // TAMBAHKAN sebelum return statement
+
+  const assignPicMutation = useMutation({
+    mutationFn: ({ taskId, picEmail }) => assignPic(taskId, picEmail),
+    onSuccess: (data) => {
+      if (data.invited) {
+        toast.success("Undangan PIC berhasil dikirim");
+      } else {
+        toast.success("PIC berhasil di-assign");
+      }
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Gagal assign PIC");
+    },
+  });
+
+  const removePicMutation = useMutation({
+    mutationFn: ({ taskId, userId }) => removePic(taskId, userId),
+    onSuccess: () => {
+      toast.success("PIC berhasil dihapus");
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+    },
+    onError: () => {
+      toast.error("Gagal menghapus PIC");
+    },
+  });
   return {
     taskByGroup,
     addTaskMutation,
     updateTaskMutation,
     updateTaskPositionsMutation,
+    assignPicMutation,
+    removePicMutation,
   };
 };
