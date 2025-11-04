@@ -7,7 +7,8 @@ import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
 import Login from "./pages/Login";
-import AcceptPicInvite from "./pages/Task/AcceptPicInvite";
+import AcceptPicInvite from "./pages/AcceptPicInvite";
+import Dashboard from "./pages/Dashboard";
 export default function App() {
   return (
     <AuthProvider>
@@ -20,6 +21,7 @@ export default function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/workspaces" element={<WorkspaceIndex />} />
                 <Route
                   path="/workspaces/:id"

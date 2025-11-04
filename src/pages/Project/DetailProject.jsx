@@ -52,30 +52,10 @@ const ProjectDetailPage = () => {
                   <h1 className="text-2xl font-bold text-gray-800">
                     {data.nama}
                   </h1>
-                  <button className="p-1 hover:bg-gray-100 rounded transition">
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
-                  </button>
-                </div>
-                <div className="flex items-center gap-4 mt-1.5 text-sm text-gray-500">
-                  <span className="flex items-center gap-1.5">
-                    <Users className="w-4 h-4" />
-                    Main workspace
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4" />
-                    Last updated today
-                  </span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm">
-                Integrate
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm">
-                Automate
-              </button>
-              <div className="h-6 w-px bg-gray-300"></div>
               <button
                 onClick={() => handleAddProject()}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
@@ -88,27 +68,6 @@ const ProjectDetailPage = () => {
         </div>
       </div>
 
-      {/* Subheader / Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-full px-8">
-          <div className="flex items-center gap-6">
-            <button className="px-1 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
-              Main Table
-            </button>
-            <button className="px-1 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 transition">
-              Kanban
-            </button>
-            <button className="px-1 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 transition">
-              Calendar
-            </button>
-            <button className="px-1 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 transition">
-              Chart
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
       <div className="max-w-full px-8 py-6">
         <div className="space-y-3">
           {data.groups &&

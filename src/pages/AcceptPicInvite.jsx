@@ -266,7 +266,6 @@ const AcceptPicInvite = () => {
                 />
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Konfirmasi Password *
@@ -282,7 +281,6 @@ const AcceptPicInvite = () => {
                 />
               </div>
 
-              {/* No HP */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   No. Handphone *
@@ -298,7 +296,6 @@ const AcceptPicInvite = () => {
                 />
               </div>
 
-              {/* Posisi */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Posisi *
@@ -314,7 +311,6 @@ const AcceptPicInvite = () => {
                 />
               </div>
 
-              {/* Departemen */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Departemen
@@ -329,7 +325,6 @@ const AcceptPicInvite = () => {
                 />
               </div>
 
-              {/* Divisi */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Divisi
@@ -344,7 +339,6 @@ const AcceptPicInvite = () => {
                 />
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}

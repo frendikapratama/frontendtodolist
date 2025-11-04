@@ -227,7 +227,7 @@ const TaskList = ({ groupId }) => {
             Task
           </div>
           <div className="w-32 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
-            Person
+            PIC
           </div>
           <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
             Status
@@ -236,7 +236,13 @@ const TaskList = ({ groupId }) => {
             Priority
           </div>
           <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            Meeting Date
+          </div>
+          <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
             Start Date
+          </div>
+          <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase">
+            Due Date
           </div>
         </div>
 
@@ -325,7 +331,6 @@ const TaskList = ({ groupId }) => {
                     </span>
                   )}
                 </div>
-
                 <div className="w-32 px-6 py-3.5 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     {/* Show existing PICs */}
@@ -392,7 +397,6 @@ const TaskList = ({ groupId }) => {
                     )}
                   </div>
                 </div>
-
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100">
                   <span
                     ref={(el) =>
@@ -420,7 +424,6 @@ const TaskList = ({ groupId }) => {
                       />
                     )}
                 </div>
-
                 <div className="w-32 px-6 py-3.5 border-b border-gray-100">
                   <span
                     ref={(el) =>
@@ -448,13 +451,54 @@ const TaskList = ({ groupId }) => {
                       />
                     )}
                 </div>
-
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100">
                   <span
-                    ref={(el) => (buttonRefs.current[`date-${task._id}`] = el)}
+                    ref={(el) =>
+                      (buttonRefs.current[`meeting_date-${task._id}`] = el)
+                    }
                     className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
                     onClick={() =>
-                      setActivePopup({ taskId: task._id, field: "start_date" })
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "meeting_date",
+                      })
+                    }
+                  >
+                    {task.meeting_date
+                      ? new Date(task.meeting_date).toLocaleString("id-ID", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "Set date"}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "meeting_date" && (
+                      <DatePickerPopup
+                        value={task.meeting_date}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "meeting_date", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current:
+                            buttonRefs.current[`meeting_date-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* Start Date */}
+                <div className="w-40 px-6 py-3.5 border-b border-gray-100">
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`start_date-${task._id}`] = el)
+                    }
+                    className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    onClick={() =>
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "start_date",
+                      })
                     }
                   >
                     {task.start_date
@@ -474,7 +518,40 @@ const TaskList = ({ groupId }) => {
                         }
                         onClose={() => setActivePopup(null)}
                         buttonRef={{
-                          current: buttonRefs.current[`date-${task._id}`],
+                          current: buttonRefs.current[`start_date-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* Due Date */}
+                <div className="w-40 px-6 py-3.5 border-b border-gray-100">
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`due_date-${task._id}`] = el)
+                    }
+                    className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "due_date" })
+                    }
+                  >
+                    {task.due_date
+                      ? new Date(task.due_date).toLocaleString("id-ID", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "Set date"}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "due_date" && (
+                      <DatePickerPopup
+                        value={task.due_date}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "due_date", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`due_date-${task._id}`],
                         }}
                       />
                     )}

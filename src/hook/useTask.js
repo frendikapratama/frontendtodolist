@@ -60,8 +60,6 @@ export const useTask = (groupId) => {
     },
   });
 
-  // TAMBAHKAN sebelum return statement
-
   const assignPicMutation = useMutation({
     mutationFn: ({ taskId, picEmail }) => assignPic(taskId, picEmail),
     onSuccess: (data) => {
