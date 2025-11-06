@@ -6,7 +6,7 @@ export async function getWorkspaces(data) {
 }
 
 export async function createWorkspace(data) {
-  const res = await api.post(`workspaces`, data);
+  const res = await api.post("workspaces", data);
   return res.data;
 }
 
