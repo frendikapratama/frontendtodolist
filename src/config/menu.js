@@ -6,3 +6,4 @@ export const menuItems = [
     icon: "dashboard",
   },
 ];
+``;
