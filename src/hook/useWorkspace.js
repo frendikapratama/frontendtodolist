@@ -19,6 +19,7 @@ export const useWorkspace = () => {
   const resetForm = () => {
     setFormData(initialFormData);
   };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -56,9 +57,17 @@ export const useWorkspace = () => {
   const addProjectMutation = useMutation({
     mutationFn: ({ workspaceId, data }) =>
       addProjectToWorkspace(workspaceId, data),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       toast.success("Project berhasil ditambahkan");
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({
+        queryKey: ["workspaces", variables.workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-projects", variables.workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspaces"],
+      });
     },
     onError: (error) => {
       if (error.response?.data?.error) {
