@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
-import logo from "../assets/LogoPlanify.png"
+import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
 
 export default function Login() {
@@ -18,16 +18,16 @@ export default function Login() {
     try {
       const res = await api.post("login", { email, password });
       await login(res.data.token);
-      navigate("/workspaces");
+      navigate("/kuarter");
     } catch (err) {
       setError(err.response?.data?.message || "Login gagal");
     }
   };
   const handleKey = (e) => {
-    if(e.key === "Enter"){
+    if (e.key === "Enter") {
       handleSubmit(e);
     }
-  }
+  };
 
   return (
     <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64]-200 to-[#1D546C] p-4">
@@ -51,7 +51,9 @@ export default function Login() {
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <div className="space-y-5">
               <div>
-                <label className="block text-lg mb-1 text-slate-700 font-semibold">Email</label>
+                <label className="block text-lg mb-1 text-slate-700 font-semibold">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={email}
