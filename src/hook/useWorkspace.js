@@ -8,7 +8,7 @@ import {
 import toast from "react-hot-toast";
 import { addProjectToWorkspace } from "../services/project";
 
-export const useWorkspace = () => {
+export const useWorkspace = (kuarterId = null) => {
   const queryClient = useQueryClient();
 
   const initialFormData = {
@@ -23,16 +23,21 @@ export const useWorkspace = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
   const workspacesQuery = useQuery({
     queryKey: ["workspaces"],
     queryFn: () => getWorkspaces(),
   });
-
   const createMutation = useMutation({
-    mutationFn: (data) => createWorkspace(data),
-    onSuccess: () => {
+    mutationFn: ({ kuarterId, data }) => createWorkspace(kuarterId, data),
+    onSuccess: (data, variables) => {
       toast.success("Workspace created successfully");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      if (variables.kuarterId) {
+        queryClient.invalidateQueries({
+          queryKey: ["kuarter", variables.kuarterId],
+        });
+      }
       resetForm();
     },
     onError: (error) => {
@@ -41,7 +46,7 @@ export const useWorkspace = () => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah aset");
+        toast.error("Gagal menambah workspace");
       }
     },
   });

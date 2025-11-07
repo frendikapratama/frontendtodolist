@@ -1,12 +1,12 @@
 import api from "../api/axios";
 
-export async function getWorkspaces(data) {
-  const res = await api.get("workspaces", data);
+export async function getWorkspaces() {
+  const res = await api.get("workspaces");
   return res.data.data;
 }
 
-export async function createWorkspace(data) {
-  const res = await api.post("workspaces", data);
+export async function createWorkspace(kuarterId, data) {
+  const res = await api.post(`workspaces/${kuarterId}`, data);
   return res.data;
 }
 
