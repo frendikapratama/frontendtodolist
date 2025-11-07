@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import WorkspaceIndex from "./pages/Workspace/Index";
-import WorkspaceDetailPage from "./pages/Workspace/WorkspaceDetailPage";
+import WorkspaceDetailPage from "./pages/Workspaces/WorkspaceDetailPage";
 import ProjectDetailPage from "./pages/Project/DetailProject";
 import Layout from "./components/Layout";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
@@ -9,6 +8,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import Login from "./pages/Login";
 import AcceptPicInvite from "./pages/AcceptPicInvite";
 import Dashboard from "./pages/Dashboard";
+import Kuarter from "./pages/Kuarter/Index";
+import KuarterDetail from "./pages/Kuarter/KuarterDetail";
+
 export default function App() {
   return (
     <AuthProvider>
@@ -22,7 +24,8 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/workspaces" element={<WorkspaceIndex />} />
+                <Route path="/kuarter" element={<Kuarter />} />
+                <Route path="/kuarter/:id" element={<KuarterDetail />} />;
                 <Route
                   path="/workspaces/:id"
                   element={<WorkspaceDetailPage />}

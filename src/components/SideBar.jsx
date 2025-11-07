@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import { menuItems } from "../config/menu";
 import { useWorkspace } from "../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
-import GradientText from "../components/ui/GradientText"
+import GradientText from "../components/ui/GradientText";
 import Profile from "../assets/LogoPlanify.png";
-import ToggleButtonExit from "../components/ui/ToggleButtonExit" // Sesuaikan nama import
+import ToggleButtonExit from "../components/ui/ToggleButtonExit";
 
 import { useSelectedWorkspace } from "../context/WorkspaceContext";
+import { useKuarter } from "../hook/useKuarter";
 import {
   LayoutDashboard,
   Package,
@@ -16,8 +17,6 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
-  Menu,
-  X,
   Briefcase,
   FolderOpen,
 } from "lucide-react";
@@ -35,7 +34,6 @@ const iconMap = {
 export default function Sidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState(new Set());
-  const [avatar, setAvatar] = useState();
   const location = useLocation();
 
   const navigate = useNavigate();
@@ -43,6 +41,8 @@ export default function Sidebar() {
   const { data: workspaces } = workspacesQuery;
   const { selectedWorkspaceId, setSelectedWorkspaceId } =
     useSelectedWorkspace();
+  const { kuarterQuery } = useKuarter();
+  const { data: kuarters = [] } = kuarterQuery;
 
   useEffect(() => {
     menuItems.forEach((item) => {
@@ -85,18 +85,20 @@ export default function Sidebar() {
         <div key={item.id} className="space-y-1">
           <button
             onClick={() => toggleSubmenu(item.id)}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group ${active
-              ? "bg-blue-50 text-blue-700"
-              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-              }`}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group ${
+              active
+                ? "bg-blue-50 text-blue-700"
+                : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+            }`}
           >
             <div className="flex items-center space-x-3">
               {IconComponent && (
                 <IconComponent
-                  className={`w-5 h-5 ${active
-                    ? "text-blue-600"
-                    : "text-gray-500 group-hover:text-blue-600"
-                    }`}
+                  className={`w-5 h-5 ${
+                    active
+                      ? "text-blue-600"
+                      : "text-gray-500 group-hover:text-blue-600"
+                  }`}
                 />
               )}
               <span className="font-medium">{item.label}</span>
@@ -122,10 +124,12 @@ export default function Sidebar() {
         key={item.id}
         to={item.path}
         className={({ isActive }) =>
-          `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all group ${isChild ? "pl-8" : ""
-          } ${isActive
-            ? "bg-blue-600 text-white shadow-sm"
-            : isChild
+          `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all group ${
+            isChild ? "pl-8" : ""
+          } ${
+            isActive
+              ? "bg-blue-600 text-white shadow-sm"
+              : isChild
               ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
           }`
@@ -142,15 +146,10 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Toggle Button - Tetap terlihat di luar sidebar */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
-        <ToggleButtonExit
-          isOpen={isSidebarOpen}
-          setIsOpen={setIsSidebarOpen}
-        />
+        <ToggleButtonExit isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       </div>
 
-      {/* Overlay */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"
@@ -158,14 +157,18 @@ export default function Sidebar() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`w-64 h-screen bg-white border-r border-gray-200 flex flex-col shadow-sm fixed lg:relative z-40 transition-transform lg:translate-x-0 duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`w-64 h-screen bg-white border-r border-gray-200 flex flex-col shadow-sm fixed lg:relative z-40 transition-transform lg:translate-x-0 duration-300 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-center">
-            <img src="/src/assets/LogoPlanify.png" alt="Logo" className="w-16 h-16" />
+            <img
+              src="/src/assets/LogoPlanify.png"
+              alt="Logo"
+              className="w-16 h-16"
+            />
             <GradientText
               colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
               animationSpeed={3}
@@ -180,7 +183,36 @@ export default function Sidebar() {
         <nav className="flex-1 p-4 overflow-y-auto space-y-1">
           {menuItems.map((item) => renderMenuItem(item))}
 
-          {/* Workspaces Section */}
+          {kuarters?.length > 0 && (
+            <div className="mb-4 px-3">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                Kuarters
+              </h3>
+              <div className="space-y-1">
+                {kuarters.map((k) => (
+                  <button
+                    key={k._id}
+                    onClick={() => {
+                      navigate(`/kuarter/${k._id}`);
+                      setExpandedMenus(new Set([k._id]));
+                      setIsSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all group ${
+                      location.pathname === `/kuarter/${k._id}`
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                    }`}
+                  >
+                    <div className="w-6 h-6 rounded bg-green-500 text-white flex items-center justify-center mr-2 text-xs font-semibold">
+                      {k.nama.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="font-medium">{k.nama}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {workspaces?.length > 0 && (
             <div className="mb-4 px-3">
               <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
@@ -205,16 +237,17 @@ export default function Sidebar() {
                 >
                   <span className="text-sm text-gray-700">
                     {selectedWorkspaceId &&
-                      workspaces.find((w) => w._id === selectedWorkspaceId)
+                    workspaces.find((w) => w._id === selectedWorkspaceId)
                       ? workspaces.find((w) => w._id === selectedWorkspaceId)
-                        ?.nama
+                          ?.nama
                       : "Select workspace"}
                   </span>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-400 transition-transform ${expandedMenus.has("workspace-dropdown")
-                      ? "rotate-180"
-                      : ""
-                      }`}
+                    className={`w-4 h-4 text-gray-400 transition-transform ${
+                      expandedMenus.has("workspace-dropdown")
+                        ? "rotate-180"
+                        : ""
+                    }`}
                   />
                 </button>
 
@@ -256,9 +289,10 @@ export default function Sidebar() {
                                   setSelectedWorkspaceId(ws._id);
                                 }}
                                 className={({ isActive }) =>
-                                  `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${isActive
-                                    ? "bg-blue-600 text-white"
-                                    : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                                  `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
+                                    isActive
+                                      ? "bg-blue-600 text-white"
+                                      : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
                                   }`
                                 }
                               >

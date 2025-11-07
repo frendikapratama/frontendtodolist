@@ -1,9 +1,8 @@
 export const menuItems = [
   {
-    id: "All WorkSpace",
-    label: "workspaces",
-    path: "/workspaces",
+    id: "All Kuarter",
+    label: "Kuarter",
+    path: "/Kuarter",
     icon: "dashboard",
   },
 ];
-``;
