@@ -1,11 +1,12 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./SideBar";
+import { useState } from "react"
 
 export default function Layout() {
   return (
     <div className="flex h-screen ">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto bg-gray-50 ">
+      <main className="flex-1 overflow-y-auto bg-linear-to-tl from-[#1A3D64] to-[#1D546C]">
         <div className="p-2">
           <Outlet />
         </div>
@@ -13,3 +14,4 @@ export default function Layout() {
     </div>
   );
 }
+

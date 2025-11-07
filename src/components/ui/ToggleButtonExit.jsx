@@ -12,7 +12,7 @@ export default function ToggleButtonExit({ isOpen, setIsOpen }) {
     return (
         <button
             onClick={handleClick}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-black rounded-xl overflow-hidden relative"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-300 text-black rounded-xl overflow-hidden relative"
         >
             <motion.div
                 key={isOpen ? "icon-close" : "icon-menu"}

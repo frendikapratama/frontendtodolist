@@ -14,6 +14,10 @@ export async function updateTask(taskId, data) {
   const res = await api.put(`task/${taskId}`, data);
   return res.data.data;
 }
+export async function dialogTask(taskId, data) {
+  const res = await api.put(`task/dialog/${taskId}`, data);
+  return res.data.data;
+}
 
 export const updateTaskPositions = async (taskIds) => {
   const res = await api.put(`task/positions`, { taskIds });

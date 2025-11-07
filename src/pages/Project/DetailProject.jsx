@@ -48,10 +48,10 @@ const ProjectDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-transparent p-1">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-full px-8 py-4">
+      <div className="bg-[#EFECE3] border-b border-r-2 border-gray-200 shadow-sm rounded-3xl">
+        <div className="max-w-full px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button className="p-1.5 hover:bg-gray-100 rounded transition">
@@ -68,7 +68,7 @@ const ProjectDetailPage = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleAddProject()}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#0E7490] rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 New Group
@@ -86,7 +86,7 @@ const ProjectDetailPage = () => {
             ))}
 
           {(!data.groups || data.groups.length === 0) && (
-            <div className="text-center py-20 bg-white rounded-lg border-2 border-dashed border-gray-300">
+            <div className="text-center py-20 bg-[#EFECE3] rounded-lg border-2 border-dashed border-gray-300">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
                   <Plus className="w-8 h-8 text-blue-500" />
