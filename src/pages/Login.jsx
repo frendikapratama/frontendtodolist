@@ -26,14 +26,12 @@ export default function Login() {
     <div className="h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 p-4">
       <div className="backdrop-blur-xl bg-white/20 shadow-lg rounded-2xl p-4 sm:p-6 w-full max-w-4xl mx-4">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
-          {/* Logo Section */}
           <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
             <div className=" mx-auto flex items-center justify-center ">
               <img src="../public/logo.png" alt="logo" />
             </div>
           </div>
 
-          {/* Form Section */}
           <div className="backdrop-blur-lg bg-white/5 shadow-lg rounded-2xl p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-4 sm:space-y-6">
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <div className="space-y-5">
