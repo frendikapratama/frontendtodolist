@@ -10,13 +10,19 @@ import AcceptPicInvite from "./pages/AcceptPicInvite";
 import Dashboard from "./pages/Dashboard";
 import Kuarter from "./pages/Kuarter/Index";
 import KuarterDetail from "./pages/Kuarter/KuarterDetail";
-
+import ForgotPassword from "./pages/ForgotPassword";
+import VerifyResetPassword from "./pages/VerifyResetPassword";
 export default function App() {
   return (
     <AuthProvider>
       <WorkspaceProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="/verify-reset-password"
+              element={<VerifyResetPassword />}
+            />
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/accept-pic-invite" element={<AcceptPicInvite />} />
