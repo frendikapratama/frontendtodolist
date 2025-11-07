@@ -4,6 +4,8 @@ import {
   getWorkspaces,
   createWorkspace,
   getWorkspaceById,
+  deleteWorkspace,
+  updateWorkspace,
 } from "../services/workspace";
 import toast from "react-hot-toast";
 import { addProjectToWorkspace } from "../services/project";
@@ -85,6 +87,53 @@ export const useWorkspace = (kuarterId = null) => {
     },
   });
 
+  const updateWorkspaceMutation = useMutation({
+    mutationFn: ({ id, data }) => updateWorkspace(id, data),
+    onSuccess: (_, variables) => {
+      toast.success("berhasil update workspace");
+      queryClient.invalidateQueries({ queryKey: ["workspaces", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      if (variables.kuarterId) {
+        queryClient.invalidateQueries({
+          queryKey: ["kuarter", variables.kuarterId],
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["kuarter"] });
+      }
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Gagal edit workspaces");
+      }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteWorkspace(id),
+    onSuccess: () => {
+      toast.success("Berhasil menghapus workspace");
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      if (kuarterId) {
+        queryClient.invalidateQueries({
+          queryKey: ["kuarter", kuarterId],
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["kuarter"] });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Gagal menghapus workspace");
+      }
+    },
+  });
   return {
     formData,
     setFormData,
@@ -93,5 +142,7 @@ export const useWorkspace = (kuarterId = null) => {
     handleChange,
     WorkspaceDetail,
     addProjectMutation,
+    deleteMutation,
+    updateWorkspaceMutation,
   };
 };

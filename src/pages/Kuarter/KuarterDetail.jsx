@@ -57,7 +57,6 @@ const KuarterDetail = () => {
 
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-4">Daftar Workspace</h2>
-          {/* WorkspaceIndex akan otomatis menggunakan id dari useParams */}
           <WorkspaceIndex />
         </div>
       </div>
