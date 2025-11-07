@@ -47,7 +47,6 @@ const WorkspaceIndex = () => {
       },
       {
         onError: () => {
-          // Reset ke nama awal jika error
           const workspace = displayData?.find((w) => w._id === workspaceId);
           if (workspace) {
             setEditedName(workspace.nama);
@@ -69,11 +68,7 @@ const WorkspaceIndex = () => {
         `Apakah Anda yakin ingin menghapus workspace "${workspaceName}"?`
       )
     ) {
-      deleteMutation.mutate(workspaceId, {
-        onSuccess: () => {
-          toast.success("Workspace berhasil dihapus");
-        },
-      });
+      deleteMutation.mutate(workspaceId);
     }
   };
 
