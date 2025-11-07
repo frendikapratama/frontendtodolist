@@ -5,15 +5,17 @@ import { useWorkspace } from "../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
 import GradientText from "../components/ui/GradientText";
 import Profile from "../assets/LogoPlanify.png";
-import ToggleButtonExit from "../components/ui/ToggleButtonExit";
+import ToggleButtonExit from "../components/ui/ToggleButtonExit"
+import { useAuth } from "../hook/useContext"
+import LogoutButton from "../components/ui/LogoutButton"
 
 import { useSelectedWorkspace } from "../context/WorkspaceContext";
 import { useKuarter } from "../hook/useKuarter";
 import {
   LayoutDashboard,
   Package,
-  Users,
   FileText,
+  Users,
   Settings,
   ChevronDown,
   ChevronRight,
@@ -32,8 +34,10 @@ const iconMap = {
 };
 
 export default function Sidebar() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState(new Set());
+  const [isAvatar, setIsAvatar] = useState();
+  const { user, logout } = useAuth();
   const location = useLocation();
 
   const navigate = useNavigate();
@@ -101,16 +105,18 @@ export default function Sidebar() {
                   }`}
                 />
               )}
-              <span className="font-medium">{item.label}</span>
+              <span className={`font-medium transition-opacity duration-300 ${!isSidebarOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                {item.label}
+              </span>
             </div>
-            {isExpanded ? (
+            {isSidebarOpen && (isExpanded ? (
               <ChevronDown className="w-4 h-4 text-gray-400" />
             ) : (
               <ChevronRight className="w-4 h-4 text-gray-400" />
-            )}
+            ))}
           </button>
 
-          {isExpanded && (
+          {isExpanded && isSidebarOpen && (
             <div className="ml-4 space-y-1 border-l-2 border-gray-100 pl-2">
               {item.children.map((child) => renderMenuItem(child, true))}
             </div>
@@ -124,28 +130,35 @@ export default function Sidebar() {
         key={item.id}
         to={item.path}
         className={({ isActive }) =>
-          `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all group ${
-            isChild ? "pl-8" : ""
-          } ${
-            isActive
-              ? "bg-blue-600 text-white shadow-sm"
-              : isChild
+          `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all group ${isChild ? "pl-8" : ""
+          } ${isActive
+            ? "bg-[#0E7490] text-white shadow-sm"
+            : isChild
               ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
           }`
         }
-        onClick={() => setIsSidebarOpen(false)}
+        onClick={() => {
+          if (window.innerWidth < 1024) {
+            setIsSidebarOpen(false);s
+          }
+        }}
       >
         {IconComponent && !isChild && (
-          <IconComponent className="w-5 h-5 transition-colors" />
+          <IconComponent className={`transition-all duration-500 ease-in-out transform ml-1
+            ${isSidebarOpen ? "w-6 h-6 scale-100" : "w-5 h-5 scale-400"}
+          `} />
         )}
-        <span className="font-medium">{item.label}</span>
+        <span className={`font-medium transition-opacity duration-300 ${!isSidebarOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+          {item.label}
+        </span>
       </NavLink>
     );
   };
 
   return (
     <>
+      {/* Overlay untuk mobile */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <ToggleButtonExit isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       </div>
@@ -157,31 +170,37 @@ export default function Sidebar() {
         />
       )}
 
-      <aside
-        className={`w-64 h-screen bg-white border-r border-gray-200 flex flex-col shadow-sm fixed lg:relative z-40 transition-transform lg:translate-x-0 duration-300 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-center">
-            <img
-              src="/src/assets/LogoPlanify.png"
-              alt="Logo"
-              className="w-16 h-16"
-            />
-            <GradientText
-              colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
-              animationSpeed={3}
-              showBorder={false}
-              className="custom-class text-3xl "
-            >
-              Planify
-            </GradientText>
+      {/* Sidebar */}
+      <div className={`fixed lg:sticky lg:top-0 z-40 h-screen transition-all duration-300 ${isSidebarOpen ? "w-60" : "w-20"
+        }`}>
+        <aside className="w-full h-full bg-[#EFECE3] border-r border-gray-900 flex flex-col shadow-sm">
+          {/* Header */}
+          <div className="p-6 border-b border-gray-200">
+            <div className={`flex items-center transition-all duration-300 ${isSidebarOpen ? "justify-center" : "justify-center"
+              }`}>
+              <img
+                src="/src/assets/LogoPlanify.png"
+                alt="Logo"
+                className={`transition-all duration-300 ${isSidebarOpen ? "w-16 h-16" : "w-16 h-8 scale-150"
+                  }`}
+              />
+              {isSidebarOpen && (
+                <GradientText
+                  colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
+                  animationSpeed={3}
+                  showBorder={false}
+                  className="custom-class text-3xl transition-opacity duration-300"
+                >
+                  Planify
+                </GradientText>
+              )}
+            </div>
           </div>
-        </div>
 
-        <nav className="flex-1 p-4 overflow-y-auto space-y-1">
-          {menuItems.map((item) => renderMenuItem(item))}
+          {/* Navigation */}
+          <nav className="flex-1 p-4 overflow-y-auto flex flex-col space-y-1">
+            <div className="flex justify-start flex-col">
+              {menuItems.map((item) => renderMenuItem(item))}
 
           {kuarters?.length > 0 && (
             <div className="mb-4 px-3">
@@ -219,111 +238,125 @@ export default function Sidebar() {
                 Workspaces
               </h3>
 
-              <div className="relative">
-                <button
-                  onClick={() =>
-                    setExpandedMenus((prev) => {
-                      const newSet = new Set(prev);
-                      if (newSet.has("workspace-dropdown")) {
-                        newSet.delete("workspace-dropdown");
-                      } else {
-                        newSet.clear();
-                        newSet.add("workspace-dropdown");
+                  <div className="relative">
+                    <button
+                      onClick={() =>
+                        setExpandedMenus((prev) => {
+                          const newSet = new Set(prev);
+                          if (newSet.has("workspace-dropdown")) {
+                            newSet.delete("workspace-dropdown");
+                          } else {
+                            newSet.clear();
+                            newSet.add("workspace-dropdown");
+                          }
+                          return newSet;
+                        })
                       }
-                      return newSet;
-                    })
-                  }
-                  className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
-                >
-                  <span className="text-sm text-gray-700">
-                    {selectedWorkspaceId &&
-                    workspaces.find((w) => w._id === selectedWorkspaceId)
-                      ? workspaces.find((w) => w._id === selectedWorkspaceId)
-                          ?.nama
-                      : "Select workspace"}
-                  </span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-gray-400 transition-transform ${
-                      expandedMenus.has("workspace-dropdown")
-                        ? "rotate-180"
-                        : ""
-                    }`}
-                  />
-                </button>
+                      className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700">
+                        {selectedWorkspaceId &&
+                          workspaces.find((w) => w._id === selectedWorkspaceId)
+                          ? workspaces.find((w) => w._id === selectedWorkspaceId)
+                            ?.nama
+                          : "Select workspace"}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-gray-400 transition-transform ${expandedMenus.has("workspace-dropdown")
+                          ? "rotate-180"
+                          : ""
+                          }`}
+                      />
+                    </button>
 
-                {expandedMenus.has("workspace-dropdown") && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {workspaces.map((ws) => (
-                      <button
-                        key={ws._id}
-                        onClick={() => {
-                          setSelectedWorkspaceId(ws._id);
-                          setExpandedMenus(new Set([ws._id]));
-                        }}
-                        className="w-full flex items-center px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
-                      >
-                        <div className="w-6 h-6 rounded bg-blue-500 text-white flex items-center justify-center mr-2 text-xs font-semibold">
-                          {ws.nama.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-gray-700">{ws.nama}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {selectedWorkspaceId && (
-                <div className="mt-3 space-y-1">
-                  {workspaces
-                    .filter((ws) => ws._id === selectedWorkspaceId)
-                    .map(
-                      (ws) =>
-                        ws.projects?.length > 0 && (
-                          <div key={ws._id} className="space-y-1">
-                            {ws.projects.map((project) => (
-                              <NavLink
-                                key={project._id}
-                                to={`/project/${project._id}`}
-                                onClick={() => {
-                                  setIsSidebarOpen(false);
-                                  setSelectedWorkspaceId(ws._id);
-                                }}
-                                className={({ isActive }) =>
-                                  `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
-                                    isActive
-                                      ? "bg-blue-600 text-white"
-                                      : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
-                                  }`
-                                }
-                              >
-                                {project.nama}
-                              </NavLink>
-                            ))}
-                          </div>
-                        )
+                    {expandedMenus.has("workspace-dropdown") && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {workspaces.map((ws) => (
+                          <button
+                            key={ws._id}
+                            onClick={() => {
+                              setSelectedWorkspaceId(ws._id);
+                              setExpandedMenus(new Set([ws._id]));
+                            }}
+                            className="w-full flex items-center px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="w-6 h-6 rounded bg-[#0E7490] text-white flex items-center justify-center mr-2 text-xs font-semibold">
+                              {ws.nama.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-gray-700">{ws.nama}</span>
+                          </button>
+                        ))}
+                      </div>
                     )}
+                  </div>
+
+                  {selectedWorkspaceId && (
+                    <div className="mt-3 space-y-1">
+                      {workspaces
+                        .filter((ws) => ws._id === selectedWorkspaceId)
+                        .map(
+                          (ws) =>
+                            ws.projects?.length > 0 && (
+                              <div key={ws._id} className="space-y-1">
+                                {ws.projects.map((project) => (
+                                  <NavLink
+                                    key={project._id}
+                                    to={`/project/${project._id}`}
+                                    onClick={() => {
+                                      if (window.innerWidth < 1024) {
+                                        setIsSidebarOpen(false);
+                                      }
+                                      setSelectedWorkspaceId(ws._id);
+                                    }}
+                                    className={({ isActive }) =>
+                                      `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${isActive
+                                        ? "bg-[#0E7490] text-white"
+                                        : "text-gray-600 hover:text-[#234C6A] hover:bg-blue-50"
+                                      }`
+                                    }
+                                  >
+                                    {project.nama}
+                                  </NavLink>
+                                ))}
+                              </div>
+                            )
+                        )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+          </nav>
+
+          {/* Logout Button */}
+          {isSidebarOpen && (
+            <div className="flex justify-center items-center">
+              <LogoutButton />
+            </div>
           )}
-        </nav>
-
-        <div className="w-full h-px bg-gray-200 my-4"></div>
-
-        <div className="flex justify-between items-center px-4 pb-4">
-          <div className="hidden lg:block">
-            <ToggleButtonExit
-              isOpen={isSidebarOpen}
-              setIsOpen={setIsSidebarOpen}
+          <div className="w-full h-px bg-gray-300 my-3"></div>
+          {/* User Profile */}
+          <div className={`flex items-center px-4 pb-4 gap-3 transition-all duration-300 ${isSidebarOpen ? "justify-end" : "justify-center"
+            }`}>
+            {isSidebarOpen && user && (
+              <p className="text-black font-semibold text-lg">{user.username}</p>
+            )}
+            <img
+              className="w-10 h-10 border rounded-full"
+              src={Profile}
+              alt="Profile"
             />
           </div>
-          <img
-            className="w-10 h-10 border rounded-full ml-auto"
-            src={Profile}
-            alt="Profile"
-          />
-        </div>
-      </aside>
+        </aside>
+      </div>
+
+      {/* Toggle Button */}
+      <div className="fixed bottom-4 left-3 z-50">
+        <ToggleButtonExit
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+      </div>
     </>
   );
 }
