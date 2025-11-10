@@ -17,11 +17,8 @@ export const useSubTask = (taskId, groupId) => {
     mutationFn: ({ taskId, data }) => addSubTask(taskId, data),
     onSuccess: () => {
       toast.success("Subtask berhasil ditambahkan");
-      // Invalidate dan refetch subtask
       queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
-
-      // Trigger manual refetch jika perlu
       queryClient.refetchQueries({ queryKey: ["subtask", taskId] });
     },
     onError: (error) => {
@@ -108,12 +105,11 @@ export const useSubTask = (taskId, groupId) => {
     },
   });
 
-  // Ubah enabled menjadi true agar auto-fetch
   const subtaskByTask = useQuery({
     queryKey: ["subtask", taskId],
     queryFn: () => getSubtaskByTask(taskId),
-    enabled: !!taskId, // Hanya fetch jika taskId ada
-    staleTime: 0, // Selalu refetch ketika di-invalidate
+    enabled: !!taskId,
+    staleTime: 0,
   });
 
   return {

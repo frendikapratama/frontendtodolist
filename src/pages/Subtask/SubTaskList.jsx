@@ -42,7 +42,6 @@ const SubtaskList = ({ taskId, groupId }) => {
     "Planning",
   ];
 
-  // Sync localSubtasks dengan data dari query
   useEffect(() => {
     if (subtaskByTask.data) {
       setLocalSubtasks(subtaskByTask.data);
