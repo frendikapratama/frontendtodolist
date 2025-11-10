@@ -12,19 +12,20 @@ import Kuarter from "./pages/Kuarter/Index";
 import KuarterDetail from "./pages/Kuarter/KuarterDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyResetPassword from "./pages/VerifyResetPassword";
+import AuthPages from "./pages/AuthPages"
 export default function App() {
   return (
     <AuthProvider>
       <WorkspaceProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/forgot-password" element={<AuthPages />} />
             <Route
               path="/verify-reset-password"
-              element={<VerifyResetPassword />}
+              element={<AuthPages />}
             />
             <Route path="/" element={<Navigate to="/login" />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<AuthPages />} />
             <Route path="/accept-pic-invite" element={<AcceptPicInvite />} />
 
             <Route element={<ProtectedRoute />}>

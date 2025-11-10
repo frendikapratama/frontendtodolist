@@ -69,7 +69,7 @@ export default function ForgotPassword() {
 
         <button
           onClick={() => navigate("/login")}
-          className="w-full mt-4 text-gray-600 hover:text-gray-800"
+          className="w-full mt-4 text-white hover:text-gray-300"
         >
           Kembali ke Login
         </button>
