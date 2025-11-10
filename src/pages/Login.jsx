@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
-import logo from "../assets/LogoPlanify.png"
+import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
 
 export default function Login() {
@@ -54,7 +54,9 @@ export default function Login() {
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <div className="space-y-5">
               <div>
-                <label className="block text-lg mb-1 text-slate-700 font-semibold">Email</label>
+                <label className="block text-lg mb-1 text-slate-700 font-semibold">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={email}

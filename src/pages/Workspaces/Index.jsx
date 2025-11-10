@@ -4,17 +4,23 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
 import { useKuarter } from "../../hook/useKuarter";
 import { WorkspaceForm } from "./Form";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
 const WorkspaceIndex = () => {
-  const { id } = useParams();
-  const { workspacesQuery } = useWorkspace();
+  const { id: kuarterId } = useParams();
+  const { workspacesQuery, updateWorkspaceMutation, deleteMutation } =
+    useWorkspace();
   const { KuarterDetail } = useKuarter();
   const navigate = useNavigate();
   const { setSelectedWorkspaceId } = useSelectedWorkspace();
+  const [editing, setEditing] = useState(null);
+  const [editedName, setEditedName] = useState("");
 
-  const kuarterDetailQuery = KuarterDetail(id);
+  const kuarterDetailQuery = KuarterDetail(kuarterId);
 
   const openCreateModal = () => {
-    if (!id) {
+    if (!kuarterId) {
       toast.error("Pilih kuarter terlebih dahulu");
       return;
     }
@@ -30,13 +36,47 @@ const WorkspaceIndex = () => {
     navigate(`/workspaces/${workspaceId}`);
   };
 
-  // Jika ada id (dari kuarter detail), ambil workspace dari kuarter
-  // Jika tidak, tampilkan semua workspace
-  const displayData = id
+  const handleEdit = (workspaceId) => {
+    if (!editedName.trim() || updateWorkspaceMutation.isPending) return;
+
+    updateWorkspaceMutation.mutate(
+      {
+        id: workspaceId,
+        data: { nama: editedName.trim() },
+        kuarterId,
+      },
+      {
+        onError: () => {
+          const workspace = displayData?.find((w) => w._id === workspaceId);
+          if (workspace) {
+            setEditedName(workspace.nama);
+          }
+        },
+      }
+    );
+    setEditing(null);
+  };
+
+  const handleEditKeyDown = (e, workspaceId) => {
+    if (e.key === "Enter") handleEdit(workspaceId);
+    if (e.key === "Escape") setEditing(null);
+  };
+
+  const handleDelete = (workspaceId, workspaceName) => {
+    if (
+      window.confirm(
+        `Apakah Anda yakin ingin menghapus workspace "${workspaceName}"?`
+      )
+    ) {
+      deleteMutation.mutate(workspaceId);
+    }
+  };
+
+  const displayData = kuarterId
     ? kuarterDetailQuery.data?.workspace
     : workspacesQuery.data;
 
-  const isLoading = id
+  const isLoading = kuarterId
     ? kuarterDetailQuery.isLoading
     : workspacesQuery.isLoading;
 
@@ -53,12 +93,12 @@ const WorkspaceIndex = () => {
       <button
         onClick={openCreateModal}
         className="btn btn-primary mb-4"
-        disabled={!id} // Disable jika tidak ada kuarterId
+        disabled={!kuarterId}
       >
         Tambah workspace
       </button>
 
-      {!id && (
+      {!kuarterId && (
         <div className="alert alert-info mb-4">
           <span>Pilih kuarter terlebih dahulu untuk membuat workspace</span>
         </div>
@@ -71,7 +111,7 @@ const WorkspaceIndex = () => {
               Tambah Workspace
             </h3>
           </div>
-          <WorkspaceForm onClose={closeModal} kuarterId={id} />
+          <WorkspaceForm onClose={closeModal} kuarterId={kuarterId} />
         </div>
         <form method="dialog" className="modal-backdrop">
           <button onClick={closeModal}>close</button>
@@ -87,10 +127,46 @@ const WorkspaceIndex = () => {
           {displayData?.map((workspace) => (
             <div key={workspace._id} className="card bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">{workspace.nama}</h2>
-                <div className="card-actions justify-end">
+                {editing === workspace._id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      className="text-xl border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
+                      value={editedName}
+                      autoFocus
+                      onChange={(e) => setEditedName(e.target.value)}
+                      onKeyDown={(e) => handleEditKeyDown(e, workspace._id)}
+                      disabled={updateWorkspaceMutation.isPending}
+                    />
+                    {updateWorkspaceMutation.isPending && (
+                      <span className="loading loading-spinner loading-sm"></span>
+                    )}
+                  </div>
+                ) : (
+                  <h2
+                    className="card-title hover:bg-gray-100 px-1 rounded cursor-pointer"
+                    onClick={() => {
+                      setEditing(workspace._id);
+                      setEditedName(workspace.nama);
+                    }}
+                  >
+                    {workspace.nama}
+                  </h2>
+                )}
+                <div className="card-actions justify-between items-center mt-2">
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-ghost btn-sm text-error"
+                    onClick={() => handleDelete(workspace._id, workspace.nama)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    {deleteMutation.isPending ? (
+                      <span className="loading loading-spinner loading-xs"></span>
+                    ) : (
+                      "Hapus"
+                    )}
+                  </button>
+                  <button
+                    className="btn btn-primary btn-sm"
                     onClick={() => handleSelectWorkspace(workspace._id)}
                   >
                     Detail

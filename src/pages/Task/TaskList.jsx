@@ -4,7 +4,7 @@ import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
 import { Plus, ChevronDown, ChevronRight, UserPlus, X } from "lucide-react";
-import DialogDetail from "../Task/DialogDetail"
+import DialogDetail from "../Task/DialogDetail";
 
 const TaskList = ({ groupId }) => {
   const {
@@ -35,7 +35,13 @@ const TaskList = ({ groupId }) => {
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
-  const NOTE_OPTIONS = ["Completed - ON Time", "Completed - Overdue", "Completed - Early", "Uncompleted", "Planning"];
+  const NOTE_OPTIONS = [
+    "Completed - ON Time",
+    "Completed - Overdue",
+    "Complete - Early",
+    "Uncomplete",
+    "Planning",
+  ];
   const [showPicInput, setShowPicInput] = useState(null);
   const [picEmail, setPicEmail] = useState("");
 
@@ -278,11 +284,13 @@ const TaskList = ({ groupId }) => {
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                className={`flex items-center hover:bg-gray-50 ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                  } ${isPreview
+                className={`flex items-center hover:bg-gray-50 ${
+                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                } ${
+                  isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                  }`}
+                }`}
               >
                 {/* Name */}
                 <div className="flex-1 flex items-center gap-3 px-6 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing">
@@ -314,7 +322,7 @@ const TaskList = ({ groupId }) => {
                     className="w-4 h-4 rounded border-gray-300"
                   />
                   {editingField?.taskId === task._id &&
-                    editingField?.field === "nama" ? (
+                  editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
@@ -484,10 +492,10 @@ const TaskList = ({ groupId }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -521,10 +529,10 @@ const TaskList = ({ groupId }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -554,10 +562,10 @@ const TaskList = ({ groupId }) => {
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -585,41 +593,42 @@ const TaskList = ({ groupId }) => {
                       setActivePopup({ taskId: task._id, field: "finish_date" })
                     }
                   >
-                    {task.due_date
-                      ? new Date(task.due_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                    {task.finish_date
+                      ? new Date(task.finish_date).toLocaleString("id-ID", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
                     activePopup?.field === "finish_date" && (
                       <DatePickerPopup
-                        value={task.due_date}
+                        value={task.finish_date}
                         onChange={(value) =>
                           handlePopupChange(task._id, "finish_date", value)
                         }
                         onClose={() => setActivePopup(null)}
                         buttonRef={{
-                          current: buttonRefs.current[`finish_date-${task._id}`],
+                          current:
+                            buttonRefs.current[`finish_date-${task._id}`],
                         }}
                       />
                     )}
                 </div>
                 {/* Keterangan */}
                 <div className="w-60 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
-                  {/* <span
-                      ref={(el)=>{
-                        (buttonRefs.current[`note-${note._id}`] = el)
-                      }}
+                  <span
+                    ref={(el) => {
+                      buttonRefs.current[`note-${task._id}`] = el;
+                    }}
                     className="px-3 py-1.5 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
-                    >
-                      {task.note}
-                    </span>
+                  >
+                    {task.note}
+                  </span>
                   {activePopup?.taskId === task._id &&
                     activePopup?.field === "note" && (
                       <PopupSelect
@@ -633,8 +642,7 @@ const TaskList = ({ groupId }) => {
                           current: buttonRefs.current[`note-${task._id}`],
                         }}
                       />
-                    )} */}
-                  <p className="text-black text-sm">Completed - ON Time</p>
+                    )}
                 </div>
                 {/* Action Button */}
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">

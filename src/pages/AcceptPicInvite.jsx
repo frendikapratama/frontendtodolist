@@ -5,6 +5,7 @@ import axios from "axios";
 const AcceptPicInvite = () => {
   const [searchParams] = useSearchParams();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [inviteType, setInviteType] = useState("task");
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -19,46 +20,69 @@ const AcceptPicInvite = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [taskInfo, setTaskInfo] = useState(null);
+  const [itemInfo, setItemInfo] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // FIX: Konsisten gunakan subTaskId (huruf besar T) untuk subtask
   const taskId = searchParams.get("taskId");
+  const subTaskId = searchParams.get("subTaskId"); // Ubah dari "subtaskId"
   const token = searchParams.get("token");
 
   useEffect(() => {
-    if (!taskId || !token) {
+    // Validasi parameter
+    if (!taskId && !subTaskId) {
       setError(
         "Link undangan tidak valid. Pastikan Anda mengakses link yang benar."
       );
       return;
     }
 
+    if (!token) {
+      setError("Token tidak ditemukan dalam link undangan.");
+      return;
+    }
+
+    // Set invite type
+    if (subTaskId) {
+      setInviteType("subTask");
+    } else if (taskId) {
+      setInviteType("task");
+    }
+
+    // Check if user is registered
     const registered = searchParams.get("registered");
     if (registered === "true") {
       setIsRegistered(true);
     }
 
+    // Verify invitation
     verifyInvitation();
-  }, [taskId, token]);
+  }, []);
 
   const verifyInvitation = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/task/${taskId}/verify-invite`,
-        {
-          params: { token },
-        }
-      );
+      // Determine which ID to use
+      const id = subTaskId || taskId;
+      const type = subTaskId ? "subTask" : "task";
+
+      const endpoint = `http://localhost:5000/api/${type}/${id}/verify-invite`;
+
+      console.log("Verifying invitation:", { endpoint, token, id, type }); // Debug log
+
+      const response = await axios.get(endpoint, {
+        params: { token },
+      });
 
       if (response.data.success) {
-        setTaskInfo(response.data.data);
+        setItemInfo(response.data.data);
         setFormData((prev) => ({
           ...prev,
           email: response.data.data.invitedEmail,
         }));
       }
     } catch (error) {
+      console.error("Verification error:", error.response || error); // Tambahkan logging
       setError(
         error.response?.data?.message ||
           "Token tidak valid atau sudah kedaluwarsa"
@@ -98,16 +122,22 @@ const AcceptPicInvite = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `http://localhost:5000/api/task/${taskId}/accept-pic-invite?token=${token}`,
-        isRegistered ? {} : formData
-      );
+      // FIX: Gunakan ID dan type yang tepat
+      const id = subTaskId || taskId;
+      const type = subTaskId ? "subTask" : "task";
+
+      const endpoint = `http://localhost:5000/api/${type}/${id}/accept-pic-invite?token=${token}`;
+
+      console.log("Submitting to:", endpoint); // Debug log
+
+      const response = await axios.post(endpoint, isRegistered ? {} : formData);
 
       if (response.data.success) {
+        const itemType = inviteType === "subTask" ? "subTask" : "task";
         setSuccess(
           isRegistered
-            ? "Undangan berhasil diterima! Anda sekarang menjadi PIC untuk task ini."
-            : "Registrasi berhasil! Anda sekarang menjadi PIC untuk task ini."
+            ? `Undangan berhasil diterima! Anda sekarang menjadi PIC untuk ${itemType} ini.`
+            : `Registrasi berhasil! Anda sekarang menjadi PIC untuk ${itemType} ini.`
         );
 
         setTimeout(() => {
@@ -115,6 +145,7 @@ const AcceptPicInvite = () => {
         }, 3000);
       }
     } catch (error) {
+      console.error("Submit error:", error); // Tambahkan logging
       setError(
         error.response?.data?.message || "Terjadi kesalahan saat mendaftar"
       );
@@ -123,7 +154,7 @@ const AcceptPicInvite = () => {
     }
   };
 
-  if (!taskId || !token) {
+  if ((!taskId && !subTaskId) || !token) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
@@ -146,7 +177,7 @@ const AcceptPicInvite = () => {
     );
   }
 
-  if (error && !taskInfo) {
+  if (error && !itemInfo) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
@@ -166,27 +197,50 @@ const AcceptPicInvite = () => {
     );
   }
 
+  const pageTitle = inviteType === "subTask" ? "SubTask" : "Task";
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-500 text-white p-6 text-center">
           <div className="text-4xl mb-2">🎯</div>
-          <h1 className="text-2xl font-bold">Terima Undangan PIC</h1>
+          <h1 className="text-2xl font-bold">
+            Terima Undangan PIC {pageTitle}
+          </h1>
           <p className="text-blue-100 mt-2">
             Daftar akun untuk menjadi Person In Charge
           </p>
         </div>
 
-        {taskInfo && (
+        {itemInfo && (
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mx-6 mt-6 rounded">
-            <h3 className="font-semibold text-blue-800">Detail Task:</h3>
-            <p className="text-blue-700 font-medium">{taskInfo.taskName}</p>
-            <p className="text-blue-600 text-sm">
-              Project: {taskInfo.projectName}
-            </p>
-            <p className="text-blue-600 text-sm">
-              Workspace: {taskInfo.workspaceName}
-            </p>
+            <h3 className="font-semibold text-blue-800">Detail {pageTitle}:</h3>
+            {inviteType === "subTask" ? (
+              <>
+                <p className="text-blue-700 font-medium">
+                  {itemInfo.subtaskName}
+                </p>
+                <p className="text-blue-600 text-sm">
+                  Task: {itemInfo.taskName}
+                </p>
+                <p className="text-blue-600 text-sm">
+                  Project: {itemInfo.projectName}
+                </p>
+                <p className="text-blue-600 text-sm">
+                  Workspace: {itemInfo.workspaceName}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-blue-700 font-medium">{itemInfo.taskName}</p>
+                <p className="text-blue-600 text-sm">
+                  Project: {itemInfo.projectName}
+                </p>
+                <p className="text-blue-600 text-sm">
+                  Workspace: {itemInfo.workspaceName}
+                </p>
+              </>
+            )}
           </div>
         )}
 
@@ -207,7 +261,7 @@ const AcceptPicInvite = () => {
             <div className="text-center">
               <p className="text-gray-700 mb-4">
                 Klik tombol di bawah untuk menerima undangan dan menjadi PIC
-                task ini.
+                {inviteType === "subTask" ? " subTask" : " task"} ini.
               </p>
               <button
                 type="submit"
@@ -348,7 +402,8 @@ const AcceptPicInvite = () => {
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
-                Dengan mendaftar, Anda menyetujui untuk menjadi PIC task ini dan
+                Dengan mendaftar, Anda menyetujui untuk menjadi PIC{" "}
+                {inviteType === "subTask" ? "subTask" : "task"} ini dan
                 bergabung ke workspace terkait.
               </p>
             </>
