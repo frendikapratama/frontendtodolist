@@ -2,6 +2,8 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import logo from "../assets/LogoPlanify.png";
+import GradientText from "../components/ui/GradientText";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -16,40 +18,54 @@ export default function Login() {
     try {
       const res = await api.post("login", { email, password });
       await login(res.data.token);
-      navigate("/workspaces");
+      navigate("/kuarter");
     } catch (err) {
       setError(err.response?.data?.message || "Login gagal");
     }
   };
+  const handleKey = (e) => {
+    if (e.key === "Enter") {
+      handleSubmit(e);
+    }
+  };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 p-4">
-      <div className="backdrop-blur-xl bg-white/20 shadow-lg rounded-2xl p-4 sm:p-6 w-full max-w-4xl mx-4">
+    <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64]-200 to-[#1D546C] p-4">
+      <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-4 sm:p-6 w-full max-w-4xl mx-4">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
-          {/* Logo Section */}
           <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
-            <div className=" mx-auto flex items-center justify-center ">
-              <img src="../public/logo.png" alt="logo" />
+            <div className=" mx-auto flex items-center justify-center flex-col">
+              <img src={logo} alt="logo" />
+              <GradientText
+                colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
+                animationSpeed={3}
+                showBorder={false}
+                className="custom-class text-[4em] transition-opacity duration-300"
+              >
+                Planify
+              </GradientText>
             </div>
           </div>
 
-          {/* Form Section */}
-          <div className="backdrop-blur-lg bg-white/5 shadow-lg rounded-2xl p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-4 sm:space-y-6">
+          <div className="backdrop-blur-lg bg-black/10 shadow-lg rounded-2xl p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-4 sm:space-y-6">
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <div className="space-y-5">
               <div>
-                <label className="block text-sm mb-1 text-white">Email</label>
+                <label className="block text-lg mb-1 text-slate-700 font-semibold">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full border-b-2 border-b-blue-500 focus:border-b-blue-300 focus:ring-0 focus:outline-none px-2 sm:px-3 py-2 bg-transparent text-white placeholder-gray-300 text-sm sm:text-base"
                   placeholder="Enter your email"
+                  onKeyDown={handleKey}
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm mb-1 text-white">
+                <label className="block text-lg mb-1 text-slate-700 font-semibold">
                   Password
                 </label>
                 <input
@@ -58,6 +74,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full border-b-2 border-b-blue-500 focus:border-b-blue-300 focus:ring-0 focus:outline-none px-2 sm:px-3 py-2 bg-transparent text-white placeholder-gray-300 text-sm sm:text-base"
                   placeholder="Enter your password"
+                  onKeyDown={handleKey}
                   required
                 />
               </div>
