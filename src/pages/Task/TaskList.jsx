@@ -99,10 +99,6 @@ const TaskList = ({ groupId }) => {
     if (data) setLocalTasks(data);
   }, [data]);
 
-  const handleClickDialog = () => {
-    setOpenDialog(true);
-  };
-
   const handleAddTask = useCallback(() => {
     const trimmedName = taskName.trim();
     if (!trimmedName) return;
@@ -642,7 +638,6 @@ const TaskList = ({ groupId }) => {
                         }}
                       />
                     )}
-                  {/* <p className="text-black text-sm">Completed - ON Time</p> */}
                 </div>
                 {/* Action Button */}
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
