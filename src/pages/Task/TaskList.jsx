@@ -35,7 +35,7 @@ const TaskList = ({ groupId }) => {
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
-  const NOTE_OPTIONS = ["Completed - ON Time", "Completed - Overdue", "Complete - Early", "Urgent"];
+  const NOTE_OPTIONS = ["Completed - ON Time", "Completed - Overdue", "Completed - Early", "Uncompleted", "Planning"];
   const [showPicInput, setShowPicInput] = useState(null);
   const [picEmail, setPicEmail] = useState("");
 
@@ -93,7 +93,7 @@ const TaskList = ({ groupId }) => {
     if (data) setLocalTasks(data);
   }, [data]);
 
-  const handleClickDialog = () =>{
+  const handleClickDialog = () => {
     setOpenDialog(true)
   }
 
@@ -294,8 +294,8 @@ const TaskList = ({ groupId }) => {
                       }))
                     }
                     className={`p-0.5 rounded transition-all ${task.subtask?.length || isHovered
-                        ? "opacity-100 hover:bg-gray-200"
-                        : "opacity-0"
+                      ? "opacity-100 hover:bg-gray-200"
+                      : "opacity-0"
                       }`}
                   >
                     {openSubtasks[task._id] ? (
@@ -303,8 +303,8 @@ const TaskList = ({ groupId }) => {
                     ) : (
                       <ChevronRight
                         className={`w-4 h-4 ${task.subtask?.length
-                            ? "text-gray-700"
-                            : "text-gray-400"
+                          ? "text-gray-700"
+                          : "text-gray-400"
                           }`}
                       />
                     )}
@@ -439,17 +439,20 @@ const TaskList = ({ groupId }) => {
                 </div>
                 {/* Priority */}
                 <div className="w-32 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center ">
-                  <span
-                    ref={(el) =>
-                      (buttonRefs.current[`priority-${task._id}`] = el)
-                    }
-                    className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200"
-                    onClick={() =>
-                      setActivePopup({ taskId: task._id, field: "priority" })
-                    }
-                  >
-                    {task.priority}
-                  </span>
+                    <span
+                      ref={(el) => (buttonRefs.current[`priority-${task._id}`] = el)}
+                      className={`px-3 py-1 text-xs font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
+                          ? "text-red-700 bg-red-200"
+                          : task.priority === "High"
+                            ? "text-orange-800 bg-orange-200"
+                            : task.priority === "Medium"
+                              ? "text-blue-800 bg-blue-200"
+                              : "text-gray-800 bg-gray-200"
+                        }`}
+                      onClick={() => setActivePopup({ taskId: task._id, field: "priority" })}
+                    >
+                      {task.priority}
+                    </span>
                   {activePopup?.taskId === task._id &&
                     activePopup?.field === "priority" && (
                       <PopupSelect
@@ -606,7 +609,7 @@ const TaskList = ({ groupId }) => {
                 </div>
                 {/* Keterangan */}
                 <div className="w-60 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
-                    {/* <span
+                  {/* <span
                       ref={(el)=>{
                         (buttonRefs.current[`note-${note._id}`] = el)
                       }}
@@ -631,17 +634,17 @@ const TaskList = ({ groupId }) => {
                         }}
                       />
                     )} */}
-                    <p className="text-black text-sm">Completed - ON Time</p>
+                  <p className="text-black text-sm">Completed - ON Time</p>
                 </div>
                 {/* Action Button */}
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
                   <button
                     className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
                     onClick={() => setOpenDialog(true)}
-                    >
+                  >
                     Detail
                   </button>
-                  <DialogDetail show={openDialog} onClose={() => setOpenDialog(false)}/>
+                  <DialogDetail show={openDialog} onClose={() => setOpenDialog(false)} />
                 </div>
               </div>
 

@@ -18,15 +18,18 @@ export default function Login() {
     try {
       const res = await api.post("login", { email, password });
       await login(res.data.token);
-      navigate("/workspaces");
+      navigate("/kuarter");
     } catch (err) {
       setError(err.response?.data?.message || "Login gagal");
     }
   };
   const handleKey = (e) => {
-    if(e.key === "Enter"){
+    if (e.key === "Enter") {
       handleSubmit(e);
     }
+  }
+  const handleForgotPassword = async (e) =>{
+    navigate("/forgot-password")
   }
 
   return (
@@ -82,6 +85,12 @@ export default function Login() {
               >
                 Login
               </button>
+              <p
+                className="w-full items-center justify-center flex text-white rounded-lg my-4 sm:my-5 hover:text-blue-700 active:text-blue-800 transition-colors text-sm sm:text-base font-medium"
+                onClick={handleForgotPassword}
+              >
+              Forget Password? 
+              </p>
             </div>
           </div>
         </div>
