@@ -44,16 +44,21 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   const [message, setMessage] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [meetingLink, setMeetingLink] = useState("");
+  const [descriptions, setDescriptions] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
-  const uploadedFiles = serverAttachments;
   const [zoomImage, setZoomImage] = useState(null);
   const [linkTimer, setLinkTimer] = useState(null);
+
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] = useState("");
 
   useEffect(() => {
     if (taskData) {
       setStatus(taskData.status || "To Do");
       setMeetingDate(taskData.meeting_date || "");
       setMeetingLink(taskData.meeting_link || "");
+      setDescriptions(taskData.description || "");
+      setEditedDescription(taskData.description || "");
     }
   }, [taskData]);
 
@@ -161,7 +166,17 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   const getStatusColor = (statusValue) => {
     return statusOptions.find((s) => s.value === statusValue)?.color || "";
   };
-
+  const handleEditDescription = () => {
+    const trimmedValue = editedDescription.trim();
+    if (!taskId) {
+      updateTaskMutation.mutate({
+        taskId,
+        data: { description: trimmedValue },
+      });
+    }
+    setDescriptions(trimmedValue);
+    setEditingDescription(false);
+  };
   return (
     <AnimatePresence>
       {show && (
@@ -354,8 +369,60 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
               <div className="w-80 border-l flex flex-col overflow-hidden">
                 <div className="p-6 space-y-4 overflow-y-auto">
                   <div className="pt-4 border-t">
+                    <p className="text-sm font-semibold text-gray-600 mb-2">
+                      Task Description:
+                    </p>
+                    {editingDescription ? (
+                      <div className="space-y-2">
+                        <textarea
+                          className="w-full text-sm text-black border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-10"
+                          value={editedDescription}
+                          onChange={(e) => setEditedDescription(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && e.ctrlKey) {
+                              handleEditDescription();
+                            }
+                            if (e.key === "Escape") {
+                              setEditingDescription(false);
+                              setEditedDescription(descriptions);
+                            }
+                          }}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleEditDescription}
+                            className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                          >
+                            Simpan
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingDescription(false);
+                              setEditedDescription(descriptions);
+                            }}
+                            className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p
+                        className="text-sm text-gray-800 hover:bg-gray-100 px-2 py-1 rounded cursor-text  whitespace-pre-wrap"
+                        onClick={() => {
+                          setEditingDescription(true);
+                          setEditedDescription(descriptions);
+                        }}
+                      >
+                        {descriptions || "Click to add description..."}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="pt-4 border-t">
                     <p className="text-sm text-gray-600">
-                      <span className="font-semibold">Status saat ini:</span>
+                      <span className="font-semibold">current status:</span>
                       <span
                         className={`ml-2 px-3 py-1 rounded-full text-xs font-medium inline-block ${getStatusColor(
                           status
