@@ -3,9 +3,16 @@ import { useTask } from "../../hook/useTask";
 import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
-import { Plus, ChevronDown, ChevronRight, UserPlus, X, Trash2 } from "lucide-react";
+import {
+  Plus,
+  ChevronDown,
+  ChevronRight,
+  UserPlus,
+  X,
+  Trash2,
+} from "lucide-react";
 import DialogDetail from "../Task/DialogDetail";
-import ConfirmDialog from "../../components/ui/ConfirmDialog"
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
 
@@ -36,8 +43,8 @@ const TaskList = ({ groupId }) => {
   });
   const [confirmDelete, setConfirmDelete] = useState({
     show: false,
-    taskId: null
-  })
+    taskId: null,
+  });
   const [hoveredRow, setHoveredRow] = useState(null);
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
@@ -226,9 +233,9 @@ const TaskList = ({ groupId }) => {
     setDragState({ index: null, task: null, fromGroup: null });
   };
   const handleDeleteTask = useCallback((taskId) => {
-    console.log("handle delete called by taskId:", taskId)
+    console.log("handle delete called by taskId:", taskId);
     setConfirmDelete({ show: true, taskId: taskId });
-  }, [])
+  }, []);
   const confirmDeleteTask = useCallback(() => {
     console.log("confirmDeleteTask called");
     console.log("confirmDelete state:", confirmDelete);
@@ -240,7 +247,7 @@ const TaskList = ({ groupId }) => {
     } else {
       console.log("No taskId found in confirmDelete");
     }
-  }, [confirmDelete.taskId, deleteTaskMutation])
+  }, [confirmDelete.taskId, deleteTaskMutation]);
 
   if (!groupId)
     return (
@@ -253,50 +260,70 @@ const TaskList = ({ groupId }) => {
       <p className="px-6 py-4 text-sm text-red-500">Failed to load tasks</p>
     );
   const columnWidths = {
-    task: 'w-95',
-    pic: 'w-32',
-    status: 'w-40',
-    priority: 'w-32',
-    meetingDate: 'w-40',
-    startDate: 'w-40',
-    dueDate: 'w-40',
-    finishDate: 'w-40',
-    note: 'w-50',
-    action: 'w-40'
+    task: "w-95",
+    pic: "w-32",
+    status: "w-40",
+    priority: "w-32",
+    meetingDate: "w-40",
+    startDate: "w-40",
+    dueDate: "w-40",
+    finishDate: "w-40",
+    note: "w-50",
+    action: "w-40",
   };
 
   return (
     <div className="overflow-x-auto">
       <div className="w-[50vw] min-w-max">
         <div className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 ">
-          <div className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             Task
           </div>
-          <div className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             PIC
           </div>
-          <div className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center `}>
+          <div
+            className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center `}
+          >
             Status
           </div>
-          <div className={`${columnWidths.priority} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.priority} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             Priority
           </div>
-          <div className={`${columnWidths.meetingDate} px-6 py-3 font-semibold text-gray-600 uppercase  items-center flex justify-center`} >
+          <div
+            className={`${columnWidths.meetingDate} px-6 py-3 font-semibold text-gray-600 uppercase  items-center flex justify-center`}
+          >
             Meeting Date
           </div>
-          <div className={`${columnWidths.startDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.startDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             Start Date
           </div>
-          <div className={`${columnWidths.dueDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.dueDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             Due Date
           </div>
-          <div className={`${columnWidths.finishDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.finishDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             Finish Date
           </div>
-          <div className={`${columnWidths.note} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.note} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             Note
           </div>
-          <div className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
             Action
           </div>
         </div>
@@ -320,14 +347,18 @@ const TaskList = ({ groupId }) => {
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                  } ${isPreview
+                className={`flex items-center hover:bg-none ${
+                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                } ${
+                  isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                  }`}
+                }`}
               >
                 {/* Name */}
-                <div className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}>
+                <div
+                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}
+                >
                   <button
                     onClick={() =>
                       setOpenSubtasks((prev) => ({
@@ -358,7 +389,7 @@ const TaskList = ({ groupId }) => {
                     className="w-4 h-4 rounded border-gray-300"
                   /> */}
                   {editingField?.taskId === task._id &&
-                    editingField?.field === "nama" ? (
+                  editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
@@ -402,7 +433,9 @@ const TaskList = ({ groupId }) => {
                               : "?"}
                           </div>
                           <button
-                            onClick={() => handleRemovePic(task._id, picUser._id)}
+                            onClick={() =>
+                              handleRemovePic(task._id, picUser._id)
+                            }
                             className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <X className="w-3 h-3 text-white" />
@@ -430,7 +463,9 @@ const TaskList = ({ groupId }) => {
                             </div>
                             <div className="absolute top-7 left-1/2 -translate-x-1/2 hidden group-hover/avatar:flex bg-gray-800 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap pointer-events-none">
                               <div className="text-center">
-                                <p className="font-semibold">{picUser.username}</p>
+                                <p className="font-semibold">
+                                  {picUser.username}
+                                </p>
                                 <p className="text-gray-300">{picUser.email}</p>
                               </div>
                             </div>
@@ -476,7 +511,9 @@ const TaskList = ({ groupId }) => {
                 </div>
 
                 {/* Status */}
-                <div className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`} >
+                <div
+                  className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
                   <span
                     ref={(el) =>
                       (buttonRefs.current[`status-${task._id}`] = el)
@@ -504,18 +541,25 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Priority */}
-                <div className={`${columnWidths.priority} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`} >
+                <div
+                  className={`${columnWidths.priority} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
                   <span
-                    ref={(el) => (buttonRefs.current[`priority-${task._id}`] = el)}
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
-                      ? "text-red-700 bg-red-200"
-                      : task.priority === "High"
+                    ref={(el) =>
+                      (buttonRefs.current[`priority-${task._id}`] = el)
+                    }
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.priority === "Urgent"
+                        ? "text-red-700 bg-red-200"
+                        : task.priority === "High"
                         ? "text-orange-800 bg-orange-200"
                         : task.priority === "Medium"
-                          ? "text-blue-800 bg-blue-200"
-                          : "text-gray-800 bg-gray-200"
-                      }`}
-                    onClick={() => setActivePopup({ taskId: task._id, field: "priority" })}
+                        ? "text-blue-800 bg-blue-200"
+                        : "text-gray-800 bg-gray-200"
+                    }`}
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "priority" })
+                    }
                   >
                     {task.priority}
                   </span>
@@ -535,7 +579,9 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Meeting Date */}
-                <div className={`${columnWidths.meetingDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`} >
+                <div
+                  className={`${columnWidths.meetingDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
                   <span
                     ref={(el) =>
                       (buttonRefs.current[`meeting_date-${task._id}`] = el)
@@ -550,10 +596,10 @@ const TaskList = ({ groupId }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -572,7 +618,9 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Start Date */}
-                <div className={`${columnWidths.startDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`} >
+                <div
+                  className={`${columnWidths.startDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
                   <span
                     ref={(el) =>
                       (buttonRefs.current[`start_date-${task._id}`] = el)
@@ -587,10 +635,10 @@ const TaskList = ({ groupId }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -608,7 +656,9 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Due Date */}
-                <div className={`${columnWidths.dueDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`} >
+                <div
+                  className={`${columnWidths.dueDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
                   <span
                     ref={(el) =>
                       (buttonRefs.current[`due_date-${task._id}`] = el)
@@ -620,10 +670,10 @@ const TaskList = ({ groupId }) => {
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -641,7 +691,9 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Finish Date */}
-                <div className={`${columnWidths.finishDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}>
+                <div
+                  className={`${columnWidths.finishDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
                   <span
                     ref={(el) =>
                       (buttonRefs.current[`finish_date-${task._id}`] = el)
@@ -653,10 +705,10 @@ const TaskList = ({ groupId }) => {
                   >
                     {task.finish_date
                       ? new Date(task.finish_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -675,21 +727,24 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Keterangan */}
-                <div className={`${columnWidths.note} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}>
+                <div
+                  className={`${columnWidths.note} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
                   <span
                     ref={(el) => {
                       buttonRefs.current[`note-${task._id}`] = el;
                     }}
-                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
-                      ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                      : task.note === "Uncomplete"
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                      task.note === "Planning"
+                        ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                        : task.note === "Uncomplete"
                         ? "text-red-100 bg-red-900 hover:bg-red-400"
                         : task.note === "Completed - On Time"
-                          ? "text-green-700 bg-green-100 hover:bg-green-200"
-                          : task.note === "Completed - Overdue"
-                            ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                            : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                      }`}
+                        ? "text-green-700 bg-green-100 hover:bg-green-200"
+                        : task.note === "Completed - Overdue"
+                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
@@ -720,6 +775,10 @@ const TaskList = ({ groupId }) => {
                     >
                       Detail
                     </button>
+                    <Trash2
+                      className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
+                      onClick={() => handleDeleteTask(task._id)}
+                    />
                   </div>
                   {openDialog.open && (
                     <DialogDetail
