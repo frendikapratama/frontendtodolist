@@ -767,23 +767,27 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Action Button */}
-                <div
-                  className={`${columnWidths.action} gap-2 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                >
-                  <button
-                    className="bg-gray-100 rounded-xl p-1 text-black font-medium text-[0.7em] w-18 hover:bg-gray-200"
-                    onClick={() => setOpenDialog(true)}
-                  >
-                    Detail
-                  </button>
-                  <Trash2
-                    className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
-                    onClick={() => handleDeleteTask(task._id)}
-                  />
-                  <DialogDetail
-                    show={openDialog}
-                    onClose={() => setOpenDialog(false)}
-                  />
+                <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
+                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
+                    <button
+                      className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
+                      onClick={() => setOpenDialog({ open: true, task: task })}
+                    >
+                      Detail
+                    </button>
+                    <Trash2
+                      className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
+                      onClick={() => handleDeleteTask(task._id)}
+                    />
+                  </div>
+                  {openDialog.open && (
+                    <DialogDetail
+                      show={openDialog.open}
+                      onClose={() => setOpenDialog({ open: false, task: null })}
+                      taskId={openDialog.task?._id}
+                      taskData={openDialog.task}
+                    />
+                  )}
                 </div>
               </div>
               <ConfirmDialog
