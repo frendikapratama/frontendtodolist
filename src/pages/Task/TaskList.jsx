@@ -21,7 +21,7 @@ const TaskList = ({ groupId }) => {
   } = useTask(groupId);
   const { data, isLoading, isError } = taskByGroup;
 
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openDialog, setOpenDialog] = useState({ open: false, task: null });
   const [showAddTask, setShowAddTask] = useState(false);
   const [openSubtasks, setOpenSubtasks] = useState({});
   const [taskName, setTaskName] = useState("");
@@ -107,8 +107,8 @@ const TaskList = ({ groupId }) => {
   }, [data]);
 
   const handleClickDialog = () => {
-    setOpenDialog(true)
-  }
+    setOpenDialog(true);
+  };
 
   const handleAddTask = useCallback(() => {
     const trimmedName = taskName.trim();
@@ -335,19 +335,21 @@ const TaskList = ({ groupId }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all ${task.subtask?.length || isHovered
-                      ? "opacity-100 hover:bg-gray-200"
-                      : "opacity-0"
-                      }`}
+                    className={`p-0.5 rounded transition-all ${
+                      task.subtask?.length || isHovered
+                        ? "opacity-100 hover:bg-gray-200"
+                        : "opacity-0"
+                    }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${task.subtask?.length
-                          ? "text-gray-700"
-                          : "text-gray-400"
-                          }`}
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                        }`}
                       />
                     )}
                   </button>
@@ -710,15 +712,23 @@ const TaskList = ({ groupId }) => {
                     )}
                 </div>
                 {/* Action Button */}
-                <div className={`${columnWidths.action} gap-2 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}>
-                  <button
-                    className="bg-gray-100 rounded-xl p-1 text-black font-medium text-[0.7em] w-18 hover:bg-gray-200"
-                    onClick={() => setOpenDialog(true)}
-                  >
-                    Detail
-                  </button>
-                  <Trash2 className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer" onClick={() => handleDeleteTask(task._id)} />
-                  <DialogDetail show={openDialog} onClose={() => setOpenDialog(false)} />
+                <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
+                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
+                    <button
+                      className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
+                      onClick={() => setOpenDialog({ open: true, task: task })}
+                    >
+                      Detail
+                    </button>
+                  </div>
+                  {openDialog.open && (
+                    <DialogDetail
+                      show={openDialog.open}
+                      onClose={() => setOpenDialog({ open: false, task: null })}
+                      taskId={openDialog.task?._id}
+                      taskData={openDialog.task}
+                    />
+                  )}
                 </div>
               </div>
               <ConfirmDialog
