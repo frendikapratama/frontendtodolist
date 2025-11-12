@@ -14,6 +14,10 @@ export async function updateTask(taskId, data) {
   const res = await api.put(`task/${taskId}`, data);
   return res.data.data;
 }
+export async function deleteTask(taskId) {
+  const res = await api.delete(`task/${taskId}`);
+  return res.data;
+}
 export async function dialogTask(taskId, data) {
   const res = await api.put(`task/dialog/${taskId}`, data);
   return res.data.data;
