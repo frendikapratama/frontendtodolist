@@ -17,7 +17,7 @@ const TaskList = ({ groupId }) => {
   } = useTask(groupId);
   const { data, isLoading, isError } = taskByGroup;
 
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openDialog, setOpenDialog] = useState({ open: false, task: null });
   const [showAddTask, setShowAddTask] = useState(false);
   const [openSubtasks, setOpenSubtasks] = useState({});
   const [taskName, setTaskName] = useState("");
@@ -100,8 +100,8 @@ const TaskList = ({ groupId }) => {
   }, [data]);
 
   const handleClickDialog = () => {
-    setOpenDialog(true)
-  }
+    setOpenDialog(true);
+  };
 
   const handleAddTask = useCallback(() => {
     const trimmedName = taskName.trim();
@@ -301,19 +301,21 @@ const TaskList = ({ groupId }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all ${task.subtask?.length || isHovered
-                      ? "opacity-100 hover:bg-gray-200"
-                      : "opacity-0"
-                      }`}
+                    className={`p-0.5 rounded transition-all ${
+                      task.subtask?.length || isHovered
+                        ? "opacity-100 hover:bg-gray-200"
+                        : "opacity-0"
+                    }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${task.subtask?.length
-                          ? "text-gray-700"
-                          : "text-gray-400"
-                          }`}
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                        }`}
                       />
                     )}
                   </button>
@@ -447,20 +449,25 @@ const TaskList = ({ groupId }) => {
                 </div>
                 {/* Priority */}
                 <div className="w-32 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center ">
-                    <span
-                      ref={(el) => (buttonRefs.current[`priority-${task._id}`] = el)}
-                      className={`px-3 py-1 text-xs font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
-                          ? "text-red-700 bg-red-200"
-                          : task.priority === "High"
-                            ? "text-orange-800 bg-orange-200"
-                            : task.priority === "Medium"
-                              ? "text-blue-800 bg-blue-200"
-                              : "text-gray-800 bg-gray-200"
-                        }`}
-                      onClick={() => setActivePopup({ taskId: task._id, field: "priority" })}
-                    >
-                      {task.priority}
-                    </span>
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`priority-${task._id}`] = el)
+                    }
+                    className={`px-3 py-1 text-xs font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.priority === "Urgent"
+                        ? "text-red-700 bg-red-200"
+                        : task.priority === "High"
+                        ? "text-orange-800 bg-orange-200"
+                        : task.priority === "Medium"
+                        ? "text-blue-800 bg-blue-200"
+                        : "text-gray-800 bg-gray-200"
+                    }`}
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "priority" })
+                    }
+                  >
+                    {task.priority}
+                  </span>
                   {activePopup?.taskId === task._id &&
                     activePopup?.field === "priority" && (
                       <PopupSelect
@@ -646,13 +653,22 @@ const TaskList = ({ groupId }) => {
                 </div>
                 {/* Action Button */}
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
-                  <button
-                    className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
-                    onClick={() => setOpenDialog(true)}
-                  >
-                    Detail
-                  </button>
-                  <DialogDetail show={openDialog} onClose={() => setOpenDialog(false)} />
+                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
+                    <button
+                      className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
+                      onClick={() => setOpenDialog({ open: true, task: task })}
+                    >
+                      Detail
+                    </button>
+                  </div>
+                  {openDialog.open && (
+                    <DialogDetail
+                      show={openDialog.open}
+                      onClose={() => setOpenDialog({ open: false, task: null })}
+                      taskId={openDialog.task?._id}
+                      taskData={openDialog.task}
+                    />
+                  )}
                 </div>
               </div>
 
