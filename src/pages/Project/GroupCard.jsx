@@ -62,12 +62,12 @@ const GroupCard = ({ group, index }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       <div
-        className="px-6 py-3.5 flex items-center justify-between cursor-pointer"
+        className="px-2 py-1 flex items-center justify-between cursor-pointer"
         style={{ background: getHeaderColor() }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <ChevronDown className="w-5 h-5 text-white" />
           {isEditing ? (
             <form onSubmit={handleNameEdit} className="m-0">
@@ -88,7 +88,7 @@ const GroupCard = ({ group, index }) => {
             </form>
           ) : (
             <h3
-              className="text-white font-semibold text-base cursor-pointer hover:underline"
+              className="text-white text-[0.8em] font-semibold text-base cursor-pointer hover:underline"
               onClick={() => {
                 setIsEditing(true);
                 setEditedName(group.nama);
@@ -97,7 +97,7 @@ const GroupCard = ({ group, index }) => {
               {group.nama}
             </h3>
           )}
-          <span className="text-xs text-white bg-opacity-20 px-2.5 py-1 rounded-full font-medium">
+          <span className="text-xs text-white text-[0.7em] bg-opacity-20 px-2.5 py-1 rounded-full font-medium">
             {taskByGroup.data?.length || 0} items
           </span>
         </div>

@@ -20,10 +20,10 @@ export default function LogoutButton() {
         <button
             onClick={handleLogout}
             disabled={isClicked}
-            className="relative w-50 h-13 bg-gray-800 text-white font-semibold rounded-2xl overflow-hidden flex items-center justify-center shadow-lg hover:bg-gray-700 transition-all duration-300"
+            className="relative w-50 h-8 bg-gray-800 text-white font-semibold rounded-2xl overflow-hidden flex items-center justify-center shadow-lg hover:bg-gray-700 transition-all duration-300"
         >
             <span
-                className={`transition-all duration-300 ${isClicked ? "opacity-0" : "opacity-100"
+                className={`transition-all text-xs duration-300 ${isClicked ? "opacity-0" : "opacity-100"
                     }`}
             >
                 Logout
@@ -43,7 +43,7 @@ export default function LogoutButton() {
                             exit={{ rotateY: 90, opacity: 0 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <DoorOpen size={26} />
+                            <DoorOpen size={20} />
                         </motion.div>
                     ) : (
                         <motion.div
@@ -52,7 +52,7 @@ export default function LogoutButton() {
                             animate={{ rotateY: 0, opacity: 1 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <DoorClosed size={26} />
+                            <DoorClosed size={20} />
                         </motion.div>
                     )}
                 </AnimatePresence>

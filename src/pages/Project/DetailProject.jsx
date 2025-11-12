@@ -48,18 +48,18 @@ const ProjectDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-transparent p-1">
+    <div className="min-h-screen bg-transparent">
       {/* Header */}
       <div className="bg-[#EFECE3] border-b border-r-2 border-gray-200 shadow-sm rounded-3xl">
-        <div className="max-w-full px-8 py-3">
+        <div className="max-w-full px-8 py-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button className="p-1.5 hover:bg-gray-100 rounded transition">
-                <Star className="w-5 h-5 text-gray-400 hover:text-yellow-500" />
+              <button className="p-1 hover:bg-gray-100 rounded transition">
+                <Star className="w-4 h-4 text-gray-400 hover:text-yellow-500" />
               </button>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold text-gray-800">
+                  <h1 className="text-[1.2em] font-bold text-gray-800">
                     {data.nama}
                   </h1>
                 </div>
@@ -68,7 +68,7 @@ const ProjectDetailPage = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleAddProject()}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#0E7490] rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
+                className="px-1 py-2 text-[0.7em] font-medium text-white bg-[#0E7490] rounded-lg hover:bg-blue-700 transition flex items-center gap-1 shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 New Group

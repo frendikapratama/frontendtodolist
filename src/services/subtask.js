@@ -14,6 +14,10 @@ export async function positionSubTask(taskId, data) {
   const res = await api.patch(`subTask/${taskId}`, data);
   return res.data.data;
 }
+export async function deleteSubTask(subtaskId) {
+  const res = await api.delete(`subTask/${subtaskId}`);
+  return res.data;
+}
 
 export async function getSubtaskByTask(taskId) {
   const res = await api.get(`subTask/ByTask?task=${taskId}`);

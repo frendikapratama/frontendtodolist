@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSubTask } from "../../hook/useSubTask";
-import { Plus, UserPlus, X } from "lucide-react";
+import { Plus, UserPlus, X, Trash2 } from "lucide-react";
 import PopupSelect from "../Task/PopupSelect";
 import DatePickerPopup from "../Task/DatePickerPopup";
 import toast from "react-hot-toast";
+import DialogDetail from "../Task/DialogDetail";
+import ConfirmDialog from "../../components/ui/ConfirmDialog"
 
 const SubtaskList = ({ taskId, groupId }) => {
   const {
@@ -13,8 +15,10 @@ const SubtaskList = ({ taskId, groupId }) => {
     updatePositionSubTaskMutation,
     assignPicMutation,
     removePicMutation,
+    deleteSubTaskMutation
   } = useSubTask(taskId, groupId);
 
+  const [openDialog, setOpenDialog] = useState(false);
   const [subtaskName, setSubtaskName] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingSubtaskId, setEditingSubtaskId] = useState(null);
@@ -24,6 +28,10 @@ const SubtaskList = ({ taskId, groupId }) => {
   const [activePopup, setActivePopup] = useState(null);
   const [showPicInput, setShowPicInput] = useState(null);
   const [picEmail, setPicEmail] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    subTaskId: null
+  })
 
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = [
@@ -35,9 +43,9 @@ const SubtaskList = ({ taskId, groupId }) => {
   ];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
   const NOTE_OPTIONS = [
-    "Completed - ON Time",
+    "Completed - On Time",
     "Completed - Overdue",
-    "Complete - Early",
+    "Completed - Early",
     "Uncomplete",
     "Planning",
   ];
@@ -124,6 +132,23 @@ const SubtaskList = ({ taskId, groupId }) => {
     setDraggedItem(null);
   };
 
+  const handleDeleteTask = useCallback((subTaskId) => {
+    console.log("handle delete called by taskId:", subTaskId)
+    setConfirmDelete({ show: true, subTaskId: subTaskId });
+  }, [])
+  const confirmDeleteTask = useCallback(() => {
+    console.log("confirmDeleteTask called");
+    console.log("confirmDelete state:", confirmDelete);
+
+    if (confirmDelete.subTaskId) {
+      console.log("Calling deleteSubTaskMutation with:", confirmDelete.subTaskId);
+      deleteSubTaskMutation.mutate(confirmDelete.subTaskId);
+      setConfirmDelete({ show: false, subtaskId: null });
+    } else {
+      console.log("No taskId found in confirmDelete");
+    }
+  }, [confirmDelete.subTaskId, deleteSubTaskMutation])
+
   const handleEdit = (subtaskId) => {
     if (!editedName.trim()) return;
     updateSubTaskMutation.mutate({
@@ -169,42 +194,21 @@ const SubtaskList = ({ taskId, groupId }) => {
       </div>
     );
   }
+  const columnWidths = {
+    task: 'w-80',      
+    pic: 'w-32',       
+    status: 'w-40',
+    priority: 'w-32',
+    meetingDate: 'w-40',
+    startDate: 'w-40',
+    dueDate: 'w-40',
+    finishDate: 'w-40',
+    note: 'w-50',      
+    action: 'w-40'
+  };
 
   return (
     <div className="ml-12 mt-1 mb-2">
-      <div className="flex bg-[#D2C1B6] border-b border-gray-200">
-        <div className="flex-1 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Task
-        </div>
-        <div className="w-32 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          PIC
-        </div>
-        <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Status
-        </div>
-        <div className="w-32 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Priority
-        </div>
-        <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Meeting Date
-        </div>
-        <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Start Date
-        </div>
-        <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Due Date
-        </div>
-        <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Finish Date
-        </div>
-        <div className="w-60 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Note
-        </div>
-        <div className="w-40 px-6 py-3 text-xs font-semibold text-gray-600 uppercase items-center flex justify-center">
-          Action
-        </div>
-      </div>
-
       {localSubtasks.map((s, index) => (
         <div
           key={s._id}
@@ -213,12 +217,11 @@ const SubtaskList = ({ taskId, groupId }) => {
           onDragOver={(e) => handleDragOver(e, index)}
           onDrop={handleDrop}
           onDragEnd={handleDragEnd}
-          className={`flex items-center hover:bg-gray-50 transition-opacity bg-[#F5F3EF] border-b border-gray-100 ${
-            draggedItem === index ? "opacity-40" : ""
-          }`}
+          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""
+            }`}
         >
           {/* Name Column */}
-          <div className="flex-1 flex items-center gap-3 px-6 py-3 cursor-grab active:cursor-grabbing">
+          <div className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}>
             <div className="cursor-grab active:cursor-grabbing">
               <svg
                 className="w-4 h-4 text-gray-400"
@@ -235,15 +238,15 @@ const SubtaskList = ({ taskId, groupId }) => {
               </svg>
             </div>
 
-            <input
+            {/* <input
               type="checkbox"
               className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
+            /> */}
 
             {editingSubtaskId === s._id ? (
               <input
                 type="text"
-                className="text-sm border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
+                className="text-sm border border-gray-300 text-black rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
                 value={editedName}
                 autoFocus
                 onChange={(e) => setEditedName(e.target.value)}
@@ -252,7 +255,7 @@ const SubtaskList = ({ taskId, groupId }) => {
               />
             ) : (
               <span
-                className="text-sm text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text"
+                className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text"
                 onClick={() => {
                   setEditingSubtaskId(s._id);
                   setEditedName(s.nama);
@@ -264,7 +267,7 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* PIC Column */}
-          <div className="w-32 px-6 py-3 flex items-center justify-center">
+          {/* <div className={`${columnWidths.pic} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center shrink-0`}>
             <div className="flex items-center gap-2">
               {s.pic && s.pic.length > 0 ? (
                 <div className="flex items-center gap-1 flex-wrap">
@@ -324,13 +327,100 @@ const SubtaskList = ({ taskId, groupId }) => {
                 </button>
               )}
             </div>
+          </div> */}
+          <div className="flex items-center gap-1 relative group">
+            {s.pic && s.pic.length > 0 && (
+              <div className="flex -space-x-3">
+                {s.pic.slice(0, 3).map((picUser, idx) => (
+                  <div
+                    key={idx}
+                    className="relative cursor-pointer hover:z-10"
+                    title={picUser.email || "PIC"}
+                  >
+                    <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold">
+                      {picUser.username
+                        ? picUser.username.substring(0, 2).toUpperCase()
+                        : "?"}
+                    </div>
+                    <button
+                      onClick={() => handleRemovePic(s._id, picUser._id)}
+                      className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+
+                {s.pic.length > 3 && (
+                  <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 cursor-pointer">
+                    +{s.pic.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {s.pic && s.pic.length > 0 && (
+              <div className="absolute top-8 left-0 hidden group-hover:flex bg-white shadow-lg rounded-lg p-2 z-50">
+                <div className="flex gap-2">
+                  {s.pic.map((picUser, idx) => (
+                    <div key={idx} className="relative group/avatar">
+                      <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold cursor-pointer">
+                        {picUser.username
+                          ? picUser.username.substring(0, 2).toUpperCase()
+                          : "?"}
+                      </div>
+                      <div className="absolute top-7 left-1/2 -translate-x-1/2 hidden group-hover/avatar:flex bg-gray-800 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap pointer-events-none">
+                        <div className="text-center">
+                          <p className="font-semibold">{picUser.username}</p>
+                          <p className="text-gray-300">{picUser.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {showPicInput === s._id ? (
+              <input
+                type="email"
+                placeholder="email@example.com"
+                className="w-40 px-2 py-1 text-xs text-black border border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+                value={picEmail}
+                onChange={(e) => setPicEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAssignPic(s._id);
+                  if (e.key === "Escape") {
+                    setPicEmail("");
+                    setShowPicInput(null);
+                  }
+                }}
+                onBlur={() => {
+                  if (picEmail.trim()) {
+                    handleAssignPic(s._id);
+                  } else {
+                    setPicEmail("");
+                    setShowPicInput(null);
+                  }
+                }}
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => setShowPicInput(s._id)}
+                className="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                title="Assign PIC"
+              >
+                <UserPlus className="w-4 h-4 text-gray-400 hover:text-blue-500" />
+              </button>
+            )}
           </div>
 
           {/* Status Column */}
-          <div className="w-40 px-6 py-3 flex items-center justify-center">
+          <div className={`${columnWidths.status} px-6 py-3 flex items-center justify-center shrink-0`}>
             <span
               ref={(el) => (buttonRefs.current[`status-${s._id}`] = el)}
-              className="px-3 py-1.5 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
+              className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
               onClick={() =>
                 setActivePopup({ subtaskId: s._id, field: "status" })
               }
@@ -354,11 +444,17 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* Priority Column */}
-          <div className="w-32 px-6 py-3 flex items-center justify-center">
+          <div className={`${columnWidths.priority} px-6 py-3 flex items-center justify-center shrink-0`}>
             <span
               ref={(el) => (buttonRefs.current[`priority-${s._id}`] = el)}
-              className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200"
-              onClick={() =>
+              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${s.priority === "Urgent"
+                ? "text-red-700 bg-red-200"
+                : s.priority === "High"
+                  ? "text-orange-800 bg-orange-200"
+                  : s.priority === "Medium"
+                    ? "text-blue-800 bg-blue-200"
+                    : "text-gray-800 bg-gray-200"
+                }`}              onClick={() =>
                 setActivePopup({ subtaskId: s._id, field: "priority" })
               }
             >
@@ -381,10 +477,10 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* Meeting Date Column */}
-          <div className="w-40 px-6 py-3 flex items-center justify-center">
+          <div className={`${columnWidths.meetingDate} px-6 py-3 flex items-center justify-center shrink-0`}>
             <span
               ref={(el) => (buttonRefs.current[`meeting_date-${s._id}`] = el)}
-              className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+              className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
                 setActivePopup({
                   subtaskId: s._id,
@@ -394,10 +490,10 @@ const SubtaskList = ({ taskId, groupId }) => {
             >
               {s.meeting_date
                 ? new Date(s.meeting_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -416,10 +512,10 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* Start Date Column */}
-          <div className="w-40 px-6 py-3 flex items-center justify-center">
+          <div className={`${columnWidths.startDate} px-6 py-3 flex items-center justify-center shrink-0`}>
             <span
               ref={(el) => (buttonRefs.current[`start_date-${s._id}`] = el)}
-              className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+              className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
                 setActivePopup({
                   subtaskId: s._id,
@@ -429,10 +525,10 @@ const SubtaskList = ({ taskId, groupId }) => {
             >
               {s.start_date
                 ? new Date(s.start_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -451,20 +547,20 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* Due Date Column */}
-          <div className="w-40 px-6 py-3 flex items-center justify-center">
+          <div className={`${columnWidths.dueDate} px-6 py-3 flex items-center justify-center shrink-0`}>
             <span
               ref={(el) => (buttonRefs.current[`due_date-${s._id}`] = el)}
-              className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+              className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
                 setActivePopup({ subtaskId: s._id, field: "due_date" })
               }
             >
               {s.due_date
                 ? new Date(s.due_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -483,20 +579,20 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* Finish Date Column */}
-          <div className="w-40 px-6 py-3 flex items-center justify-center">
+          <div className={`${columnWidths.finishDate} px-6 py-3 flex items-center justify-center shrink-0`}>
             <span
               ref={(el) => (buttonRefs.current[`finish_date-${s._id}`] = el)}
-              className="text-sm text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+              className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
                 setActivePopup({ subtaskId: s._id, field: "finish_date" })
               }
             >
               {s.finish_date
                 ? new Date(s.finish_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -515,10 +611,19 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* Note Column */}
-          <div className="w-60 px-6 py-3 flex items-center justify-center">
-            <span
+          <div className={`${columnWidths.note} px-6 py-3 flex items-center justify-center shrink-0`}>
+            <span 
               ref={(el) => (buttonRefs.current[`note-${s._id}`] = el)}
-              className="px-3 py-1.5 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
+              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full cursor-pointer ${s.note === "Planning"
+                ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                : s.note === "Uncomplete"
+                  ? "text-red-100 bg-red-900 hover:bg-red-400"
+                  : s.note === "Completed - On Time"
+                    ? "text-green-700 bg-green-100 hover:bg-green-200"
+                    : s.note === "Completed - Overdue"
+                      ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                      : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+              }`}
               onClick={() =>
                 setActivePopup({ subtaskId: s._id, field: "note" })
               }
@@ -540,11 +645,24 @@ const SubtaskList = ({ taskId, groupId }) => {
           </div>
 
           {/* Action Column */}
-          <div className="w-40 px-6 py-3 flex items-center justify-center">
-            <button className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200">
+          <div className={`${columnWidths.action} px-6 py-3 flex items-center gap-2 justify-center shrink-0`}>
+            <button
+              className="bg-gray-100 rounded-xl p-1 text-black font-medium text-[0.7em] w-18 hover:bg-gray-200"
+              onClick={() => setOpenDialog(true)}
+            >
               Detail
             </button>
+            <Trash2 className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer" onClick={() => handleDeleteTask(s._id)} />
+            <DialogDetail show={openDialog} onClose={() => setOpenDialog(false)} />
+
           </div>
+          <ConfirmDialog
+            show={confirmDelete.show}
+            onClose={() => setConfirmDelete({ show: false, subTaskId: null })}
+            onConfirm={confirmDeleteTask}
+            title="Delete Subtask"
+            message="Are you sure want to delete this subtask? this action can't be undo"
+          />
         </div>
       ))}
 
@@ -553,7 +671,7 @@ const SubtaskList = ({ taskId, groupId }) => {
           <input
             type="text"
             placeholder="Subtask name"
-            className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-1.5 text-[0.9em] text-black text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={subtaskName}
             onChange={(e) => setSubtaskName(e.target.value)}
             onKeyDown={handleAddKeyDown}
@@ -566,7 +684,7 @@ const SubtaskList = ({ taskId, groupId }) => {
       ) : (
         <button
           onClick={() => setShowForm(true)}
-          className="ml-4 mt-1 flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"
+            className="ml-4 mt-1 flex text-[0.8em] items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"
         >
           <Plus className="w-3.5 h-3.5" />
           Add subtask
