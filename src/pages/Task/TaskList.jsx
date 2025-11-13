@@ -13,8 +13,6 @@ import {
 } from "lucide-react";
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { motion, AnimatePresence } from "framer-motion";
-import React from "react";
 
 const TaskList = ({ groupId }) => {
   const {
@@ -112,10 +110,6 @@ const TaskList = ({ groupId }) => {
   useEffect(() => {
     if (data) setLocalTasks(data);
   }, [data]);
-
-  const handleClickDialog = () => {
-    setOpenDialog(true);
-  };
 
   const handleAddTask = useCallback(() => {
     const trimmedName = taskName.trim();

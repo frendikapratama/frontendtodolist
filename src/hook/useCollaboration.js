@@ -18,7 +18,16 @@ export const useCollaboration = () => {
       queryClient.invalidateQueries({ queryKey: ["collaboration-requests"] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || "Gagal mengirim request");
+      const message = error.response?.data?.message || "Gagal mengirim request";
+
+      if (message.toLowerCase().includes("already") || message.toLowerCase().includes("sent")) {
+        toast("Request has been send before!", {
+          icon: "⚠️",
+          style: { background: "#facc15", color: "#000" },
+        });
+      } else {
+        toast.error(message);
+      }
     },
   });
 
