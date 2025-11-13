@@ -75,7 +75,7 @@ const CollaborationTab = ({ workspaceId }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-screen">
       {/* Modal for Sending Request */}
       <dialog id="sendCollabModal" className="modal">
         <div className="modal-box">
@@ -145,18 +145,18 @@ const CollaborationTab = ({ workspaceId }) => {
         </div>
       </dialog>
 
-      {/* New Layout: Grid with 3 sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-screen lg:h-auto">
+      {/* Grid with 3 sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-screen lg:h-screen ">
         {/* Left Column: Projects */}
         <div
-          className={`col-span-1 lg:col-span-2 bg-base-100 p-4 border rounded-lg overflow-y-auto ${isDragOver ? "border-primary border-2" : "border-base-300"
+          className={`col-span-1 lg:col-span-2 p-4 bg-white/40 borde-none rounded-lg overflow-y-auto ${isDragOver ? "border-primary border-2" : "border-base-300"
             }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[1em] font-semibold">Projects</h3>
+            <h3 className="text-[1.1em] font-semibold">Projects</h3>
             <button
               className="btn btn-primary btn-sm"
               onClick={() =>
@@ -172,7 +172,7 @@ const CollaborationTab = ({ workspaceId }) => {
             <div className="space-y-6">
               {/* Individual Projects */}
               <div>
-                <h4 className="font-semibold mb-3 text-[0.8em] text-gray-600 flex items-center gap-2">
+                  <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4"
@@ -192,10 +192,10 @@ const CollaborationTab = ({ workspaceId }) => {
                     {ownedOnlyProjects.map((project) => (
                       <div
                         key={project._id}
-                        className="card bg-base-100 shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-green-500"
+                        className="card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-green-500"
                         onClick={() => navigate(`/project/${project._id}`)}
                       >
-                        <h4 className="card-title text-[0.8em]">{project.nama}</h4>
+                        <h4 className="card-title text-[0.9em]">{project.nama}</h4>
                         {project.description && (
                           <p className="text-[0.8em] text-gray-600 mb-2">
                             {project.description}
@@ -218,7 +218,7 @@ const CollaborationTab = ({ workspaceId }) => {
                     ))}
                   </div>
                 ) : (
-                      <p className="text-gray-500 text-[0.8em] italic">
+                      <p className="text-[#EFECE3] text-[0.8em] italic">
                     There is no project
                   </p>
                 )}
@@ -226,7 +226,7 @@ const CollaborationTab = ({ workspaceId }) => {
 
               {/* Collaboration Projects (Owner) */}
               <div>
-                <h4 className="font-semibold mb-3 text-[0.8em] text-gray-600 flex items-center gap-2">
+                  <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4"
@@ -242,10 +242,10 @@ const CollaborationTab = ({ workspaceId }) => {
                     {ownedWithCollaboration.map((project) => (
                       <div
                         key={project._id}
-                        className="card bg-base-100 shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-blue-500"
+                        className="card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-blue-500"
                         onClick={() => navigate(`/project/${project._id}`)}
                       >
-                        <h4 className="card-title text-[0.8em]">{project.nama}</h4>
+                        <h4 className="card-title text-[0.9em]">{project.nama}</h4>
                         {project.description && (
                           <p className="text-[0.8em] text-gray-600 mb-2">
                             {project.description}
@@ -265,8 +265,8 @@ const CollaborationTab = ({ workspaceId }) => {
                           </div>
                         </div>
                         {project.otherWorkspaces?.length > 0 && (
-                          <p className="text-xs text-gray-500 mt-2">
-                            <span className="font-medium">Collaboration: </span>
+                          <p className="text-black/60 font-semibold text-[0.8em] mt-2">
+                            <span className="font-medium text-gray-600">Collaboration: </span>
                             {project.otherWorkspaces
                               .map((w) => w.nama)
                               .join(", ")}
@@ -276,7 +276,7 @@ const CollaborationTab = ({ workspaceId }) => {
                     ))}
                   </div>
                 ) : (
-                      <p className="text-gray-500 text-[0.8em] italic">
+                      <p className="text-[#EFECE3] text-[0.8em] italic">
                     There is no project for Collaboration
                   </p>
                 )}
@@ -284,7 +284,7 @@ const CollaborationTab = ({ workspaceId }) => {
 
               {/* Collaboration Projects from Others */}
               <div>
-                <h4 className="font-semibold mb-3 text-[0.8em] text-gray-600 flex items-center gap-2">
+                  <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4"
@@ -300,10 +300,10 @@ const CollaborationTab = ({ workspaceId }) => {
                     {collaboratedFromOthers.map((project) => (
                       <div
                         key={project._id}
-                        className="card bg-base-100 p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-orange-500"
+                        className="card bg-white/50 text-black p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-orange-500"
                         onClick={() => navigate(`/project/${project._id}`)}
                       >
-                        <h5 className="font-semibold text-[0.8em]">
+                        <h5 className="font-semibold text-[0.9em]"> 
                           {project.nama}
                         </h5>
                         {project.description && (
@@ -311,10 +311,6 @@ const CollaborationTab = ({ workspaceId }) => {
                             {project.description}
                           </p>
                         )}
-                        <p className="text-gray-500 mt-1 text-[0.8em]">
-                          <span className="font-medium">Owner: </span>
-                          {project.workspace?.nama}
-                        </p>
                         <p className="text-gray-500 text-[0.7em]">
                           {new Date(project.createdAt).toLocaleDateString(
                             "id-ID"
@@ -323,11 +319,15 @@ const CollaborationTab = ({ workspaceId }) => {
                         <div className="badge badge-warning badge-sm mt-2 font-bold text-[0.6em]">
                           Collaborator
                         </div>
+                        <p className="text-black/60 font-semibold mt-1 text-[0.8em]">
+                          <span className="font-medium text-gray-600">Owner: </span>
+                          {project.workspace?.nama}
+                        </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                      <p className="text-gray-500 text-sm italic text-[0.8em]">
+                      <p className="text-[#EFECE3] text-sm italic text-[0.8em]">
                     Haven't be part of other Collaboration
                   </p>
                 )}
@@ -336,11 +336,11 @@ const CollaborationTab = ({ workspaceId }) => {
           )}
         </div>
 
-        {/* Right Column: Incoming (Top) and Sending (Bottom) */}
-        <div className="col-span-1 flex flex-col gap-6">
+        {/* Right Column: Incoming (Top) and Log (Bottom) */}
+        <div className="col-span-1 flex flex-col gap-4">
           {/* Incoming Requests (Top Half) */}
-          <div className="flex-1 bg-base-100 p-4 border rounded-lg overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Incoming Requests</h3>
+          <div className="flex-1 bg-white/40 p-4 border-none rounded-lg overflow-y-auto">
+            <h3 className="text-[1em] font-semibold mb-4">Incoming Requests</h3>
             {incomingRequests.isLoading ? (
               <p>Loading...</p>
             ) : incomingRequests.data?.length > 0 ? (
@@ -348,30 +348,33 @@ const CollaborationTab = ({ workspaceId }) => {
                 {incomingRequests.data.map((request) => (
                   <div
                     key={request._id}
-                    className="card bg-base-100 border border-base-300 p-4 cursor-grab hover:shadow-md"
+                    className="card bg-white/60 text-black border-none p-4 cursor-grab hover:shadow-md"
                     draggable={true}
                     onDragStart={(e) => handleDragStart(e, request._id)}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-semibold">{request.project?.nama}</h4>
-                        <p className="text-sm text-gray-600">
-                          From Department: {request.fromWorkspace?.nama}
+                        <h4 className="font-semibold text-[0.9em] ">{request.project?.nama}</h4>
+                        <p className="text-[0.8em] font-medium text-gray-600">
+                          From Department:{' '}
+                          <span className=" text-black/60 font-semibold">
+                            {request.fromWorkspace?.nama}
+                          </span>
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-[0.7em] text-gray-500">
                           {new Date(request.createdAt).toLocaleDateString("id-ID")}
                         </p>
-                        <div className="badge badge-warning badge-sm mt-2">
+                        <div className="badge badge-warning text-[0.7em] font-bold  badge-sm mt-2">
                           {request.status}
                         </div>
-                      <p className="text-xs text-gray-400 mt-2">
-                        Drag to Projects to Accept
+                        <p className="text-[0.8em] text-gray-400 mt-2">
+                        Drag to Projects Section to Accept
                       </p>
                       </div>
                       {request.status === "pending" && (
                         <div>
                           <button
-                            className="btn btn-error btn-sm"
+                            className="btn btn-error btn-sm text-[0.7em]"
                             onClick={() => {rejectMutation.mutate(request._id)}}
                           >
                             Reject
@@ -383,13 +386,13 @@ const CollaborationTab = ({ workspaceId }) => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">There is no Incoming Request</p>
+                  <p className="text-gray-500 text-[0.8em]">There is no Incoming Request</p>
             )}
           </div>
 
           {/* Log Requests (Bottom Half) */}
-          <div className="flex-1 bg-base-100 p-4 border rounded-lg overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Log Requests</h3>
+          <div className="flex-1 bg-white/40 p-4 border-none rounded-lg overflow-y-auto">
+            <h3 className="text-[1em] font-semibold mb-4">Log Requests</h3>
             {outgoingRequests.isLoading ? (
               <p>Loading...</p>
             ) : outgoingRequests.data?.length > 0 ? (
@@ -397,17 +400,20 @@ const CollaborationTab = ({ workspaceId }) => {
                 {outgoingRequests.data.map((request) => (
                   <div
                     key={request._id}
-                    className="card bg-base-100 border border-base-300 p-4"
+                    className="card bg-white/60 text-black border border-none p-4"
                   >
-                    <h4 className="font-semibold">{request.project?.nama}</h4>
-                    <p className="text-sm text-gray-600">
-                      ke: {request.toWorkspace?.nama}
+                    <h4 className="font-semibold text-[0.9em]">{request.project?.nama}</h4>
+                    <p className="text-[0.8em] font-medium text-gray-600">
+                      To division: {' '} 
+                      <span className="text-black/60 font-semibold">
+                        {request.toWorkspace?.nama}
+                      </span>
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-[0.6em] text-gray-500">
                       {new Date(request.createdAt).toLocaleDateString("id-ID")}
                     </p>
                     <div
-                      className={`badge badge-sm mt-2 ${request.status === "approved"
+                      className={`badge badge-sm mt-2 text-[0.7em] font-bold ${request.status === "approved"
                         ? "badge-success"
                         : request.status === "rejected"
                           ? "badge-error"
@@ -420,7 +426,7 @@ const CollaborationTab = ({ workspaceId }) => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">There is no Sending Request</p>
+                  <p className="text-gray-500 text-[0.8em]">There is no Sending Request</p>
             )}
           </div>
         </div>

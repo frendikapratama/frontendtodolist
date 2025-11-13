@@ -56,24 +56,20 @@ export default function Sidebar() {
       }
     });
 
-    // Deteksi quarter dari URL
     const kuarterMatch = location.pathname.match(/\/kuarter\/([^\/]+)/);
     if (kuarterMatch) {
       setSelectedQuarterId(kuarterMatch[1]);
     }
 
-    // Deteksi project dari URL dan set quarter + workspace
     const projectMatch = location.pathname.match(/\/project\/([^\/]+)/);
     if (projectMatch && workspaces?.length > 0) {
       const projectId = projectMatch[1];
 
-      // Cari workspace dan quarter yang memiliki project ini
       for (const workspace of workspaces) {
         const project = workspace.projects?.find(p => p._id === projectId);
         if (project) {
           setSelectedWorkspaceId(workspace._id);
 
-          // Cari quarter yang terkait dengan workspace ini
           const relatedQuarter = kuarters?.find(k => k.workspace?.includes(workspace._id));
           if (relatedQuarter) {
             setSelectedQuarterId(relatedQuarter._id);
@@ -281,7 +277,7 @@ export default function Sidebar() {
                                       setIsSidebarOpen(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center px-3 h-10 py-2.5 rounded-lg transition-all group ${location.pathname === `/kuarter/${k._id}`
+                                  className={`w-full flex items-center px-3 h-10 py-2.5 rounded-lg transition-all group ${location.pathname === `/kuarter/${k._id}` && isSidebarOpen
                                     ? "bg-blue-600 text-white"
                                     : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
                                     }`}
@@ -397,12 +393,15 @@ export default function Sidebar() {
                             }
                           }}
                           className={`w-full flex items-center justify-center py-2 rounded-lg transition-all ${location.pathname === `/kuarter/${k._id}` || selectedQuarterId === k._id
-                            ? "bg-blue-600 text-white"
+                            ? "bg-none text-white"
                             : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
                             }`}
                           title={k.nama}
                         >
-                          <div className="w-7 h-7 rounded bg-green-500 text-white flex items-center justify-center text-[0.8em] font-semibold">
+                          <div className={`w-7 h-7 rounded flex items-center justify-center text-[0.8em] font-semibold ${location.pathname === `/kuarter/${k._id}` || selectedQuarterId === k._id
+                              ? "bg-blue-600 rounded-xl text-white"
+                              : "bg-green-500 text-white"
+                            }`}>
                             {k.nama.charAt(0).toUpperCase()}
                           </div>
                         </button>
