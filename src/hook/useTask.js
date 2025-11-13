@@ -6,11 +6,13 @@ import {
   updateTaskPositions,
   assignPic,
   removePic,
-  deleteTask
+  deleteTask,
+  getByProjectId,
 } from "../services/task";
 import toast from "react-hot-toast";
+import api from "../api/axios";
 
-export const useTask = (groupId) => {
+export const useTask = (groupId, projectId) => {
   const queryClient = useQueryClient();
 
   const taskByGroup = useQuery({
@@ -18,6 +20,14 @@ export const useTask = (groupId) => {
     queryFn: () => getByGroup(groupId),
     enabled: !!groupId,
   });
+
+  const taskByProject = (projectId) => {
+    return useQuery({
+      queryKey: ["task", "project", projectId],
+      queryFn: () => getByProjectId(projectId),
+      enabled: !!projectId,
+    });
+  };
 
   const addTaskMutation = useMutation({
     mutationFn: (taskData) => addTask(groupId, taskData),
@@ -51,9 +61,10 @@ export const useTask = (groupId) => {
     },
   });
   const deleteTaskMutation = useMutation({
-    mutationFn: (taskId) =>{ 
-      console.log("mutationFn called with taskId:", taskId)
-      return deleteTask(taskId)},
+    mutationFn: (taskId) => {
+      console.log("mutationFn called with taskId:", taskId);
+      return deleteTask(taskId);
+    },
     onSuccess: (data) => {
       console.log("Delete success, response:", data);
       toast.success("Successfuly delete task");
@@ -114,6 +125,7 @@ export const useTask = (groupId) => {
     updateTaskPositionsMutation,
     assignPicMutation,
     removePicMutation,
-    deleteTaskMutation
+    deleteTaskMutation,
+    taskByProject,
   };
 };

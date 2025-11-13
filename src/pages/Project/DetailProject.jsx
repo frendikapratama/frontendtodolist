@@ -1,10 +1,20 @@
 import { useParams } from "react-router-dom";
 import { useProject } from "../../hook/useProject";
 import { useGroup } from "../../hook/useGroups";
-import { Plus, Star, Users, Calendar, ChevronDown } from "lucide-react";
+import {
+  Plus,
+  Star,
+  Users,
+  Calendar,
+  ChevronDown,
+  Table,
+  Layout,
+} from "lucide-react";
 import GroupCard from "./GroupCard";
-import { useEffect } from "react";
+import Kanban from "./Kanban";
+import { useEffect, useState } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
+
 const ProjectDetailPage = () => {
   const { projectDetail } = useProject();
   const { id } = useParams();
@@ -12,6 +22,7 @@ const ProjectDetailPage = () => {
   const projectQuery = projectDetail(id);
   const { data, isLoading, isError } = projectQuery;
   const { setSelectedWorkspaceId } = useSelectedWorkspace();
+  const [viewMode, setViewMode] = useState("table"); // 'table' atau 'kanban'
 
   useEffect(() => {
     if (!data) return;
@@ -65,6 +76,33 @@ const ProjectDetailPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
+                  viewMode === "table"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <Table className="w-4 h-4" />
+                Table
+              </button>
+              <button
+                onClick={() => setViewMode("kanban")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
+                  viewMode === "kanban"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <Layout className="w-4 h-4" />
+                Kanban
+              </button>
+            </div>
+
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleAddProject()}
@@ -79,37 +117,41 @@ const ProjectDetailPage = () => {
       </div>
 
       <div className="max-w-full px-8 py-6">
-        <div className="space-y-3">
-          {data.groups &&
-            data.groups.map((group, index) => (
-              <GroupCard key={group._id} group={group} index={index} />
-            ))}
+        {viewMode === "table" ? (
+          <div className="space-y-3">
+            {data.groups &&
+              data.groups.map((group, index) => (
+                <GroupCard key={group._id} group={group} index={index} />
+              ))}
 
-          {(!data.groups || data.groups.length === 0) && (
-            <div className="text-center py-20 bg-[#EFECE3] rounded-lg border-2 border-dashed border-gray-300">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Plus className="w-8 h-8 text-blue-500" />
+            {(!data.groups || data.groups.length === 0) && (
+              <div className="text-center py-20 bg-[#EFECE3] rounded-lg border-2 border-dashed border-gray-300">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                    <Plus className="w-8 h-8 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                      No groups yet
+                    </h3>
+                    <p className="text-gray-500 text-sm">
+                      Create your first group to start organizing tasks
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleAddProject()}
+                    className="mt-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add New Group
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    No groups yet
-                  </h3>
-                  <p className="text-gray-500 text-sm">
-                    Create your first group to start organizing tasks
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleAddProject()}
-                  className="mt-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add New Group
-                </button>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <Kanban projectId={id} />
+        )}
       </div>
     </div>
   );
