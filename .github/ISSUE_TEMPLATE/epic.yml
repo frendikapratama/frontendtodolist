@@ -1,0 +1,175 @@
+name: "Epic — Aplikasi Manajemen Tugas & Proyek (Seluruh Divisi)"
+about: "Epic issue; checklist lengkap untuk semua modul: Dashboard, Project, Task, Team, Notifikasi, Reporting, Auth. Gunakan ini sebagai master To-Do / release epic."
+title: "Epic: Aplikasi Manajemen Tugas & Proyek — [NAMA_ORG / NAMA_PROYEK]"
+labels: ["epic", "planning"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📌 Ringkasan Epic
+        Aplikasi manajemen tugas & proyek untuk seluruh divisi. Epic ini membagi pekerjaan menjadi modul-modul besar (Dashboard, Project Mgmt, Task Mgmt, Team & Collaboration, Notifikasi, Reporting, Autentikasi). Centang tiap checklist ketika subtask selesai.
+
+  - type: input
+    id: project_name
+    attributes:
+      label: "Project short name"
+      description: "Nama project / repo (mis. ProjectOps)"
+      placeholder: "ProjectOps"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Deskripsi singkat epic"
+      description: "Tujuan epic / catatan penting"
+      placeholder: "Buat MVP untuk manajemen tugas & proyek seluruh divisi"
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: "Pilih prioritas epic"
+      options:
+        - High
+        - Medium
+        - Low
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria (singkat)"
+      description: "Kriteria minimal agar epic dianggap selesai"
+      placeholder: "- Auth & RBAC berfungsi\n- CRUD project & task tersedia\n- Realtime update in-app\n- Notifikasi email & in-app basic\n- Gantt & Kanban basic"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🗂️ Modul & Checklist Lengkap
+
+  - type: markdown
+    attributes:
+      value: |
+        ### A. Dashboard / Overview
+        - [ ] 1. Statistik: total proyek `done / in-progress / late / planned`
+        - [ ] 2. Grafik progres (pilih 1: Bar / Pie) terintegrasi dengan data tasks/projects
+        - [ ] 3. Recent updates (aktivitas tim) — feed real-time
+        - [ ] 4. Shortcut: Task hari ini, Project hari ini, Upcoming deadlines
+        - [ ] 5. Unit tests untuk endpoint statistik & feed
+
+  - type: markdown
+    attributes:
+      value: |
+        ### B. Project Management
+        - [ ] 1. CRUD Project (API & UI)
+        - [ ] 2. Penanggung jawab / project owner field & assignment
+        - [ ] 3. Views: Table, Kanban (drag & drop), Progress Bar, Timeline
+        - [ ] 4. Sub-Project / Milestone entity & UI
+        - [ ] 5. Pembeda per Department / Division (filter & tag)
+        - [ ] 6. Permissions: hanya Manager/Admin edit project metadata
+        - [ ] 7. Tests: integration tests untuk create/update/delete project
+
+  - type: markdown
+    attributes:
+      value: |
+        ### C. Task Management
+        - [ ] 1. CRUD Task (API & UI)
+        - [ ] 2. Fields wajib:
+          - [ ] Title
+          - [ ] Description (markdown)
+          - [ ] Start date
+          - [ ] Due date
+          - [ ] Finish date
+          - [ ] Status (planned, in_progress, blocked, done, cancelled, late)
+          - [ ] Assignee
+          - [ ] Attachment + Preview
+          - [ ] Priority (Fibonacci: 1,2,3,5,8,13)
+        - [ ] 3. Komentar & diskusi real-time pada tiap task
+        - [ ] 4. Tampilan: Table, Kanban (drag & drop), Gantt Chart (interactive), Calendar view
+        - [ ] 5. API untuk attachments (upload/download) + file size/type validation
+        - [ ] 6. Tests: unit + e2e untuk task flows (create → assign → complete)
+
+  - type: markdown
+    attributes:
+      value: |
+        ### D. Team & Collaboration
+        - [ ] 1. Role & Permission management (System Admin, Project Manager, Member, Viewer)
+        - [ ] 2. Daftar anggota tim per project (invite / remove / role assign)
+        - [ ] 3. Chat (opsional MVP: simple room per project; Phase 2: realtime DM)
+        - [ ] 4. File/documentation upload & listing (project-level)
+        - [ ] 5. Activity Feed: siapa melakukan apa (create/update/delete)
+        - [ ] 6. Tests: permission enforcement tests
+
+  - type: markdown
+    attributes:
+      value: |
+        ### E. Notifikasi
+        - [ ] 1. In-app notifications (Pusher / Socket.IO)
+        - [ ] 2. Email notifications via SMTP (Nodemailer / transactional provider)
+        - [ ] 3. WhatsApp notifications via WhatsApp Business API (worker + queue)
+        - [ ] 4. Triggers:
+          - [ ] Task assigned
+          - [ ] Task approaching due date (configurable reminders)
+          - [ ] Task status changed
+          - [ ] New project / project archived
+        - [ ] 5. Queue & retry logic (BullMQ + Redis) untuk pengiriman notifikasi
+
+  - type: markdown
+    attributes:
+      value: |
+        ### F. Reporting
+        - [ ] 1. Gantt chart generasi otomatis dari task start & due date
+        - [ ] 2. Support dependencies antar task (depends_on)
+        - [ ] 3. Drag-and-drop di Gantt untuk ubah jadwal → backend validation + cascade/cascade option
+        - [ ] 4. Global project timeline view (filterable by dept/project)
+        - [ ] 5. Export laporan (CSV / PDF basic)
+
+  - type: markdown
+    attributes:
+      value: |
+        ### G. Autentikasi & Security
+        - [ ] 1. User auth: register / login / refresh token (JWT)
+        - [ ] 2. Password hashing: bcrypt / argon2 + secure config
+        - [ ] 3. RBAC: granular access; only System Admin can delete projects (hard delete)
+        - [ ] 4. Role definitions: System Admin, Project Manager, Member, Viewer
+        - [ ] 5. Security: rate-limit, input validation, file scan (optional)
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔩 Infra, Integrasi & Non-Functional
+        - [ ] Database schema & migrations (Prisma / TypeORM)
+        - [ ] Object storage for attachments (S3 / MinIO)
+        - [ ] Redis for caching & pub/sub
+        - [ ] CI: GitHub Actions build & test
+        - [ ] Deploy: Dockerized service, staging & production
+        - [ ] Monitoring: error tracking (Sentry) & metrics
+        - [ ] Backups & DB restore docs
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📦 Deliverables per Phase (Suggested)
+        - **MVP**: Auth, Projects CRUD, Tasks CRUD, Kanban, In-app realtime, Basic notifications (email), Activity feed
+        - **Phase 2**: Attachments preview, Roles, Gantt & Calendar, WhatsApp integration, advanced reporting
+        - **Phase 3**: Chat, full audit logs, scaling & monitoring
+
+  - type: input
+    id: estimate
+    attributes:
+      label: "Estimated work (person-weeks)"
+      description: "Contoh: 6w (2 dev full-time)"
+      placeholder: "ex: 6w"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🧾 Petunjuk penggunaan
+        1. Assign epic ini ke Project Manager / Tech Lead.  
+        2. Bagi checklist menjadi issue-issue kecil (task / story) bila perlu (create linked issues).  
+        3. Gunakan label `phase/mvp`, `phase/2`, `priority/high`, `team/backend`, `team/frontend`.  
+        4. Untuk setiap perubahan status besar, update epic (centang subtask yang selesai).  
+        5. Jika kamu ingin saya **otomatis buat issue kecil** dari checklist ini, beri tahu modul mana yang mau dipecah — saya bisa generate list issue ready-to-create.
