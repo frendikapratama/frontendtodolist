@@ -1,4 +1,4 @@
-import CalendarView from "./CalendarView";
+import CalendarView from "./Task/CalendarView";
 
 const sampleTasks = [
   {
