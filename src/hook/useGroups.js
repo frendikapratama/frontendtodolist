@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addGroupToProject, updategroup } from "../services/group";
+import { addGroupToProject, updategroup, deleteGroup } from "../services/group";
 import toast from "react-hot-toast";
 export const useGroup = () => {
   const queryClient = useQueryClient();
@@ -37,8 +37,27 @@ export const useGroup = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (groupId) => deleteGroup(groupId),
+    onSuccess: (groupId) => {
+      toast.success("delete group successfully");
+      queryClient.invalidateQueries({ queryKey: ["project"] });
+      queryClient.invalidateQueries({ queryKey: ["project"], groupId });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed delete group ");
+      }
+    },
+  });
+
   return {
     addGroupMutation,
     updateGroupMutation,
+    deleteMutation,
   };
 };

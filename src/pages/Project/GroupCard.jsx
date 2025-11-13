@@ -1,14 +1,14 @@
 import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { useTask } from "../../hook/useTask";
 import TaskList from "../Task/TaskList";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useGroup } from "../../hook/useGroups";
+import { Trash2 } from "lucide-react";
 
 const GroupCard = ({ group, index }) => {
   const { taskByGroup, updateTaskMutation } = useTask(group._id);
-  const { updateGroupMutation } = useGroup();
+  const { updateGroupMutation, deleteMutation } = useGroup();
   const [isDragOver, setIsDragOver] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -61,6 +61,14 @@ const GroupCard = ({ group, index }) => {
     return colors[index % 3];
   };
 
+  const handleDelete = (groupId, group_nama) => {
+    if (
+      window.confirm(`Apakah Anda yakin ingin menghapus group "${group_nama}"?`)
+    ) {
+      deleteMutation.mutate(groupId);
+    }
+  };
+
   return (
     <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       <div
@@ -101,9 +109,12 @@ const GroupCard = ({ group, index }) => {
             {taskByGroup.data?.length || 0} items
           </span>
         </div>
-        <button className="p-1.5 hover:bg-white hover:bg-opacity-20 rounded">
-          <MoreHorizontal className="w-5 h-5 text-white" />
-        </button>
+
+        <Trash2
+          className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
+          onClick={() => handleDelete(group._id, group.nama)}
+          disabled={deleteMutation.isPending}
+        />
       </div>
 
       <div
