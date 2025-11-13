@@ -63,9 +63,9 @@ const WorkspaceDetailPage = () => {
         </div>
       </dialog>
 
-      <div className="card p-6">
-        <div className="flex flex-row justify-between items-center mb-6">
-          <h2 className="card-title text-2xl">Workspace {data.nama}</h2>
+      <div className="card p-3">
+        <div className="flex flex-row justify-between items-center mb-4">
+          <h2 className="card-title text-[1.2em]">Workspace {data.nama}</h2>
           <button
             className="btn btn-primary btn-sm"
             onClick={() =>
