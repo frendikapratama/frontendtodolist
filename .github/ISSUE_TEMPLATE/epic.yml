@@ -1,6 +1,6 @@
 name: "Epic — Aplikasi Manajemen Tugas & Proyek (Seluruh Divisi)"
-about: "Epic issue; checklist lengkap untuk semua modul: Dashboard, Project, Task, Team, Notifikasi, Reporting, Auth. Gunakan ini sebagai master To-Do / release epic."
-title: "Epic: Aplikasi Manajemen Tugas & Proyek — [NAMA_ORG / NAMA_PROYEK]"
+description: "Epic issue; checklist lengkap untuk semua modul: Dashboard, Project, Task, Team, Notifikasi, Reporting, Auth. Gunakan ini sebagai master To-Do / release epic."
+title: "Epic: Aplikasi Manajemen Tugas & Proyek — [Dika & Marcello/Task Management]"
 labels: ["epic", "planning"]
 assignees: []
 body:
