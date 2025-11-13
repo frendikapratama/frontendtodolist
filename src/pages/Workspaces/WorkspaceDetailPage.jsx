@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useWorkspace } from "../../hook/useWorkspace";
 import { useEffect, useState } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
+import { useNavigate } from "react-router-dom";
 import CollaborationTab from "./CollaborationTab";
 
 const WorkspaceDetailPage = () => {
@@ -11,6 +12,7 @@ const WorkspaceDetailPage = () => {
   const { data, isLoading, isError } = workspaceQuery;
   const [projectName, setProjectName] = useState("");
   const { setSelectedWorkspaceId } = useSelectedWorkspace();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (id) {
@@ -63,9 +65,12 @@ const WorkspaceDetailPage = () => {
         </div>
       </dialog>
 
-      <div className="card p-6">
-        <div className="flex flex-row justify-between items-center mb-6">
-          <h2 className="card-title text-2xl">Workspace {data.nama}</h2>
+      <div className="card p-3">
+        <div className="flex flex-row justify-between items-center mb-4">
+          <button onClick={() => navigate(-1)} className="text-[0.8em] text-white hover:text-blue-300 active:text-blue-400 font-semibold transition-colors duration-200">
+            ← Back
+          </button>
+          <h2 className="card-title font-bold text-[1.3em]">Workspace {data.nama} Division</h2>
           <button
             className="btn btn-primary btn-sm"
             onClick={() =>
