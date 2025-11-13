@@ -1,21 +1,45 @@
-import { useState, useEffect } from "react";
-import { useTask } from "../../hook/useTask";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useTaskByProject, useUpdateTask } from "../../hook/useTask";
 import { Layout } from "lucide-react";
 
 const Kanban = ({ projectId }) => {
-  const { taskByProject } = useTask();
+  // ===== SEMUA HOOKS HARUS DI ATAS, SEBELUM CONDITIONAL RETURNS =====
+  const tasksQuery = useTaskByProject(projectId);
+  const updateTaskMutation = useUpdateTask();
   const [groups, setGroups] = useState([]);
+  const [editingField, setEditingField] = useState(null);
+  const [editedValue, setEditedValue] = useState("");
 
-  const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
-  const STATUS_COLORS = {
-    "To Do": "#579bfc",
-    "In Progress": "#fdab3d",
-    Done: "#00c875",
-    Blocked: "#e2445c",
-    Hold: "#888888",
-  };
+  // Pindahkan ke useMemo agar tidak berubah setiap render
+  const STATUS_OPTIONS = useMemo(
+    () => ["To Do", "In Progress", "Done", "Blocked", "Hold"],
+    []
+  );
 
-  const tasksQuery = taskByProject(projectId);
+  const STATUS_COLORS = useMemo(
+    () => ({
+      "To Do": "#579bfc",
+      "In Progress": "#fdab3d",
+      Done: "#00c875",
+      Blocked: "#e2445c",
+      Hold: "#888888",
+    }),
+    []
+  );
+
+  const handleFieldEdit = useCallback(
+    (taskId, field, value) => {
+      const trimmedValue = value.trim();
+      if (!trimmedValue && field === "nama") {
+        setEditingField(null);
+        return;
+      }
+      updateTaskMutation.mutate({ taskId, data: { [field]: trimmedValue } });
+      setEditingField(null);
+    },
+    [updateTaskMutation]
+  );
+
   useEffect(() => {
     if (tasksQuery.data) {
       const apiData = tasksQuery.data;
@@ -48,8 +72,9 @@ const Kanban = ({ projectId }) => {
         setGroups(statusGroups);
       }
     }
-  }, [tasksQuery.data]);
+  }, [tasksQuery.data, STATUS_OPTIONS, STATUS_COLORS]);
 
+  // ===== CONDITIONAL RETURNS DI BAWAH SETELAH SEMUA HOOKS =====
   if (tasksQuery.isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -91,9 +116,34 @@ const Kanban = ({ projectId }) => {
                   key={task._id}
                   className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 >
-                  <h4 className="font-medium text-sm text-gray-800 mb-2">
-                    {task.nama}
-                  </h4>
+                  {editingField?.taskId === task._id &&
+                  editingField?.field === "nama" ? (
+                    <input
+                      type="text"
+                      className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
+                      value={editedValue}
+                      autoFocus
+                      onChange={(e) => setEditedValue(e.target.value)}
+                      onBlur={() =>
+                        handleFieldEdit(task._id, "nama", editedValue)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter")
+                          handleFieldEdit(task._id, "nama", editedValue);
+                        if (e.key === "Escape") setEditingField(null);
+                      }}
+                    />
+                  ) : (
+                    <h4
+                      className="font-medium text-sm text-gray-800 mb-2 hover:bg-gray-100 px-1 rounded cursor-text"
+                      onClick={() => {
+                        setEditingField({ taskId: task._id, field: "nama" });
+                        setEditedValue(task.nama);
+                      }}
+                    >
+                      {task.nama}
+                    </h4>
+                  )}
 
                   {/* Group Info */}
                   <div className="flex items-center gap-1 mb-2">

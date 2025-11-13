@@ -10,9 +10,8 @@ import {
   getByProjectId,
 } from "../services/task";
 import toast from "react-hot-toast";
-import api from "../api/axios";
 
-export const useTask = (groupId, projectId) => {
+export const useTask = (groupId) => {
   const queryClient = useQueryClient();
 
   const taskByGroup = useQuery({
@@ -20,14 +19,6 @@ export const useTask = (groupId, projectId) => {
     queryFn: () => getByGroup(groupId),
     enabled: !!groupId,
   });
-
-  const taskByProject = (projectId) => {
-    return useQuery({
-      queryKey: ["task", "project", projectId],
-      queryFn: () => getByProjectId(projectId),
-      enabled: !!projectId,
-    });
-  };
 
   const addTaskMutation = useMutation({
     mutationFn: (taskData) => addTask(groupId, taskData),
@@ -60,6 +51,7 @@ export const useTask = (groupId, projectId) => {
       }
     },
   });
+
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId) => {
       console.log("mutationFn called with taskId:", taskId);
@@ -67,7 +59,7 @@ export const useTask = (groupId, projectId) => {
     },
     onSuccess: (data) => {
       console.log("Delete success, response:", data);
-      toast.success("Successfuly delete task");
+      toast.success("Successfully delete task");
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
@@ -126,6 +118,33 @@ export const useTask = (groupId, projectId) => {
     assignPicMutation,
     removePicMutation,
     deleteTaskMutation,
-    taskByProject,
   };
+};
+
+export const useTaskByProject = (projectId) => {
+  return useQuery({
+    queryKey: ["task", "project", projectId],
+    queryFn: () => getByProjectId(projectId),
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ taskId, data }) => updateTask(taskId, data),
+    onSuccess: () => {
+      toast.success("Successfully updated Task");
+      queryClient.invalidateQueries({ queryKey: ["task"] });
+    },
+    onError: (error) => {
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
+      } else {
+        toast.error("Failed to update task");
+      }
+    },
+  });
 };
