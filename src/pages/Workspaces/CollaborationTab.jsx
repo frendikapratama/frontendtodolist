@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCollaboration } from "../../hook/useCollaboration";
 import { useWorkspace } from "../../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
+import AnimatedPercentage from "../../components/ui/AnimatedPercentage";
 
 const CollaborationTab = ({ workspaceId }) => {
   const {
@@ -78,15 +79,15 @@ const CollaborationTab = ({ workspaceId }) => {
     <div className="space-y-6 h-screen">
       {/* Modal for Sending Request */}
       <dialog id="sendCollabModal" className="modal">
-        <div className="modal-box">
+        <div className="modal-box bg-white text-black">
           <h3 className="font-bold text-lg mb-4">Sending Collaboration Request</h3>
           <form onSubmit={handleSendRequest} className="space-y-4">
             <div>
               <label className="label">
-                <span className="label-text">Project</span>
+                <span className="label-text ">Project</span>
               </label>
               <select
-                className="select select-bordered w-full"
+                className="select select-bordered w-full text-black bg-gray-300"
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
                 required
@@ -107,7 +108,7 @@ const CollaborationTab = ({ workspaceId }) => {
                 <span className="label-text">Sending to department</span>
               </label>
               <select
-                className="select select-bordered w-full"
+                className="select select-bordered w-full  text-black bg-gray-300"
                 value={selectedWorkspace}
                 onChange={(e) => setSelectedWorkspace(e.target.value)}
                 required
@@ -156,7 +157,7 @@ const CollaborationTab = ({ workspaceId }) => {
           onDragLeave={handleDragLeave}
         >
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[1.1em] font-semibold">Projects</h3>
+            <h3 className="text-[1.1em] font-semibold text-[#EFECE3]">Projects</h3>
             <button
               className="btn btn-primary btn-sm"
               onClick={() =>
@@ -172,7 +173,7 @@ const CollaborationTab = ({ workspaceId }) => {
             <div className="space-y-6">
               {/* Individual Projects */}
               <div>
-                  <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
+                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4"
@@ -185,7 +186,7 @@ const CollaborationTab = ({ workspaceId }) => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Individual department project (Without Collaboration)
+                  Individual division project (Without Collaboration)
                 </h4>
                 {ownedOnlyProjects.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -195,30 +196,38 @@ const CollaborationTab = ({ workspaceId }) => {
                         className="card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-green-500"
                         onClick={() => navigate(`/project/${project._id}`)}
                       >
-                        <h4 className="card-title text-[0.9em]">{project.nama}</h4>
-                        {project.description && (
-                          <p className="text-[0.8em] text-gray-600 mb-2">
-                            {project.description}
-                          </p>
-                        )}
-                        <p className="text-[0.7em] text-gray-500">
-                          {new Date(project.createdAt).toLocaleDateString(
-                            "id-ID"
-                          )}
-                        </p>
-                        <div className="flex gap-2 mt-2">
-                          <div className="badge badge-success badge-sm font-bold text-[0.6em]">
-                            Owner
-                          </div>
-                          {/* <div className="badge badge-info badge-sm">
+                        <div className="mt-2 grid grid-cols-2 gap-10 items-center">
+                          <div className="flex flex-col gap-1">
+                            <h4 className="card-title text-[0.9em]">{project.nama}</h4>
+                            {project.description && (
+                              <p className="text-[0.8em] text-gray-600 mb-2">
+                                {project.description}
+                              </p>
+                            )}
+                            <p className="text-[0.7em] text-gray-500">
+                              {new Date(project.createdAt).toLocaleDateString(
+                                "id-ID"
+                              )}
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <div className="badge badge-success badge-sm font-bold text-[0.6em]">
+                                Owner
+                              </div>
+                              {/* <div className="badge badge-info badge-sm">
                             {project.id?.length || 0} Group
                           </div> */}
+                            </div>
+                          </div>
+                          <div className="flex items-end justify-center flex-col">
+                            <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
+                            <AnimatedPercentage target={90} />
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                      <p className="text-[#EFECE3] text-[0.8em] italic">
+                  <p className="text-[#EFECE3] text-[0.8em] italic">
                     There is no project
                   </p>
                 )}
@@ -226,7 +235,7 @@ const CollaborationTab = ({ workspaceId }) => {
 
               {/* Collaboration Projects (Owner) */}
               <div>
-                  <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
+                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4"
@@ -245,38 +254,46 @@ const CollaborationTab = ({ workspaceId }) => {
                         className="card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-blue-500"
                         onClick={() => navigate(`/project/${project._id}`)}
                       >
-                        <h4 className="card-title text-[0.9em]">{project.nama}</h4>
-                        {project.description && (
-                          <p className="text-[0.8em] text-gray-600 mb-2">
-                            {project.description}
-                          </p>
-                        )}
-                        <p className="text-[0.7em] text-gray-500">
-                          {new Date(project.createdAt).toLocaleDateString(
-                            "id-ID"
-                          )}
-                        </p>
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                          <div className="badge badge-success badge-sm font-bold text-[0.6em]">
-                            Owner
+                        <div className="mt-2 grid grid-cols-2 gap-10 items-center">
+                          <div className="flex flex-col gap-1">
+                            <h4 className="card-title text-[0.9em]">{project.nama}</h4>
+                            {project.description && (
+                              <p className="text-[0.8em] text-gray-600 mb-2">
+                                {project.description}
+                              </p>
+                            )}
+                            <p className="text-[0.7em] text-gray-500">
+                              {new Date(project.createdAt).toLocaleDateString(
+                                "id-ID"
+                              )}
+                            </p>
+                            <div className="flex gap-2 mt-2 flex-col">
+                              <div className="badge badge-success badge-sm font-bold text-[0.6em]">
+                                Owner
+                              </div>
+                              {/* <div className="badge badge-info badge-sm">
+                            {project.id?.length || 0} Group
+                          </div> */}
+                              {project.otherWorkspaces?.length > 0 && (
+                                <p className="text-black/60 font-semibold text-[0.8em]">
+                                  <span className="font-medium text-gray-600">Collaboration: </span>
+                                  {project.otherWorkspaces
+                                    .map((w) => w.nama)
+                                    .join(", ")}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <div className="badge badge-info badge-sm font-bold text-[0.6em]">
-                            {project.otherWorkspaces?.length || 0} workspace
+                          <div className="flex items-end justify-center flex-col">
+                            <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
+                            <AnimatedPercentage target={90} />
                           </div>
                         </div>
-                        {project.otherWorkspaces?.length > 0 && (
-                          <p className="text-black/60 font-semibold text-[0.8em] mt-2">
-                            <span className="font-medium text-gray-600">Collaboration: </span>
-                            {project.otherWorkspaces
-                              .map((w) => w.nama)
-                              .join(", ")}
-                          </p>
-                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                      <p className="text-[#EFECE3] text-[0.8em] italic">
+                  <p className="text-[#EFECE3] text-[0.8em] italic">
                     There is no project for Collaboration
                   </p>
                 )}
@@ -284,7 +301,7 @@ const CollaborationTab = ({ workspaceId }) => {
 
               {/* Collaboration Projects from Others */}
               <div>
-                  <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
+                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4"
@@ -303,7 +320,7 @@ const CollaborationTab = ({ workspaceId }) => {
                         className="card bg-white/50 text-black p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-orange-500"
                         onClick={() => navigate(`/project/${project._id}`)}
                       >
-                        <h5 className="font-semibold text-[0.9em]"> 
+                        {/* <h5 className="font-semibold text-[0.9em]">
                           {project.nama}
                         </h5>
                         {project.description && (
@@ -322,12 +339,43 @@ const CollaborationTab = ({ workspaceId }) => {
                         <p className="text-black/60 font-semibold mt-1 text-[0.8em]">
                           <span className="font-medium text-gray-600">Owner: </span>
                           {project.workspace?.nama}
-                        </p>
+                        </p> */}
+                        <div className="mt-2 grid grid-cols-2 gap-10 items-center">
+                          <div className="flex flex-col gap-1">
+                            <h4 className="card-title text-[0.9em]">{project.nama}</h4>
+                            {project.description && (
+                              <p className="text-[0.8em] text-gray-600 mb-2">
+                                {project.description}
+                              </p>
+                            )}
+                            <p className="text-[0.7em] text-gray-500">
+                              {new Date(project.createdAt).toLocaleDateString(
+                                "id-ID"
+                              )}
+                            </p>
+                            <div className="flex gap-2 mt-2 flex-col">
+                              {/* <div className="badge badge-info badge-sm">
+                            {project.id?.length || 0} Group
+                          </div> */}
+                              <div className="badge badge-warning badge-sm font-bold text-[0.6em]">
+                                Collaborator
+                              </div>
+                              <p className="text-black/60 font-semibold text-[0.8em]">
+                                <span className="font-medium text-gray-600">Owner: </span>
+                                {project.workspace?.nama}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-end justify-center flex-col">
+                            <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
+                            <AnimatedPercentage target={90} />
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                      <p className="text-[#EFECE3] text-sm italic text-[0.8em]">
+                  <p className="text-[#EFECE3] text-sm italic text-[0.8em]">
                     Haven't be part of other Collaboration
                   </p>
                 )}
@@ -340,7 +388,7 @@ const CollaborationTab = ({ workspaceId }) => {
         <div className="col-span-1 flex flex-col gap-4">
           {/* Incoming Requests (Top Half) */}
           <div className="flex-1 bg-white/40 p-4 border-none rounded-lg overflow-y-auto">
-            <h3 className="text-[1em] font-semibold mb-4">Incoming Requests</h3>
+            <h3 className="text-[1em] font-semibold mb-4 text-[#EFECE3]">Incoming Requests</h3>
             {incomingRequests.isLoading ? (
               <p>Loading...</p>
             ) : incomingRequests.data?.length > 0 ? (
@@ -368,14 +416,14 @@ const CollaborationTab = ({ workspaceId }) => {
                           {request.status}
                         </div>
                         <p className="text-[0.8em] text-gray-400 mt-2">
-                        Drag to Projects Section to Accept
-                      </p>
+                          Drag to Projects Section to Accept
+                        </p>
                       </div>
                       {request.status === "pending" && (
                         <div>
                           <button
                             className="btn btn-error btn-sm text-[0.7em]"
-                            onClick={() => {rejectMutation.mutate(request._id)}}
+                            onClick={() => { rejectMutation.mutate(request._id) }}
                           >
                             Reject
                           </button>
@@ -386,13 +434,13 @@ const CollaborationTab = ({ workspaceId }) => {
                 ))}
               </div>
             ) : (
-                  <p className="text-gray-500 text-[0.8em]">There is no Incoming Request</p>
+              <p className="text-gray-500 text-[0.8em]">There is no Incoming Request</p>
             )}
           </div>
 
           {/* Log Requests (Bottom Half) */}
           <div className="flex-1 bg-white/40 p-4 border-none rounded-lg overflow-y-auto">
-            <h3 className="text-[1em] font-semibold mb-4">Log Requests</h3>
+            <h3 className="text-[1em] font-semibold mb-4 text-[#EFECE3]">Log Requests</h3>
             {outgoingRequests.isLoading ? (
               <p>Loading...</p>
             ) : outgoingRequests.data?.length > 0 ? (
@@ -404,7 +452,7 @@ const CollaborationTab = ({ workspaceId }) => {
                   >
                     <h4 className="font-semibold text-[0.9em]">{request.project?.nama}</h4>
                     <p className="text-[0.8em] font-medium text-gray-600">
-                      To division: {' '} 
+                      To Division: {' '}
                       <span className="text-black/60 font-semibold">
                         {request.toWorkspace?.nama}
                       </span>
@@ -426,7 +474,7 @@ const CollaborationTab = ({ workspaceId }) => {
                 ))}
               </div>
             ) : (
-                  <p className="text-gray-500 text-[0.8em]">There is no Sending Request</p>
+              <p className="text-gray-500 text-[0.8em]">There is no Sending Request</p>
             )}
           </div>
         </div>

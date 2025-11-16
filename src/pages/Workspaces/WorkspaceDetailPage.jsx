@@ -36,20 +36,20 @@ const WorkspaceDetailPage = () => {
   return (
     <>
       <dialog id="addProjectModal" className="modal">
-        <div className="modal-box">
-          <h3 className="font-bold text-lg mb-4">Tambah Project</h3>
+        <div className="modal-box bg-white text-black">
+          <h3 className="font-bold text-lg mb-4">Add Project</h3>
           <form onSubmit={handleAddProject}>
             <input
               type="text"
               placeholder="Nama Project"
-              className="input input-bordered w-full"
+              className="input input-bordered w-full bg-gray-300 text-black"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               required
             />
             <div className="modal-action">
               <button type="submit" className="btn btn-primary">
-                Simpan
+                Save
               </button>
               <button
                 type="button"
@@ -58,7 +58,7 @@ const WorkspaceDetailPage = () => {
                   document.getElementById("addProjectModal").close()
                 }
               >
-                Batal
+                Cancel
               </button>
             </div>
           </form>
@@ -70,14 +70,14 @@ const WorkspaceDetailPage = () => {
           <button onClick={() => navigate(-1)} className="text-[0.8em] text-white hover:text-blue-300 active:text-blue-400 font-semibold transition-colors duration-200">
             ← Back
           </button>
-          <h2 className="card-title font-bold text-[1.3em]">Workspace {data.nama} Division</h2>
+          <h2 className="card-title text-white font-bold text-[1.3em]">Workspace {data.nama} Division</h2>
           <button
             className="btn btn-primary btn-sm"
             onClick={() =>
               document.getElementById("addProjectModal").showModal()
             }
           >
-            Tambah Project
+            Add Project
           </button>
         </div>
 

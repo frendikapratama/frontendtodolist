@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useKuarter } from "../../hook/useKuarter";
 import WorkspaceIndex from "../Workspaces/Index";
+import WorkspaceDetailPanel from "../Workspaces/WorkspaceDetailPanel";
 
 const KuarterDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { KuarterDetail } = useKuarter();
   const kuarterDetailQuery = KuarterDetail(id);
+  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
 
   if (kuarterDetailQuery.isLoading) {
     return (
@@ -20,9 +22,9 @@ const KuarterDetail = () => {
   if (!kuarterDetailQuery.data) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
-        <h2 className="text-gray-500 text-lg">Data tidak ditemukan</h2>
+        <h2 className="text-gray-500 text-lg">Data not found</h2>
         <button onClick={() => navigate(-1)} className="btn btn-primary mt-4">
-          Kembali
+          Back
         </button>
       </div>
     );
@@ -31,33 +33,50 @@ const KuarterDetail = () => {
   const kuarterData = kuarterDetailQuery.data;
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <button onClick={() => navigate(-1)} className="btn btn-ghost">
-          ← Kembali
+    <div className="p-3 overflow-hidden">
+      <div className="flex flex-row justify-between">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-[0.8em] text-white hover:text-blue-300 active:text-blue-400 font-semibold transition-colors duration-200"
+        >
+          ← Back
         </button>
-        <h1 className="text-2xl font-bold mt-4">
-          Detail Kuarter: {kuarterData.nama}
+        <h1 className="text-[1.3em] font-bold">
+          Detail Quarter: {kuarterData.nama}
         </h1>
+        <p></p>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4">
-        <div className="card bg-base-100 shadow-xl">
+      <div className="mt-6 flex flex-row gap-4">
+        {/* Left Panel - Quarter Information & Workspace Detail */}
+        <div className="md:w-[60%] w-full card bg-white/40 shadow-xl h-[88vh] overflow-y-auto">
           <div className="card-body">
-            <h2 className="card-title">Informasi Kuarter</h2>
+            <h2 className="card-title text-[1.2em]">Quarter Information</h2>
             <div className="divider"></div>
-            <p>
-              <strong>Nama:</strong> {kuarterData.nama}
-            </p>
-            <p>
-              <strong>ID:</strong> {kuarterData._id}
-            </p>
+            <div className="text-gray-800">
+              <p>
+                <strong>Name:</strong> {kuarterData.nama}
+              </p>
+              <p>
+                <strong>ID:</strong> {kuarterData._id}
+              </p>
+              <p>
+                <strong>Description:</strong> {kuarterData.deskripsi || "No description"}
+              </p>
+            </div>
+
+            {/* Division Details Section */}
+            <div className="divider mt-6"></div>
+            <h2 className="card-title text-[1.2em]">Division Details</h2>
+            <div className="mt-4">
+              <WorkspaceDetailPanel workspace={selectedWorkspace} />
+            </div>
           </div>
         </div>
 
-        <div className="mt-4">
-          <h2 className="text-xl font-bold mb-4">Daftar Workspace</h2>
-          <WorkspaceIndex />
+        {/* Right Panel - List Division */}
+        <div className="md:w-[40%] w-full mt-4 md:mt-0 h-[88vh] overflow-y-auto">
+          <WorkspaceIndex onWorkspaceSelect={setSelectedWorkspace} />
         </div>
       </div>
     </div>
