@@ -8,3 +8,7 @@ export async function getProgressbyProject(projectId) {
   const res = await api.get(`progress/project/${projectId}`);
   return res.data;
 }
+export async function getProgressbyWorkspace(workspaceId) {
+  const res = await api.get(`progress/workspace/${workspaceId}`);
+  return res.data.data;
+}

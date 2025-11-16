@@ -6,7 +6,7 @@ import { useKuarter } from "../../hook/useKuarter";
 import { WorkspaceForm } from "./Form";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import ProgressBar from "../../components/ui/ProgressBar";
+import WorkspaceCard from "./WorkspaceCard";
 
 const WorkspaceIndex = ({ onWorkspaceSelect }) => {
   const { id: kuarterId } = useParams();
@@ -43,6 +43,11 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
     if (onWorkspaceSelect) {
       onWorkspaceSelect(workspace);
     }
+  };
+
+  const handleEditStart = (workspaceId, workspaceName) => {
+    setEditing(workspaceId);
+    setEditedName(workspaceName);
   };
 
   const handleEdit = (workspaceId) => {
@@ -145,78 +150,21 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
         ) : (
           <div className="flex flex-col gap-4">
             {displayData?.map((workspace) => (
-              <div
+              <WorkspaceCard
                 key={workspace._id}
-                className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${selectedCardId === workspace._id ? "ring-2 ring-blue-500" : ""
-                  }`}
-                onClick={() => handleCardClick(workspace)}
-              >
-                <div className="card-body">
-                  {editing === workspace._id ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        className="text-xl border border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
-                        value={editedName}
-                        autoFocus
-                        onChange={(e) => setEditedName(e.target.value)}
-                        onKeyDown={(e) => handleEditKeyDown(e, workspace._id)}
-                        onClick={(e) => e.stopPropagation()}
-                        disabled={updateWorkspaceMutation.isPending}
-                      />
-                      {updateWorkspaceMutation.isPending && (
-                        <span className="loading loading-spinner loading-sm"></span>
-                      )}
-                    </div>
-                  ) : (
-                    <h2
-                      className="card-title hover:bg-gray-100 px-1 rounded"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditing(workspace._id);
-                        setEditedName(workspace.nama);
-                      }}
-                    >
-                      {workspace.nama}
-                    </h2>
-                  )}
-                  <div className="flex justify-between">
-                    <div className="flex mt-2 items-center w-full">
-                      <div className="w-40">
-                        <p className="text-[0.8em] font-semibold mb-1 text-gray-800">
-                          Total Progress
-                        </p>
-                        <ProgressBar progress={90} />
-                      </div>
-                    </div>
-                    <div className="card-actions justify-end flex flex-row items-center mt-2">
-                      <button
-                        className="btn btn-sm w-14 btn-warning text-orange-900"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(workspace._id, workspace.nama);
-                        }}
-                        disabled={deleteMutation.isPending}
-                      >
-                        {deleteMutation.isPending ? (
-                          <span className="loading loading-spinner loading-xs "></span>
-                        ) : (
-                          "Delete"
-                        )}
-                      </button>
-                      <button
-                        className="btn btn-primary btn-sm w-14"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectWorkspace(workspace._id);
-                        }}
-                      >
-                        Detail
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                workspace={workspace}
+                isSelected={selectedCardId === workspace._id}
+                onCardClick={handleCardClick}
+                onEdit={handleEditStart}
+                onDelete={handleDelete}
+                onDetail={handleSelectWorkspace}
+                editing={editing}
+                editedName={editedName}
+                setEditedName={setEditedName}
+                handleEditKeyDown={handleEditKeyDown}
+                updateWorkspaceMutation={updateWorkspaceMutation}
+                deleteMutation={deleteMutation}
+              />
             ))}
           </div>
         )}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import AnimatedNumber from "../../components/ui/AnimatedNumber";
+import { useWorkspaceStats } from "../../hook/useProgress";
 
-// Komponen custom tooltip untuk pie chart
 const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
         const data = payload[0];
@@ -24,6 +24,9 @@ const CustomTooltip = ({ active, payload }) => {
 const WorkspaceDetailPanel = ({ workspace }) => {
     const [activeIndex, setActiveIndex] = useState(null);
     const [isAnimating, setIsAnimating] = useState(false);
+    
+    // Fetch workspace statistics dari API (optional)
+    const { workspaceStats } = useWorkspaceStats(workspace?._id);
 
     useEffect(() => {
         setIsAnimating(true);
@@ -42,33 +45,48 @@ const WorkspaceDetailPanel = ({ workspace }) => {
         );
     }
 
-    // Hitung total dari semua task
-    const totalTaskCalculated = (workspace.inProgress || 0) +
-        (workspace.completed || 0) +
-        (workspace.undated || 0) +
-        (workspace.planned || 0);
+    // Gunakan data dari API jika ada, fallback ke props workspace
+    const apiData = workspaceStats.data;
+    
+    // Merge data: prioritas API data, fallback ke workspace props
+    const mergedData = {
+        inProgress: apiData?.inProgressProject ?? workspace.inProgress ?? 0,
+        completed: apiData?.completedProject ?? workspace.completed ?? 0,
+        undated: apiData?.undatedProject ?? workspace.undated ?? 0,
+        planned: workspace.planned ?? 0,
+        totalTask: apiData?.totalProject ?? workspace.totalTask ?? workspace.totaltask ?? 0,
+        totalGroupTask: workspace.totalGroupTask ?? 0,
+        progress: apiData?.progress ?? 0,
+        projects: apiData?.projects ?? []
+    };
 
-    const totalTaskForCalculation = workspace.totalTask || totalTaskCalculated || 1;
+    // Hitung total dari semua task (tetap gunakan logic asli)
+    const totalTaskCalculated = (mergedData.inProgress || 0) +
+        (mergedData.completed || 0) +
+        (mergedData.undated || 0) +
+        (mergedData.planned || 0);
 
+    const totalTaskForCalculation = mergedData.totalTask || totalTaskCalculated || 1;
+
+    // Chart data (tetap gunakan variable asli)
     const chartData = [
-        { name: 'In Progress', value: workspace.inProgress || 0, color: '#3b82f6' },
-        { name: 'Completed', value: workspace.completed || 0, color: '#10b981' },
-        { name: 'Undated', value: workspace.undated || 0, color: '#6b7280' },
-        { name: 'Planned', value: workspace.planned || 0, color: '#f59e0b' },
+        { name: 'In Progress', value: mergedData.inProgress || 0, color: '#3b82f6' },
+        { name: 'Completed', value: mergedData.completed || 0, color: '#10b981' },
+        { name: 'Undated', value: mergedData.undated || 0, color: '#6b7280' },
+        { name: 'Planned', value: mergedData.planned || 0, color: '#f59e0b' },
     ].map(item => ({
         ...item,
-        // percentage: totalTaskForCalculation > 0 ? ((item.value / totalTaskForCalculation) * 100).toFixed(1) : '0.0'
-        percentage: ((item.value / (workspace.totalTask || 1))).toFixed(1)
+        percentage: ((item.value / totalTaskForCalculation) * 100).toFixed(1)
     }));
 
+    // Stats (tetap gunakan variable asli)
     const stats = [
-        { label: 'In Progress', value: workspace.inProgress || 0, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-        { label: 'Completed', value: workspace.completed || 0, color: 'text-green-600', bgColor: 'bg-green-50' },
-        { label: 'Undated', value: workspace.undated || 0, color: 'text-gray-600', bgColor: 'bg-gray-50' },
-        { label: 'Planned', value: workspace.planned || 0, color: 'text-amber-600', bgColor: 'bg-amber-50' },
-        // { label: 'Total Tasks', value: totalTaskForCalculation, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-        { label: 'Total Tasks', value: workspace.totaltask, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-        { label: 'Total Group Tasks', value: workspace.totalGroupTask || 0, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
+        { label: 'In Progress', value: mergedData.inProgress || 0, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+        { label: 'Completed', value: mergedData.completed || 0, color: 'text-green-600', bgColor: 'bg-green-50' },
+        { label: 'Undated', value: mergedData.undated || 0, color: 'text-gray-600', bgColor: 'bg-gray-50' },
+        { label: 'Planned', value: mergedData.planned || 0, color: 'text-amber-600', bgColor: 'bg-amber-50' },
+        { label: 'Total Tasks', value: mergedData.totalTask || 0, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+        { label: 'Total Group Tasks', value: mergedData.totalGroupTask || 0, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
     ];
 
     const onPieEnter = (_, index) => {
@@ -79,7 +97,6 @@ const WorkspaceDetailPanel = ({ workspace }) => {
         setActiveIndex(null);
     };
 
-    // Custom label renderer untuk menampilkan persentase di tengah setiap segment
     const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percentage }) => {
         const RADIAN = Math.PI / 180;
         const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
