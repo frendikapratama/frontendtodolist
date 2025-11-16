@@ -6,7 +6,8 @@ import {
   updateTaskPositions,
   assignPic,
   removePic,
-  deleteTask
+  deleteTask,
+  getByProjectId,
 } from "../services/task";
 import toast from "react-hot-toast";
 
@@ -50,13 +51,15 @@ export const useTask = (groupId) => {
       }
     },
   });
+
   const deleteTaskMutation = useMutation({
-    mutationFn: (taskId) =>{ 
-      console.log("mutationFn called with taskId:", taskId)
-      return deleteTask(taskId)},
+    mutationFn: (taskId) => {
+      console.log("mutationFn called with taskId:", taskId);
+      return deleteTask(taskId);
+    },
     onSuccess: (data) => {
       console.log("Delete success, response:", data);
-      toast.success("Successfuly delete task");
+      toast.success("Successfully delete task");
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
@@ -114,6 +117,34 @@ export const useTask = (groupId) => {
     updateTaskPositionsMutation,
     assignPicMutation,
     removePicMutation,
-    deleteTaskMutation
+    deleteTaskMutation,
   };
+};
+
+export const useTaskByProject = (projectId) => {
+  return useQuery({
+    queryKey: ["task", "project", projectId],
+    queryFn: () => getByProjectId(projectId),
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ taskId, data }) => updateTask(taskId, data),
+    onSuccess: () => {
+      toast.success("Successfully updated Task");
+      queryClient.invalidateQueries({ queryKey: ["task"] });
+    },
+    onError: (error) => {
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
+      } else {
+        toast.error("Failed to update task");
+      }
+    },
+  });
 };
