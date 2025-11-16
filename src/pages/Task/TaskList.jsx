@@ -775,6 +775,7 @@ const TaskList = ({ groupId }) => {
                   </div>
                   {openDialog.open && (
                     <DialogDetail
+                      draggable
                       show={openDialog.open}
                       onClose={() => setOpenDialog({ open: false, task: null })}
                       taskId={openDialog.task?._id}

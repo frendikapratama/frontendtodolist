@@ -2,17 +2,23 @@ import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { useTask } from "../../hook/useTask";
 import TaskList from "../Task/TaskList";
 import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useGroup } from "../../hook/useGroups";
 import { Trash2 } from "lucide-react";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 const GroupCard = ({ group, index }) => {
   const { taskByGroup, updateTaskMutation } = useTask(group._id);
   const { updateGroupMutation, deleteMutation } = useGroup();
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(group.nama);
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    taskId: null,
+  });
 
   const handleNameEdit = (e) => {
     e.preventDefault();
@@ -61,13 +67,16 @@ const GroupCard = ({ group, index }) => {
     return colors[index % 3];
   };
 
-  const handleDelete = (groupId, group_nama) => {
-    if (
-      window.confirm(`Apakah Anda yakin ingin menghapus group "${group_nama}"?`)
-    ) {
-      deleteMutation.mutate(groupId);
+  const handleDelete = useCallback((groupId) => {
+    setConfirmDelete({ show: true, groupId: groupId });
+  }, []);
+  const confirmDeleteGroup = useCallback(() => {
+    if (confirmDelete.groupId) {
+      deleteMutation.mutate(confirmDelete.groupId);
+      setConfirmDelete({ show: false, groupId: null });
+    } else {
     }
-  };
+  }, [confirmDelete.groupId, deleteMutation]);
 
   return (
     <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -76,7 +85,11 @@ const GroupCard = ({ group, index }) => {
         style={{ background: getHeaderColor() }}
       >
         <div className="flex items-center gap-2">
-          <ChevronDown className="w-5 h-5 text-white" />
+          <ChevronDown
+            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${isOpen ? "rotate-0" : "-rotate-90"
+              }`}
+            onClick={() => setIsOpen(!isOpen) }
+          />
           {isEditing ? (
             <form onSubmit={handleNameEdit} className="m-0">
               <input
@@ -109,16 +122,27 @@ const GroupCard = ({ group, index }) => {
             {taskByGroup.data?.length || 0} items
           </span>
         </div>
-
-        <Trash2
-          className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
+        <button
+          className="btn btn-sm p-1 w-12 h-6 hover:bg-orange-700 bg-red-800 text-[0.7em] border-none"
           onClick={() => handleDelete(group._id, group.nama)}
-          disabled={deleteMutation.isPending}
-        />
+        >
+          Delete
+        </button>
       </div>
+      <ConfirmDialog
+        show={confirmDelete.show}
+        onClose={() => setConfirmDelete({ show: false, groupId: null })}
+        onConfirm={confirmDeleteGroup}
+        title="Delete Group"
+        message="Are you sure want to delete this Group Task? this action can't be undo"
+      />
 
       <div
-        className={isDragOver ? "bg-blue-50" : ""}
+        className={`
+        ${isDragOver ? "bg-blue-50" : ""}
+        transition-all duration-500 overflow-hidden
+        ${isOpen ? "opacity-100" : "opacity-0 max-h-0"}
+        `}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragOver(true);

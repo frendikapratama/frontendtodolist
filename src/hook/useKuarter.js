@@ -19,6 +19,7 @@ export const useKuarter = () => {
 
   const initialFormData = {
     nama: "",
+    departemen: ""
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -28,7 +29,11 @@ export const useKuarter = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   const kuarterQuery = useQuery({
