@@ -224,9 +224,9 @@ Date: ${event.start.toLocaleDateString()}
   }
 
   return (
-    <div className="bg-[#EFECE3] rounded-lg p-6">
+    <div className="bg-black/20 shadow-2xl text-black rounded-lg p-6">
       {allTasks.length > 0 ? (
-        <div className="bg-white rounded-xl shadow-lg p-4">
+        <div className="bg-white/60 rounded-xl shadow-lg p-4">
           {/* Legend */}
           <div className="mb-4 flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">

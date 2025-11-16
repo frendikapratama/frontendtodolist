@@ -3,6 +3,62 @@ import { useCollaboration } from "../../hook/useCollaboration";
 import { useWorkspace } from "../../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
 import AnimatedPercentage from "../../components/ui/AnimatedPercentage";
+import { useProgressProject } from "../../hook/useProgress";
+
+const ProjectCard = ({ project, isOwner, borderColor, badgeColor, badgeText, collaborationInfo, ownerInfo }) => {
+  const navigate = useNavigate();
+  const { progressByProject } = useProgressProject(project._id);
+  const progress = progressByProject.data?.progress ?? 0;
+
+  return (
+    <div
+      className={`card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 ${borderColor}`}
+      onClick={() => navigate(`/project/${project._id}`)}
+    >
+      <div className="mt-2 grid grid-cols-2 gap-10 items-center">
+        <div className="flex flex-col gap-1">
+          <h4 className="card-title text-[0.9em]">{project.nama}</h4>
+          {project.description && (
+            <p className="text-[0.8em] text-gray-600 mb-2">
+              {project.description}
+            </p>
+          )}
+          <p className="text-[0.7em] text-gray-500">
+            {new Date(project.createdAt).toLocaleDateString("id-ID")}
+          </p>
+          <div className="flex gap-2 mt-2 flex-col">
+            <div className={`badge ${badgeColor} badge-sm font-bold text-[0.6em]`}>
+              {badgeText}
+            </div>
+
+            {collaborationInfo && (
+              <p className="text-black/60 font-semibold text-[0.8em]">
+                <span className="font-medium text-gray-600">Collaboration: </span>
+                {collaborationInfo}
+              </p>
+            )}
+
+            {ownerInfo && (
+              <p className="text-black/60 font-semibold text-[0.8em]">
+                <span className="font-medium text-gray-600">Owner: </span>
+                {ownerInfo}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-end justify-center flex-col">
+          <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
+          {progressByProject.isLoading ? (
+            <span className="text-[0.7em] text-gray-400">Loading...</span>
+          ) : (
+            <AnimatedPercentage target={progress} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CollaborationTab = ({ workspaceId }) => {
   const {
@@ -50,8 +106,7 @@ const CollaborationTab = ({ workspaceId }) => {
 
   const ownedOnlyProjects = projectsQuery.data?.owned || [];
   const ownedWithCollaboration = projectsQuery.data?.ownedButCollaborated || [];
-  const collaboratedFromOthers =
-    projectsQuery.data?.collaboratedFromOthers || [];
+  const collaboratedFromOthers = projectsQuery.data?.collaboratedFromOthers || [];
 
   const handleDragStart = (e, requestId) => {
     e.dataTransfer.setData("text/plain", requestId);
@@ -191,39 +246,13 @@ const CollaborationTab = ({ workspaceId }) => {
                 {ownedOnlyProjects.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {ownedOnlyProjects.map((project) => (
-                      <div
+                      <ProjectCard
                         key={project._id}
-                        className="card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-green-500"
-                        onClick={() => navigate(`/project/${project._id}`)}
-                      >
-                        <div className="mt-2 grid grid-cols-2 gap-10 items-center">
-                          <div className="flex flex-col gap-1">
-                            <h4 className="card-title text-[0.9em]">{project.nama}</h4>
-                            {project.description && (
-                              <p className="text-[0.8em] text-gray-600 mb-2">
-                                {project.description}
-                              </p>
-                            )}
-                            <p className="text-[0.7em] text-gray-500">
-                              {new Date(project.createdAt).toLocaleDateString(
-                                "id-ID"
-                              )}
-                            </p>
-                            <div className="flex gap-2 mt-2">
-                              <div className="badge badge-success badge-sm font-bold text-[0.6em]">
-                                Owner
-                              </div>
-                              {/* <div className="badge badge-info badge-sm">
-                            {project.id?.length || 0} Group
-                          </div> */}
-                            </div>
-                          </div>
-                          <div className="flex items-end justify-center flex-col">
-                            <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
-                            <AnimatedPercentage target={90} />
-                          </div>
-                        </div>
-                      </div>
+                        project={project}
+                        borderColor="border-green-500"
+                        badgeColor="badge-success"
+                        badgeText="Owner"
+                      />
                     ))}
                   </div>
                 ) : (
@@ -249,47 +278,18 @@ const CollaborationTab = ({ workspaceId }) => {
                 {ownedWithCollaboration.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {ownedWithCollaboration.map((project) => (
-                      <div
+                      <ProjectCard
                         key={project._id}
-                        className="card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-blue-500"
-                        onClick={() => navigate(`/project/${project._id}`)}
-                      >
-                        <div className="mt-2 grid grid-cols-2 gap-10 items-center">
-                          <div className="flex flex-col gap-1">
-                            <h4 className="card-title text-[0.9em]">{project.nama}</h4>
-                            {project.description && (
-                              <p className="text-[0.8em] text-gray-600 mb-2">
-                                {project.description}
-                              </p>
-                            )}
-                            <p className="text-[0.7em] text-gray-500">
-                              {new Date(project.createdAt).toLocaleDateString(
-                                "id-ID"
-                              )}
-                            </p>
-                            <div className="flex gap-2 mt-2 flex-col">
-                              <div className="badge badge-success badge-sm font-bold text-[0.6em]">
-                                Owner
-                              </div>
-                              {/* <div className="badge badge-info badge-sm">
-                            {project.id?.length || 0} Group
-                          </div> */}
-                              {project.otherWorkspaces?.length > 0 && (
-                                <p className="text-black/60 font-semibold text-[0.8em]">
-                                  <span className="font-medium text-gray-600">Collaboration: </span>
-                                  {project.otherWorkspaces
-                                    .map((w) => w.nama)
-                                    .join(", ")}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-end justify-center flex-col">
-                            <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
-                            <AnimatedPercentage target={90} />
-                          </div>
-                        </div>
-                      </div>
+                        project={project}
+                        borderColor="border-blue-500"
+                        badgeColor="badge-success"
+                        badgeText="Owner"
+                        collaborationInfo={
+                          project.otherWorkspaces?.length > 0
+                            ? project.otherWorkspaces.map((w) => w.nama).join(", ")
+                            : null
+                        }
+                      />
                     ))}
                   </div>
                 ) : (
@@ -315,63 +315,14 @@ const CollaborationTab = ({ workspaceId }) => {
                 {collaboratedFromOthers.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {collaboratedFromOthers.map((project) => (
-                      <div
+                      <ProjectCard
                         key={project._id}
-                        className="card bg-white/50 text-black p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-orange-500"
-                        onClick={() => navigate(`/project/${project._id}`)}
-                      >
-                        {/* <h5 className="font-semibold text-[0.9em]">
-                          {project.nama}
-                        </h5>
-                        {project.description && (
-                          <p className="text-gray-600 mb-2 text-[0.8em]">
-                            {project.description}
-                          </p>
-                        )}
-                        <p className="text-gray-500 text-[0.7em]">
-                          {new Date(project.createdAt).toLocaleDateString(
-                            "id-ID"
-                          )}
-                        </p>
-                        <div className="badge badge-warning badge-sm mt-2 font-bold text-[0.6em]">
-                          Collaborator
-                        </div>
-                        <p className="text-black/60 font-semibold mt-1 text-[0.8em]">
-                          <span className="font-medium text-gray-600">Owner: </span>
-                          {project.workspace?.nama}
-                        </p> */}
-                        <div className="mt-2 grid grid-cols-2 gap-10 items-center">
-                          <div className="flex flex-col gap-1">
-                            <h4 className="card-title text-[0.9em]">{project.nama}</h4>
-                            {project.description && (
-                              <p className="text-[0.8em] text-gray-600 mb-2">
-                                {project.description}
-                              </p>
-                            )}
-                            <p className="text-[0.7em] text-gray-500">
-                              {new Date(project.createdAt).toLocaleDateString(
-                                "id-ID"
-                              )}
-                            </p>
-                            <div className="flex gap-2 mt-2 flex-col">
-                              {/* <div className="badge badge-info badge-sm">
-                            {project.id?.length || 0} Group
-                          </div> */}
-                              <div className="badge badge-warning badge-sm font-bold text-[0.6em]">
-                                Collaborator
-                              </div>
-                              <p className="text-black/60 font-semibold text-[0.8em]">
-                                <span className="font-medium text-gray-600">Owner: </span>
-                                {project.workspace?.nama}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-end justify-center flex-col">
-                            <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
-                            <AnimatedPercentage target={90} />
-                          </div>
-                        </div>
-                      </div>
+                        project={project}
+                        borderColor="border-orange-500"
+                        badgeColor="badge-warning"
+                        badgeText="Collaborator"
+                        ownerInfo={project.workspace?.nama}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -462,10 +413,10 @@ const CollaborationTab = ({ workspaceId }) => {
                     </p>
                     <div
                       className={`badge badge-sm mt-2 text-[0.7em] font-bold ${request.status === "approved"
-                        ? "badge-success"
-                        : request.status === "rejected"
-                          ? "badge-error"
-                          : "badge-warning"
+                          ? "badge-success"
+                          : request.status === "rejected"
+                            ? "badge-error"
+                            : "badge-warning"
                         }`}
                     >
                       {request.status}

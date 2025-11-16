@@ -163,12 +163,12 @@ const GroupCard = ({ group, index }) => {
           </div>
         </div>
       ) : progressData ? (
-        <div className="px-4 py-3 bg-white border-b border-gray-200">
+        <div className="px-4 py-3 bg-gray-200 border-b border-gray-200">
           {/* Progress Bar */}
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-gray-700">
-                Progress
+              <span className="text-[0.8em] font-medium text-gray-700">
+                Progress Task
               </span>
               <span className="text-sm font-semibold text-gray-900">
                 {progressData.progress}%
@@ -176,7 +176,7 @@ const GroupCard = ({ group, index }) => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                className="bg-teal-700 h-2.5 rounded-full transition-all duration-300"
                 style={{ width: `${progressData.progress}%` }}
               ></div>
             </div>
