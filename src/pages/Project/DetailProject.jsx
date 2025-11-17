@@ -97,6 +97,7 @@ const ProjectDetailPage = () => {
                   viewMode === "kanban"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
+                    
                 }`}
               >
                 <Layout className="w-4 h-4" />

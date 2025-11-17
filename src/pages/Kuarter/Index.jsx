@@ -122,7 +122,7 @@ const Kuarter = () => {
                     />
                   ) : (
                     <h2
-                      className="card-title text-gray-900 font-bold hover:bg-gray-100 px-1 rounded cursor-pointer"
+                      className="card-title text-white font-bold hover:bg-gray-900 px-1 rounded cursor-pointer"
                       onClick={() => {
                         setEditing(kuarter._id);
                         setEditedName(kuarter.nama);
