@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import GroupCard from "./GroupCard";
 import Kanban from "./Kanban";
-// import GanttChart from "./GanttChart";
+import GanttChart from "./GantChart";
 import CalendarView from "../Task/CalendarView";
 import { useEffect, useState } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
@@ -97,7 +97,6 @@ const ProjectDetailPage = () => {
                   viewMode === "kanban"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
-                    
                 }`}
               >
                 <Layout className="w-4 h-4" />
@@ -178,7 +177,7 @@ const ProjectDetailPage = () => {
         {viewMode === "kanban" && <Kanban projectId={id} />}
 
         {viewMode === "calendar" && <CalendarView projectId={id} />}
-        {/* {viewMode === "gantt" && <GanttChart projectId={id} />} */}
+        {viewMode === "gantt" && <GanttChart projectId={id} />}
       </div>
     </div>
   );
