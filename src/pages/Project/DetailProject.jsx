@@ -102,6 +102,16 @@ const ProjectDetailPage = () => {
                 <Layout className="w-4 h-4" />
                 Kanban
               </button>
+              <button
+                onClick={() => setViewMode("gantt")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "gantt"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-600 hover:text-gray-800"
+                  }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                Gantt
+              </button>
 
               <button
                 onClick={() => setViewMode("calendar")}
