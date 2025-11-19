@@ -12,6 +12,7 @@ import {
 import GroupCard from "./GroupCard";
 import Kanban from "./Kanban";
 import CalendarView from "../Task/CalendarView";
+import GanttChart from "../../components/ui/GanttChart";
 import { useEffect, useState } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
 
@@ -166,6 +167,8 @@ const ProjectDetailPage = () => {
         {viewMode === "kanban" && <Kanban projectId={id} />}
 
         {viewMode === "calendar" && <CalendarView projectId={id} />}
+        {/* {viewMode === "gantt" && <GanttChart projectId={id} />} */}
+        {viewMode === "gantt" && <GanttChart projectId={id} />}
       </div>
     </div>
   );
