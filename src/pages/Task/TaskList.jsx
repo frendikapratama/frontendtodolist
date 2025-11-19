@@ -82,7 +82,7 @@ const TaskList = ({ groupId }) => {
 
   const handleRemovePic = useCallback(
     (taskId, userId) => {
-      if (window.confirm("Hapus PIC dari task ini?")) {
+      if (window.confirm("Delete this PIC?")) {
         removePicMutation.mutate({ taskId, userId });
       }
     },
@@ -144,12 +144,50 @@ const TaskList = ({ groupId }) => {
     [updateTaskMutation]
   );
 
+  const calculateAutoNote = (status, due_date, finish_date) => {
+    if (status === "Done" && due_date && finish_date) {
+      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
+      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
+      if (finishDate === dueDate) {
+        return "Completed - On Time";
+      } else if (finishDate > dueDate) {
+        return "Completed - Overdue";
+      } else if (finishDate < dueDate) {
+        return "Completed - Early";
+      }
+    }
+    if (status === "To Do") {
+      return "Planning";
+    }
+    if (["In Progress", "Blocked", "Hold"].includes(status)) {
+      return "Uncomplete";
+    }
+    return null;
+  };
+
   const handlePopupChange = useCallback(
     (taskId, field, value) => {
-      updateTaskMutation.mutate({ taskId, data: { [field]: value } });
+      const task = localTasks.find(t => t._id === taskId);
+      if (!task) {
+        updateTaskMutation.mutate({ taskId, data: { [field]: value } });
+        setActivePopup(null);
+        return;
+      }
+      let updateData = { [field]: value };
+      if (field !== "note" && (field === "status" || field === "due_date" || field === "finish_date")) {
+        const newStatus = field === "status" ? value : task.status;
+        const newDueDate = field === "due_date" ? value : task.due_date;
+        const newFinishDate = field === "finish_date" ? value : task.finish_date;
+        const autoNote = calculateAutoNote(newStatus, newDueDate, newFinishDate);
+
+        if (autoNote) {
+          updateData.note = autoNote;
+        }
+      }
+      updateTaskMutation.mutate({ taskId, data: updateData });
       setActivePopup(null);
     },
-    [updateTaskMutation]
+    [localTasks, updateTaskMutation]
   );
 
   const handleDragStart = (e, index) => {
@@ -167,18 +205,13 @@ const TaskList = ({ groupId }) => {
     const draggedTaskData = JSON.parse(
       e.dataTransfer.getData("draggedTask") || "{}"
     );
-
     if (!draggedTaskData._id) return;
-
     const isSameGroup = sourceGroupId === groupId;
     const currentDragIndex = isSameGroup ? dragState.index : null;
-
     if (currentDragIndex === index) return;
-
     setLocalTasks((prev) => {
       const filtered = prev.filter((t) => !t._isPreview);
       const newTasks = isSameGroup ? [...filtered] : [...filtered];
-
       if (isSameGroup && currentDragIndex !== null) {
         const [removed] = newTasks.splice(currentDragIndex, 1);
         newTasks.splice(index, 0, removed);
@@ -339,7 +372,7 @@ const TaskList = ({ groupId }) => {
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
+                onDragEnd={handleDragEnd}a
                 className={`flex items-center hover:bg-none ${
                   isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
                 } ${
