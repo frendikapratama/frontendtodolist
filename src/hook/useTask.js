@@ -75,7 +75,7 @@ export const useTask = (groupId) => {
   });
 
   const updateTaskPositionsMutation = useMutation({
-    mutationFn: (taskIds) => updateTaskPositions(taskIds),
+    mutationFn: (taskIds) => updateTaskPositions(groupId, taskIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task"] });
     },
