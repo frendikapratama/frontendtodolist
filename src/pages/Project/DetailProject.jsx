@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import GroupCard from "./GroupCard";
 import Kanban from "./Kanban";
-import GanttChart from "./GantChart";
 import CalendarView from "../Task/CalendarView";
 import { useEffect, useState } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
@@ -102,17 +101,7 @@ const ProjectDetailPage = () => {
                 <Layout className="w-4 h-4" />
                 Kanban
               </button>
-              <button
-                onClick={() => setViewMode("gantt")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
-                  viewMode === "gantt"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                Gantt
-              </button>
+
               <button
                 onClick={() => setViewMode("calendar")}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
@@ -177,7 +166,6 @@ const ProjectDetailPage = () => {
         {viewMode === "kanban" && <Kanban projectId={id} />}
 
         {viewMode === "calendar" && <CalendarView projectId={id} />}
-        {viewMode === "gantt" && <GanttChart projectId={id} />}
       </div>
     </div>
   );
