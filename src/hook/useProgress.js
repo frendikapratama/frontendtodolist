@@ -1,6 +1,9 @@
-// ========== hook/ ==========
 import { useQuery } from "@tanstack/react-query";
-import { getProgressByGroup, getProgressbyProject, getProgressbyWorkspace } from "../services/progress";
+import {
+  getProgressByGroup,
+  getProgressbyProject,
+  getProgressbyWorkspace,
+} from "../services/progress";
 
 export const useProgress = (groupId) => {
   const progressByGroup = useQuery({
@@ -29,7 +32,6 @@ export const useProgressProject = (projectId) => {
     progressByProject,
   };
 };
-
 
 export const useWorkspaceStats = (workspaceId) => {
   const workspaceStats = useQuery({

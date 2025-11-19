@@ -27,11 +27,10 @@ export async function dialogTask(taskId, data) {
   return res.data.data;
 }
 
-export const updateTaskPositions = async (taskIds) => {
-  const res = await api.put(`task/positions`, { taskIds });
+export const updateTaskPositions = async (groupId, taskIds) => {
+  const res = await api.put(`/task/positions/${groupId}`, { taskIds });
   return res.data.data;
 };
-
 export async function assignPic(taskId, picEmail) {
   const res = await api.put(`task/${taskId}`, { picEmail });
   return res.data;
