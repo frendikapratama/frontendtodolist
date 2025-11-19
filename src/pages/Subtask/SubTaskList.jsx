@@ -255,7 +255,7 @@ const SubtaskList = ({ taskId, groupId }) => {
               />
             ) : (
               <span
-                className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text"
+                className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text whitespace-normal break-all"
                 onClick={() => {
                   setEditingSubtaskId(s._id);
                   setEditedName(s.nama);
