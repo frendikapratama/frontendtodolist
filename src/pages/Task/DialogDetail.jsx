@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { API_URL } from "../../api/axios";
+import api from "../../api/axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send,
@@ -176,6 +177,29 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
     }
     setDescriptions(trimmedValue);
     setEditingDescription(false);
+  };
+
+  const handleDownloadFile = async (fileObj) => {
+    try {
+      const response = await api.get(
+        `/attachment/${taskId}/download/${fileObj._id}`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileObj.fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Gagal mendownload file");
+    }
   };
   return (
     <AnimatePresence>
@@ -512,14 +536,13 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                                   {formatFileSize(fileObj.fileSize)}
                                 </span>
                                 <div className="flex gap-1">
-                                  <a
-                                    href={`${API_URL}/api/attachment/${taskId}/download/${fileObj._id}`}
-                                    download
+                                  <button
+                                    onClick={() => handleDownloadFile(fileObj)}
                                     className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition-colors"
                                     title="Download"
                                   >
                                     <Download className="w-3.5 h-3.5" />
-                                  </a>
+                                  </button>
                                   <button
                                     onClick={() =>
                                       handleRemoveFile(fileObj._id)

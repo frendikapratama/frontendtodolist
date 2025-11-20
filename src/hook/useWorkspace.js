@@ -30,6 +30,7 @@ export const useWorkspace = (kuarterId = null) => {
     queryKey: ["workspaces"],
     queryFn: () => getWorkspaces(),
   });
+
   const createMutation = useMutation({
     mutationFn: ({ kuarterId, data }) => createWorkspace(kuarterId, data),
     onSuccess: (data, variables) => {
@@ -135,9 +136,7 @@ export const useWorkspace = (kuarterId = null) => {
     },
   });
 
-  const getProgressBar = useMutation({
-    
-  })
+  const getProgressBar = useMutation({});
   return {
     formData,
     setFormData,
