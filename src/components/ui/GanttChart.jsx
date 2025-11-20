@@ -162,7 +162,7 @@ const GanttChart = ({ projectId }) => {
             actualWidth = finishDays;
 
             if (finish < due) {
-                status = 'early'; 
+                status = 'early';
             } else if (finish.getTime() === due.getTime()) {
                 status = 'ontime';
             } else {
@@ -198,10 +198,10 @@ const GanttChart = ({ projectId }) => {
 
     const getBarColor = (status) => {
         const colors = {
-            'early': 'bg-gradient-to-r from-green-400 to-green-500',      
-            'ontime': 'bg-gradient-to-r from-cyan-400 to-cyan-500',       
-            'late': 'bg-gradient-to-r from-red-400 to-red-500',           
-            'ongoing': 'bg-gradient-to-r from-blue-400 to-blue-500'       
+            'early': 'bg-gradient-to-r from-green-400 to-green-500',
+            'ontime': 'bg-gradient-to-r from-cyan-400 to-cyan-500',
+            'late': 'bg-gradient-to-r from-red-400 to-red-500',
+            'ongoing': 'bg-gradient-to-r from-blue-400 to-blue-500'
         };
         return colors[status] || colors.ongoing;
     };
