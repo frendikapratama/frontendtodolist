@@ -402,7 +402,7 @@ const GanttChart = ({ projectId }) => {
                                     {expandedGroups[group.groupId] && group.tasks?.map((task) => (
                                         <div
                                             key={task.taskId}
-                                            className={`flex items-center gap-3 p-4 pl-12 border-b border-slate-100 transition-all duration-200 ${hoveredItem === task.taskId ? 'bg-blue-50' : 'bg-white'
+                                            className={`flex items-center h-18 gap-3 p-4 pl-12 border-b border-slate-100 transition-all duration-200 ${hoveredItem === task.taskId ? 'bg-blue-50' : 'bg-white'
                                                 }`}
                                             onMouseEnter={() => setHoveredItem(task.taskId)}
                                             onMouseLeave={() => setHoveredItem(null)}
@@ -508,7 +508,7 @@ const GanttChart = ({ projectId }) => {
                                             <div
                                                 className={`relative border-b border-slate-200 transition-all duration-200 ${hoveredItem === group.groupId ? 'bg-slate-50' : ''
                                                     }`}
-                                                style={{ height: '64px' }}
+                                                style={{ height: '5em' }}
                                             >
                                                 {groupBar && (
                                                     <div className="relative h-full flex items-center px-2">
@@ -542,7 +542,7 @@ const GanttChart = ({ projectId }) => {
                                                         key={task.taskId}
                                                         className={`relative border-b border-slate-100 transition-all duration-200 ${hoveredItem === task.taskId ? 'bg-blue-50' : ''
                                                             }`}
-                                                        style={{ height: '64px' }}
+                                                        style={{ height: '4.5em' }}
                                                     >
                                                         {taskBar && (
                                                             <div className="relative h-full flex items-center px-2">

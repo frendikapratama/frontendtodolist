@@ -5,4 +5,10 @@ export const menuItems = [
     path: "/Kuarter",
     icon: "dashboard",
   },
+  {
+    id: "My Workspaces",
+    label: "My Workspaces",
+    path: "/Kuarter",
+    icon: "dashboard",
+  },
 ];

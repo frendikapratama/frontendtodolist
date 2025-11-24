@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import ProgressBar from "../../components/ui/ProgressBar";
 import { useWorkspaceStats } from "../../hook/useProgress";
 import { useMember } from "../../hook/useMember";
@@ -19,21 +19,63 @@ const WorkspaceCard = ({
 }) => {
   const { workspaceStats } = useWorkspaceStats(workspace._id);
   const progress = workspaceStats.data?.progress ?? 0;
-
-  console.log(`Progress for ${workspace.nama}:`, {
-    loading: workspaceStats.isLoading,
-    progress: progress,
-    rawData: workspaceStats.data,
-  });
-
   const { membersWorkspaceQuery } = useMember("workspace", workspace._id);
-  const [showMembers, setShowMembers] = useState(false);
+
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
+  const members = membersWorkspaceQuery.data?.members || [];
+  const maxVisible = 5;
+  const visibleMembers = members.slice(0, maxVisible);
+  const remainingCount = members.length - maxVisible;
+
+  const colors = [
+    "bg-gradient-to-br from-violet-500 to-purple-600",
+    "bg-gradient-to-br from-blue-500 to-cyan-500",
+    "bg-gradient-to-br from-emerald-500 to-teal-500",
+    "bg-gradient-to-br from-orange-500 to-amber-500",
+    "bg-gradient-to-br from-pink-500 to-rose-500",
+  ];
+
+  const roleColors = {
+    admin: "bg-purple-100 text-purple-700 border-purple-200",
+    member: "bg-blue-100 text-blue-700 border-blue-200",
+    viewer: "bg-gray-100 text-gray-600 border-gray-200",
+  };
+
+  const handleAvatarClick = (member, e) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const containerRect = containerRef.current.getBoundingClientRect();
+    setPopoverPos({
+      x: rect.left - containerRect.left + rect.width / 2,
+      y: rect.bottom - containerRect.top + 8,
+    });
+    setSelectedMember(selectedMember?._id === member._id ? null : member);
+  };
+
+  const handleShowAll = (e) => {
+    e.stopPropagation();
+    setSelectedMember({ showAll: true });
+    const rect = e.currentTarget.getBoundingClientRect();
+    const containerRect = containerRef.current.getBoundingClientRect();
+    setPopoverPos({
+      x: rect.left - containerRect.left + rect.width / 2,
+      y: rect.bottom - containerRect.top + 8,
+    });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = () => setSelectedMember(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
     <div
-      className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
-        isSelected ? "ring-2 ring-blue-500" : ""
-      }`}
+      className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${isSelected ? "ring-2 ring-blue-500" : ""
+        }`}
       onClick={() => onCardClick(workspace)}
     >
       <div className="card-body">
@@ -64,8 +106,10 @@ const WorkspaceCard = ({
             {workspace.nama}
           </h2>
         )}
-        <div className="flex justify-between">
-          <div className="flex mt-2 items-center w-full">
+
+        <div className="flex justify-between items-start">
+          {/* Progress Section */}
+          <div className="flex mt-2 items-center">
             <div className="w-40">
               <p className="text-[0.8em] font-semibold mb-1 text-gray-800">
                 Total Progress
@@ -81,108 +125,163 @@ const WorkspaceCard = ({
             </div>
           </div>
 
-          {/* member */}
+          {/* Member Avatar Stack */}
+          <div className="mt-2" ref={containerRef}>
+            <p className="text-[0.8em] font-semibold mb-2 text-gray-800">
+              Members ({membersWorkspaceQuery.data?.totalMembers || 0})
+            </p>
 
-          <div className="mt-3">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMembers(!showMembers);
-              }}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              {showMembers
-                ? "Hide Members"
-                : `Show Members (${
-                    membersWorkspaceQuery.data?.totalMembers || 0
-                  })`}
-            </button>
+            {membersWorkspaceQuery.isLoading ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              <div className="relative">
+                <div className="flex items-center">
+                  {visibleMembers.map((member, index) => (
+                    member.user && (
+                      <div
+                        key={member._id}
+                        className="relative group"
+                        style={{
+                          marginLeft: index === 0 ? 0 : "-10px",
+                          zIndex: visibleMembers.length - index,
+                        }}
+                      >
+                        <button
+                          onClick={(e) => handleAvatarClick(member, e)}
+                          className={`
+                            w-9 h-9 rounded-full ${colors[index % colors.length]}
+                            flex items-center justify-center text-white font-semibold text-sm
+                            ring-2 ring-white shadow-md
+                            transform transition-all duration-300 ease-out
+                            hover:scale-110 hover:-translate-y-1 hover:z-50
+                            hover:ring-2 hover:ring-blue-400
+                            ${selectedMember?._id === member._id ? "scale-110 -translate-y-1 ring-2 ring-blue-400" : ""}
+                          `}
+                        >
+                          {member.user.username.charAt(0).toUpperCase()}
+                        </button>
 
-            {showMembers && (
-              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                {membersWorkspaceQuery.isLoading ? (
-                  <span className="loading loading-spinner loading-sm"></span>
-                ) : (
-                  <>
-                    {/* Owner */}
-                    {/* {membersWorkspaceQuery.data?.owner && (
-                      <div className="mb-2 pb-2 border-b">
-                        <p className="text-xs font-semibold text-gray-600">
-                          Owner:
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="avatar placeholder">
-                            <div className="bg-primary text-white rounded-full w-6">
-                              <span className="text-xs">
-                                {membersWorkspaceQuery.data.owner.username
-                                  .charAt(0)
-                                  .toUpperCase()}
-                              </span>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {membersWorkspaceQuery.data.owner.username}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {membersWorkspaceQuery.data.owner.email}
-                            </p>
-                          </div>
+                        {/* Hover tooltip */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 
+                          bg-gray-900 text-white text-xs rounded-md whitespace-nowrap
+                          opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                          pointer-events-none shadow-lg z-50">
+                          {member.user.username}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 
+                            border-4 border-transparent border-t-gray-900" />
                         </div>
                       </div>
-                    )} */}
+                    )
+                  ))}
 
-                    {/* Members List */}
-                    <p className="text-xs font-semibold text-gray-600 mb-2">
-                      Members:
-                    </p>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {membersWorkspaceQuery.data?.members?.map(
-                        (member) =>
-                          member.user && (
-                            <div
-                              key={member._id}
-                              className="flex items-center gap-2"
-                            >
-                              <div className="avatar placeholder">
-                                <div className="bg-neutral text-white rounded-full w-6">
-                                  <span className="text-xs">
-                                    {member.user.username
-                                      .charAt(0)
-                                      .toUpperCase()}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm">
-                                  {member.user.username}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {member.user.email}
-                                </p>
-                              </div>
-                              <span
-                                className={`badge badge-xs ${
-                                  member.role === "admin"
-                                    ? "badge-primary"
-                                    : member.role === "member"
-                                    ? "badge-secondary"
-                                    : "badge-ghost"
-                                }`}
-                              >
-                                {member.role}
-                              </span>
-                            </div>
-                          )
-                      )}
+                  {remainingCount > 0 && (
+                    <button
+                      onClick={handleShowAll}
+                      className="
+                        w-9 h-9 rounded-full bg-gray-600
+                        flex items-center justify-center text-white font-semibold text-xs
+                        ring-2 ring-white shadow-md
+                        transform transition-all duration-300 ease-out
+                        hover:scale-110 hover:-translate-y-1 hover:bg-gray-500
+                      "
+                      style={{ marginLeft: "-10px", zIndex: 0 }}
+                    >
+                      +{remainingCount}
+                    </button>
+                  )}
+                </div>
+
+                {/* Single member popover */}
+                {selectedMember && !selectedMember.showAll && (
+                  <div
+                    className="absolute bg-white rounded-xl shadow-2xl p-4 min-w-52 border border-gray-100"
+                    style={{
+                      left: popoverPos.x,
+                      top: popoverPos.y,
+                      transform: "translateX(-50%)",
+                      zIndex: 100,
+                      animation: "fadeSlideIn 0.2s ease-out",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 
+                      w-4 h-4 bg-white rotate-45 rounded-sm border-l border-t border-gray-100" />
+
+                    <div className="relative flex items-center gap-3">
+                      <div className={`
+                        w-11 h-11 rounded-full ${colors[visibleMembers.findIndex(m => m._id === selectedMember._id) % colors.length]}
+                        flex items-center justify-center text-white font-bold text-lg
+                      `}>
+                        {selectedMember.user.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{selectedMember.user.username}</p>
+                        <p className="text-sm text-gray-500 truncate">{selectedMember.user.email}</p>
+                      </div>
                     </div>
-                  </>
+
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${roleColors[selectedMember.role] || roleColors.viewer}`}>
+                        {selectedMember.role?.charAt(0).toUpperCase() + selectedMember.role?.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* All members popover */}
+                {selectedMember?.showAll && (
+                  <div
+                    className="absolute bg-white rounded-xl shadow-2xl p-4 w-64 border border-gray-100"
+                    style={{
+                      left: popoverPos.x,
+                      top: popoverPos.y,
+                      transform: "translateX(-50%)",
+                      zIndex: 100,
+                      animation: "fadeSlideIn 0.2s ease-out",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 
+                      w-4 h-4 bg-white rotate-45 rounded-sm border-l border-t border-gray-100" />
+
+                    <h4 className="font-semibold text-gray-900 mb-3 relative">
+                      All Members ({members.length})
+                    </h4>
+
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {members.map((member, index) => (
+                        member.user && (
+                          <div
+                            key={member._id}
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 
+                              transition-colors duration-150"
+                          >
+                            <div className={`
+                              w-8 h-8 rounded-full ${colors[index % colors.length]}
+                              flex items-center justify-center text-white font-semibold text-sm
+                            `}>
+                              {member.user.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-900 text-sm truncate">
+                                {member.user.username}
+                              </p>
+                              <p className="text-xs text-gray-500 truncate">{member.user.email}</p>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${roleColors[member.role] || roleColors.viewer}`}>
+                              {member.role}
+                            </span>
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* delete & detail */}
+          {/* Delete & Detail buttons */}
           <div className="card-actions justify-end flex flex-row items-center mt-2">
             <button
               className="btn btn-sm w-14 btn-warning text-orange-900"
@@ -193,7 +292,7 @@ const WorkspaceCard = ({
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? (
-                <span className="loading loading-spinner loading-xs "></span>
+                <span className="loading loading-spinner loading-xs"></span>
               ) : (
                 "Delete"
               )}
@@ -210,6 +309,20 @@ const WorkspaceCard = ({
           </div>
         </div>
       </div>
+
+      {/* Add this CSS to your global styles or as a style tag */}
+      <style>{`
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

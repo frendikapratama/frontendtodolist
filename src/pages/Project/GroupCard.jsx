@@ -4,16 +4,18 @@ import TaskList from "../Task/TaskList";
 import { useCallback } from "react";
 import { useState, useEffect } from "react";
 import { useGroup } from "../../hook/useGroups";
-import { Trash2 } from "lucide-react";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useProgress } from "../../hook/useProgress";
+import { useRecentUpdates } from "../../context/RecentlyContext";
 
 const GroupCard = ({ group, index }) => {
   const { taskByGroup, updateTaskMutation } = useTask(group._id);
   const { updateGroupMutation, deleteMutation } = useGroup();
   const { progressByGroup } = useProgress(group._id);
+  const { toggleRecentUpdates, isOpen: isRecentOpen, selectedGroupId } = useRecentUpdates();
+
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isCardOpen, setIsCardOpen] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(group.nama);
@@ -22,16 +24,16 @@ const GroupCard = ({ group, index }) => {
     taskId: null,
   });
 
+  const isRecentUpdatesOpen = isRecentOpen && selectedGroupId === group._id;
+
   const handleNameEdit = (e) => {
     e.preventDefault();
     const newName = editedName.trim();
-
     if (!newName || newName === group.nama) {
       setIsEditing(false);
       setEditedName(group.nama);
       return;
     }
-
     updateGroupMutation.mutate({
       groupId: group._id,
       data: { nama: newName },
@@ -41,20 +43,14 @@ const GroupCard = ({ group, index }) => {
 
   useEffect(() => {
     const handleTaskDrop = (event) => {
-      const { taskId, sourceGroupId, targetGroupId, targetIndex } =
-        event.detail;
-
+      const { taskId, sourceGroupId, targetGroupId, targetIndex } = event.detail;
       if (targetGroupId === group._id && sourceGroupId !== group._id) {
         updateTaskMutation.mutate({
           taskId,
-          data: {
-            groupId: group._id,
-            position: targetIndex,
-          },
+          data: { groupId: group._id, position: targetIndex },
         });
       }
     };
-
     document.addEventListener("taskDrop", handleTaskDrop);
     return () => document.removeEventListener("taskDrop", handleTaskDrop);
   }, [group._id, updateTaskMutation]);
@@ -72,11 +68,11 @@ const GroupCard = ({ group, index }) => {
   const handleDelete = useCallback((groupId) => {
     setConfirmDelete({ show: true, groupId: groupId });
   }, []);
+
   const confirmDeleteGroup = useCallback(() => {
     if (confirmDelete.groupId) {
       deleteMutation.mutate(confirmDelete.groupId);
       setConfirmDelete({ show: false, groupId: null });
-    } else {
     }
   }, [confirmDelete.groupId, deleteMutation]);
 
@@ -91,20 +87,19 @@ const GroupCard = ({ group, index }) => {
     return colors[status] || "bg-gray-100 text-gray-700";
   };
 
-  // Get progress data
   const progressData = progressByGroup.data;
 
   return (
     <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+      {/* Header */}
       <div
         className="px-2 py-1 flex items-center justify-between cursor-pointer"
         style={{ background: getHeaderColor() }}
       >
         <div className="flex items-center gap-2">
           <ChevronDown
-            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${isOpen ? "rotate-0" : "-rotate-90"
-              }`}
-            onClick={() => setIsOpen(!isOpen) }
+            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${isCardOpen ? "rotate-0" : "-rotate-90"}`}
+            onClick={() => setIsCardOpen(!isCardOpen)}
           />
           {isEditing ? (
             <input
@@ -116,9 +111,8 @@ const GroupCard = ({ group, index }) => {
               onChange={(e) => setEditedName(e.target.value)}
               onBlur={handleNameEdit}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleNameEdit(e);
-                } else if (e.key === "Escape") {
+                if (e.key === "Enter") handleNameEdit(e);
+                else if (e.key === "Escape") {
                   setIsEditing(false);
                   setEditedName(group.nama);
                 }
@@ -146,6 +140,7 @@ const GroupCard = ({ group, index }) => {
           Delete
         </button>
       </div>
+
       <ConfirmDialog
         show={confirmDelete.show}
         onClose={() => setConfirmDelete({ show: false, groupId: null })}
@@ -164,15 +159,10 @@ const GroupCard = ({ group, index }) => {
         </div>
       ) : progressData ? (
         <div className="px-4 py-3 bg-gray-200 border-b border-gray-200">
-          {/* Progress Bar */}
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[0.8em] font-medium text-gray-700">
-                Progress Task
-              </span>
-              <span className="text-sm font-semibold text-gray-900">
-                {progressData.progress}%
-              </span>
+              <span className="text-[0.8em] font-medium text-gray-700">Progress Task</span>
+              <span className="text-sm font-semibold text-gray-900">{progressData.progress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div
@@ -182,62 +172,54 @@ const GroupCard = ({ group, index }) => {
             </div>
           </div>
 
-          {/* Status Summary */}
-          <div className="flex flex-wrap gap-2">
-            {progressData.done > 0 && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                  "done"
-                )}`}
+          <div className="flex justify-between">
+            <div className="flex flex-wrap gap-2 items-center">
+              {progressData.done > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("done")}`}>
+                  Done: {progressData.done}
+                </span>
+              )}
+              {progressData.in_progress > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("in_progress")}`}>
+                  In Progress: {progressData.in_progress}
+                </span>
+              )}
+              {progressData.to_do > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("to_do")}`}>
+                  To Do: {progressData.to_do}
+                </span>
+              )}
+              {progressData.Hold > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("Hold")}`}>
+                  Hold: {progressData.Hold}
+                </span>
+              )}
+              {progressData.reject > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("reject")}`}>
+                  Reject: {progressData.reject}
+                </span>
+              )}
+            </div>
+            <div className="text-gray-300">
+              <button
+                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${isRecentUpdatesOpen
+                    ? "bg-blue-700 ring-2 ring-blue-300 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                  }`}
+                onClick={() => toggleRecentUpdates(group._id)}
               >
-                Done: {progressData.done}
-              </span>
-            )}
-            {progressData.in_progress > 0 && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                  "in_progress"
-                )}`}
-              >
-                In Progress: {progressData.in_progress}
-              </span>
-            )}
-            {progressData.to_do > 0 && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                  "to_do"
-                )}`}
-              >
-                To Do: {progressData.to_do}
-              </span>
-            )}
-            {progressData.Hold > 0 && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                  "Hold"
-                )}`}
-              >
-                Hold: {progressData.Hold}
-              </span>
-            )}
-            {progressData.reject > 0 && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                  "reject"
-                )}`}
-              >
-                Reject: {progressData.reject}
-              </span>
-            )}
+                {isRecentUpdatesOpen ? "Hide Updates" : "Recent Updates"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
 
+      {/* Task List */}
       <div
         className={`
-        ${isDragOver ? "bg-blue-50" : ""}
-        transition-all duration-500 overflow-hidden
-        ${isOpen ? "opacity-100" : "opacity-0 max-h-0"}
+          ${isDragOver ? "bg-blue-50" : ""}
+          transition-all duration-500 overflow-hidden
         `}
         onDragOver={(e) => {
           e.preventDefault();

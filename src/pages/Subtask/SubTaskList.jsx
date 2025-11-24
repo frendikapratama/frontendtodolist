@@ -124,6 +124,7 @@ const SubtaskList = ({ taskId, groupId }) => {
       taskId,
       data: { subTaskId: localSubtasks.map((s) => s._id) },
     });
+    console.log(updatePositionSubTaskMutation)
 
     setDraggedItem(null);
   };
