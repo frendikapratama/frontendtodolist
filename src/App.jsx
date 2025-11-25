@@ -12,7 +12,7 @@ import Kuarter from "./pages/Kuarter/Index";
 import KuarterDetail from "./pages/Kuarter/KuarterDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyResetPassword from "./pages/VerifyResetPassword";
-import AuthPages from "./pages/AuthPages"
+import AuthPages from "./pages/AuthPages";
 import { RecentUpdatesProvider } from "./context/RecentlyContext";
 export default function App() {
   return (
@@ -22,10 +22,7 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/forgot-password" element={<AuthPages />} />
-              <Route
-                path="/verify-reset-password"
-                element={<AuthPages />}
-              />
+              <Route path="/verify-reset-password" element={<AuthPages />} />
               <Route path="/" element={<Navigate to="/login" />} />
               <Route path="/login" element={<AuthPages />} />
               <Route path="/accept-pic-invite" element={<AcceptPicInvite />} />
