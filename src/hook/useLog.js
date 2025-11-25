@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getLogsByGroup } from "../services/logs";
+import { getLogsByGroup, getLogsById } from "../services/logs";
 
 export const useLog = (groupId) => {
     const logsByGroup = useQuery({
@@ -10,4 +10,14 @@ export const useLog = (groupId) => {
     });
 
     return { logsByGroup };
+};
+export const useLogId = (userId) => {
+    const logsById = useQuery({
+        queryKey: ["logsId", userId, "activityId"],
+        queryFn: () => getLogsById(userId),
+        enabled: !!userId,
+        retry: 2,
+    });
+
+    return { logsById };
 };

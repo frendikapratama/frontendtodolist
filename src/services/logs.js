@@ -8,3 +8,10 @@ export async function getLogsByGroup(groupId) {
     });
     return res.data;
 }
+export async function getLogsById(userId) {
+    if (!userId) return { logs: [] };
+    const res = await api.get(`activity/user/${userId}`, {
+        withCredentials: true
+    });
+    return res.data;
+}
