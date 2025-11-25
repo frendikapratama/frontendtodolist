@@ -48,3 +48,15 @@ export async function acceptPicInvite(taskId, token, userData = null) {
   );
   return res.data;
 }
+
+export const fetchMyWork = async() => {
+  const res = await api.get(`task/my-work`);
+  return res.data.data;
+}
+// export async function myWork(taskId, token, userData = null) {
+//   const res = await api.get(
+//     `/task/${taskId}/accept-pic-invite?token=${token}`,
+//     userData
+//   );
+//   return res.data;
+// }

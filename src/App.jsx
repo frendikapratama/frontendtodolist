@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import AcceptPicInvite from "./pages/AcceptPicInvite";
 import Dashboard from "./pages/Dashboard";
 import Kuarter from "./pages/Kuarter/Index";
+import MyWork from "./pages/Workspaces/MyWorkspaces"
 import KuarterDetail from "./pages/Kuarter/KuarterDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyResetPassword from "./pages/VerifyResetPassword";
@@ -30,6 +31,7 @@ export default function App() {
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/mywork" element={<MyWork />} />
                   <Route path="/kuarter" element={<Kuarter />} />
                   <Route path="/kuarter/:id" element={<KuarterDetail />} />;
                   <Route
