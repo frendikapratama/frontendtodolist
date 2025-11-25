@@ -1,9 +1,11 @@
 import { useParams } from "react-router-dom";
 import { useWorkspace } from "../../hook/useWorkspace";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
+import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CollaborationTab from "./CollaborationTab";
+import WorkspaceChat from "../../components/WorkspaceChat";
 
 const WorkspaceDetailPage = () => {
   const { WorkspaceDetail, addProjectMutation } = useWorkspace();
@@ -13,12 +15,32 @@ const WorkspaceDetailPage = () => {
   const [projectName, setProjectName] = useState("");
   const { setSelectedWorkspaceId } = useSelectedWorkspace();
   const navigate = useNavigate();
+  const { user, token } = useContext(AuthContext);
+
+  const [isMember, setIsMember] = useState(false);
 
   useEffect(() => {
     if (id) {
       setSelectedWorkspaceId(id);
     }
   }, [id, setSelectedWorkspaceId]);
+
+  useEffect(() => {
+    if (data && user) {
+      // Cek apakah user adalah owner
+      const isOwner = data.owner?._id === user._id || data.owner === user._id;
+
+      // Cek apakah user ada di members array
+      const isMemberOfWorkspace = data.members?.some(
+        (member) =>
+          member.user?._id === user._id ||
+          member.user === user._id ||
+          member._id === user._id
+      );
+
+      setIsMember(isOwner || isMemberOfWorkspace);
+    }
+  }, [data, user]);
 
   const handleAddProject = (e) => {
     e.preventDefault();
@@ -67,10 +89,15 @@ const WorkspaceDetailPage = () => {
 
       <div className="card p-3">
         <div className="flex flex-row justify-between items-center mb-4">
-          <button onClick={() => navigate(-1)} className="text-[0.8em] text-white hover:text-blue-300 active:text-blue-400 font-semibold transition-colors duration-200">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-[0.8em] text-white hover:text-blue-300 active:text-blue-400 font-semibold transition-colors duration-200"
+          >
             ← Back
           </button>
-          <h2 className="card-title text-white font-bold text-[1.3em]">Workspace {data.nama} Division</h2>
+          <h2 className="card-title text-white font-bold text-[1.3em]">
+            Workspace {data.nama} Division
+          </h2>
           <button
             className="btn btn-primary btn-sm"
             onClick={() =>
@@ -82,6 +109,10 @@ const WorkspaceDetailPage = () => {
         </div>
 
         <CollaborationTab workspaceId={id} />
+
+        {isMember && user && token && (
+          <WorkspaceChat workspaceId={id} currentUser={user} token={token} />
+        )}
       </div>
     </>
   );
