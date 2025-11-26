@@ -53,7 +53,7 @@ const MyWorkspaces = () => {
             if (before?.status && after?.status) {
                 return {
                     main: action === 'UPDATE_TASK' ? 'Changed status' : 'Updated subtask status',
-                    detail: log.task.nama,
+                    detail: log.task?.nama || '-',
                     change: `${before.status} → ${after.status}`
                 };
             }
@@ -74,14 +74,14 @@ const MyWorkspaces = () => {
             if (after?.due_date) {
                 return {
                     main: 'Updated due date',
-                    detail: log.task.nama,
+                    detail: log.task?.nama || '-',
                     change: new Date(after.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                 };
             }
         }
         return {
             main: description || action.replace(/_/g, ' ').toLowerCase(),
-            detail: log.task.nama,
+            detail: log.task?.nama || '-',
             change: null
         };
     };
