@@ -31,6 +31,8 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [totalMembers, setTotalMembers] = useState(0);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -79,10 +81,22 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
 
     newSocket.on("user:joined", (data) => {
       console.log(`${data.username} joined`);
+      setOnlineUsers((prev) => {
+        if (!prev.find((u) => u.userId === data.userId)) {
+          return [...prev, { userId: data.userId, username: data.username }];
+        }
+        return prev;
+      });
     });
 
     newSocket.on("user:left", (data) => {
       console.log(`${data.username} left`);
+      setOnlineUsers((prev) => prev.filter((u) => u.userId !== data.userId));
+    });
+
+    newSocket.on("workspace:users", (data) => {
+      setOnlineUsers(data.users || []);
+      setTotalMembers(data.totalMembers || 0);
     });
 
     newSocket.on("chat:typing", ({ userId, username, isTyping: typing }) => {
@@ -239,11 +253,39 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Workspace Chat</h3>
-        {/* <span style={isConnected ? styles.statusOnline : styles.statusOffline}>
-          {isConnected ? "● Online" : "● Offline"}
-        </span> */}
+      {/* Info Bar */}
+      <div style={styles.infoBar}>
+        <div style={styles.infoItem}>
+          <span style={styles.infoIcon}>👥</span>
+          <div style={styles.infoText}>
+            <div style={styles.infoLabel}>Members</div>
+            <div style={styles.infoValue}>{totalMembers || "..."}</div>
+          </div>
+        </div>
+
+        <div style={styles.divider}></div>
+
+        <div style={styles.infoItem}>
+          <span style={styles.infoIcon}>
+            {isConnected ? "🟢" : "🔴"}
+          </span>
+          <div style={styles.infoText}>
+            <div style={styles.infoLabel}>Status</div>
+            <div style={styles.infoValue}>
+              {isConnected ? "Online" : "Offline"}
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.divider}></div>
+
+        <div style={styles.infoItem}>
+          <span style={styles.infoIcon}>💬</span>
+          <div style={styles.infoText}>
+            <div style={styles.infoLabel}>Active Now</div>
+            <div style={styles.infoValue}>{onlineUsers.length}</div>
+          </div>
+        </div>
       </div>
 
       <div style={styles.messagesContainer}>
@@ -264,12 +306,13 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
                     ? "flex-end"
                     : "flex-start",
                 backgroundColor:
-                  msg.sender._id === currentUser._id ? "#007bff" : "#f1f1f1",
-                color: msg.sender._id === currentUser._id ? "white" : "black",
+                  msg.sender._id === currentUser._id ? "#6366F1" : "#EEF2FF",
+                color: msg.sender._id === currentUser._id ? "white" : "#1F2937",
+                animation: "fadeIn 0.5s ease-in-out",
               }}
             >
               {msg.sender._id !== currentUser._id && (
-                <div style={styles.senderName}>{msg.sender.username}</div>
+                <div style={{ ...styles.senderName, color: "#4F46E5" }}>{msg.sender.username}</div>
               )}
 
               {msg.type === "image" && msg.fileUrl && (
@@ -374,35 +417,47 @@ const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
-    height: "600px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    backgroundColor: "white",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    height: "100%",
+    background: "#FAFAFA",
+    overflow: "hidden",
   },
-  header: {
+  infoBar: {
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     alignItems: "center",
-    padding: "15px",
-    borderBottom: "1px solid #ddd",
-    backgroundColor: "#f8f9fa",
-    borderRadius: "8px 8px 0 0",
+    padding: "16px 20px",
+    background: "linear-gradient(135deg, #0D1164 0%, #211832 100%)",
+    boxShadow: "0 2px 8px rgba(99, 102, 241, 0.2)",
   },
-  title: {
-    margin: 0,
-    fontSize: "18px",
-    fontWeight: 600,
+  infoItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
   },
-  statusOnline: {
-    color: "#28a745",
-    fontSize: "14px",
-    fontWeight: 500,
+  infoIcon: {
+    fontSize: "20px",
   },
-  statusOffline: {
-    color: "#dc3545",
-    fontSize: "14px",
-    fontWeight: 500,
+  infoText: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+  infoLabel: {
+    fontSize: "9px",
+    color: "rgba(255, 255, 255, 0.8)",
+    fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  infoValue: {
+    fontSize: "11px",
+    color: "white",
+    fontWeight: "700",
+  },
+  divider: {
+    width: "1px",
+    height: "40px",
+    background: "rgba(255, 255, 255, 0.2)",
   },
   messagesContainer: {
     flex: 1,
@@ -411,16 +466,17 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "10px",
-    backgroundColor: "#fafafa",
+    fontSize: "14px",
+    backgroundColor: "#FAFAFA",
   },
   loading: {
     textAlign: "center",
-    color: "#666",
+    color: "#9CA3AF",
     padding: "20px",
   },
   emptyState: {
     textAlign: "center",
-    color: "#999",
+    color: "#6B7280",
     padding: "40px 20px",
     fontSize: "14px",
   },
@@ -429,18 +485,19 @@ const styles = {
     padding: "10px 15px",
     borderRadius: "12px",
     wordWrap: "break-word",
-    boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    transition: "transform 0.2s ease",
   },
   senderName: {
-    fontSize: "12px",
-    fontWeight: "bold",
+    fontSize: "11px",
+    fontWeight: "600",
     marginBottom: "5px",
-    opacity: 0.8,
+    opacity: 0.9,
   },
   timestamp: {
-    fontSize: "11px",
-    marginTop: "5px",
-    opacity: 0.7,
+    fontSize: "9px",
+    marginTop: "1px",
+    opacity: 0.6,
   },
   image: {
     maxWidth: "100%",
@@ -450,81 +507,105 @@ const styles = {
     objectFit: "cover",
   },
   fileLink: {
-    color: "inherit",
+    color: "#6366F1",
     textDecoration: "underline",
     display: "block",
     marginBottom: "5px",
+    fontWeight: "500",
   },
   typingIndicator: {
     padding: "10px 15px",
     fontSize: "13px",
     fontStyle: "italic",
-    color: "#666",
-    backgroundColor: "#f9f9f9",
+    color: "#6B7280",
+    backgroundColor: "#F3F4F6",
+    borderTop: "1px solid #E5E7EB",
   },
   inputContainer: {
     display: "flex",
     gap: "10px",
     padding: "15px",
-    borderTop: "1px solid #ddd",
+    borderTop: "1px solid #E5E7EB",
     alignItems: "center",
     backgroundColor: "white",
-    borderRadius: "0 0 8px 8px",
   },
   attachButton: {
     padding: "8px 12px",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
+    border: "1px solid #E5E7EB",
+    borderRadius: "6px",
     backgroundColor: "white",
     cursor: "pointer",
     fontSize: "18px",
-    transition: "background-color 0.2s",
+    color: "#6B7280",
+    transition: "all 0.2s ease",
   },
   selectedFileContainer: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
     padding: "6px 10px",
-    backgroundColor: "#e9ecef",
-    borderRadius: "4px",
+    backgroundColor: "#EEF2FF",
+    borderRadius: "6px",
     fontSize: "12px",
+    border: "1px solid #C7D2FE",
   },
   selectedFile: {
-    color: "#495057",
+    color: "#6366F1",
     maxWidth: "150px",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
+    fontWeight: "500",
   },
   removeFileButton: {
     background: "none",
     border: "none",
-    color: "#dc3545",
+    color: "#EF4444",
     cursor: "pointer",
     fontSize: "14px",
     padding: "0 4px",
     fontWeight: "bold",
+    transition: "color 0.2s ease",
   },
   input: {
     flex: 1,
-    padding: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
+    padding: "10px 14px",
+    border: "1px solid #E5E7EB",
+    borderRadius: "6px",
     fontSize: "14px",
     outline: "none",
+    backgroundColor: "white",
+    color: "black",
+    transition: "border-color 0.2s ease",
   },
   sendButton: {
     padding: "10px 20px",
-    backgroundColor: "#007bff",
+    background: "linear-gradient(135deg, #0D1164 0%, #211832 100%)",
     color: "white",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "6px",
     cursor: "pointer",
     fontSize: "14px",
-    fontWeight: 500,
-    transition: "background-color 0.2s",
+    fontWeight: "600",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+    boxShadow: "0 2px 4px rgba(99, 102, 241, 0.2)",
   },
 };
+
+// Add CSS for fadeIn animation
+const styleSheet = document.styleSheets[0];
+styleSheet.insertRule(`
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`, styleSheet.cssRules.length);
 
 export default WorkspaceChat;
 export { chatApi };

@@ -134,7 +134,7 @@ const GroupCard = ({ group, index }) => {
           </span>
         </div>
         <button
-          className="btn btn-sm p-1 w-12 h-6 hover:bg-orange-700 bg-red-800 text-[0.7em] border-none"
+          className="btn btn-sm p-1 w-12 h-6 text-white hover:bg-orange-700 bg-red-800 text-[0.7em] border-none"
           onClick={() => handleDelete(group._id, group.nama)}
         >
           Delete
