@@ -5,6 +5,7 @@ import { useKuarterLogs } from '../hook/useLog';
 import { useGroupsByKuarter } from '../hook/useGroups';
 import { getKuarter } from '../services/kuarter';
 import AnimatedNumber from '../components/ui/AnimatedNumber'
+import NotificationBell from "../components/ui/NotificationBell";
 import { progress } from 'framer-motion';
 
 // ==================== CONSTANTS ====================
@@ -56,7 +57,15 @@ const compactLayout = (cardsToCompact, movingCardId = null) => {
       result.push(card);
       continue;
     }
+    
     let newCard = { ...card };
+    
+    // Ensure card doesn't exceed grid bounds
+    if (newCard.x + newCard.w > GRID_COLS) {
+      newCard.x = Math.max(0, GRID_COLS - newCard.w);
+    }
+    
+    // Find best position
     for (let y = 0; y < card.y; y++) {
       const testCard = { ...newCard, y };
       const hasCollision = result.some(c => checkCollision(testCard, c));
@@ -719,25 +728,67 @@ export default function Dashboard() {
   // ==================== STORAGE HOOKS ====================
   useEffect(() => {
     const loadLayout = async () => {
+      // Wait for container to be mounted
+      if (!containerRef.current) {
+        setTimeout(loadLayout, 50);
+        return;
+      }
+
       try {
         if (typeof window.storage !== 'undefined') {
           const result = await window.storage.get('dashboard-layout');
           if (result?.value) {
-            setCards(JSON.parse(result.value));
+            const loadedCards = JSON.parse(result.value);
+            const validatedCards = loadedCards.map(card => ({
+              ...card,
+              x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
+              y: Math.max(0, card.y),
+              w: Math.min(card.w, GRID_COLS),
+              h: Math.max(2, card.h)
+            }));
+            setCards(compactLayout(validatedCards));
+            setContainerReady(true);
+            return;
           }
         }
       } catch (error) {
-        console.log('Using default layout');
+        console.log('Error loading layout:', error);
       }
+      const validatedCards = DEFAULT_CARDS.map(card => ({
+        ...card,
+        x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
+        y: Math.max(0, card.y),
+        w: Math.min(card.w, GRID_COLS),
+        h: Math.max(2, card.h)
+      }));
+      setCards(compactLayout(validatedCards));
+      setContainerReady(true);
     };
-    loadLayout();
+    setTimeout(loadLayout, 100);
   }, []);
 
+  // ==================== CONTAINER RESIZE OBSERVER ====================
   useEffect(() => {
-    if (containerRef.current && !containerReady) {
-      setContainerReady(true);
-    }
-  }, [containerReady]);
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      // Re-validate cards when container size changes
+      setCards(prevCards => {
+        const validatedCards = prevCards.map(card => ({
+          ...card,
+          x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
+          w: Math.min(card.w, GRID_COLS - card.x)
+        }));
+        return compactLayout(validatedCards);
+      });
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {
@@ -753,6 +804,35 @@ export default function Dashboard() {
       saveLayout();
     }
   }, [cards, isLoading]);
+
+  // ==================== WINDOW RESIZE HANDLER ====================
+  useEffect(() => {
+    let resizeTimeout;
+    const handleWindowResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (containerRef.current) {
+          // Validate and adjust cards if window resized
+          const adjustedCards = cards.map(card => ({
+            ...card,
+            x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
+            w: Math.min(card.w, GRID_COLS - card.x)
+          }));
+          const compacted = compactLayout(adjustedCards);
+          // Only update if actually changed
+          if (JSON.stringify(compacted) !== JSON.stringify(cards)) {
+            setCards(compacted);
+          }
+        }
+      }, 250); // Debounce resize events
+    };
+
+    window.addEventListener('resize', handleWindowResize);
+    return () => {
+      window.removeEventListener('resize', handleWindowResize);
+      clearTimeout(resizeTimeout);
+    };
+  }, []);
 
   // ==================== POSITION CALCULATIONS ====================
   const getPixelPosition = (gridX, gridY, gridW, gridH) => {
@@ -840,7 +920,9 @@ export default function Dashboard() {
       const deltaX = e.clientX - resizing.startX;
       const deltaY = e.clientY - resizing.startY;
 
-      const newW = Math.max(2, Math.min(GRID_COLS - card.x, resizing.originalW + Math.round(deltaX / (colWidth + GAP))));
+      // Calculate new width and height with constraints
+      const maxW = GRID_COLS - card.x; // Don't exceed container width
+      const newW = Math.max(2, Math.min(maxW, resizing.originalW + Math.round(deltaX / (colWidth + GAP))));
       const newH = Math.max(2, resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP)));
 
       const tempCards = cards.map(c =>
@@ -871,6 +953,35 @@ export default function Dashboard() {
       };
     }
   }, [dragging, resizing, cards]);
+
+  // ==================== WINDOW RESIZE HANDLER ====================
+  useEffect(() => {
+    let resizeTimeout;
+    const handleWindowResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (containerRef.current) {
+          // Validate and adjust cards if window resized
+          const adjustedCards = cards.map(card => ({
+            ...card,
+            x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
+            w: Math.min(card.w, GRID_COLS - card.x)
+          }));
+          const compacted = compactLayout(adjustedCards);
+          // Only update if actually changed
+          if (JSON.stringify(compacted) !== JSON.stringify(cards)) {
+            setCards(compacted);
+          }
+        }
+      }, 250); // Debounce resize events
+    };
+
+    window.addEventListener('resize', handleWindowResize);
+    return () => {
+      window.removeEventListener('resize', handleWindowResize);
+      clearTimeout(resizeTimeout);
+    };
+  }, []);
 
   // ==================== RENDER CARD CONTENT ====================
   const renderCardContent = (cardId) => {
@@ -913,6 +1024,7 @@ export default function Dashboard() {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+          <div className='flex flex-row gap-2 items-center'>
           <button
             onClick={() => setSelectedKuarterId(null)}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all text-sm"
@@ -920,6 +1032,8 @@ export default function Dashboard() {
             <X size={16} />
             Change Quarter
           </button>
+          <NotificationBell/>
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <p className="text-white/70 text-sm">

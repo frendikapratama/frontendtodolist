@@ -7,6 +7,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CollaborationTab from "./CollaborationTab";
 import WorkspaceChat from "../../components/WorkspaceChat";
+import NotificationBell from "../../components/ui/NotificationBell";
 
 const WorkspaceDetailPage = () => {
   const { WorkspaceDetail, addProjectMutation } = useWorkspace();
@@ -61,6 +62,7 @@ const WorkspaceDetailPage = () => {
     <>
       <dialog id="addProjectModal" className="modal">
         <div className="modal-box bg-white text-black">
+          <NotificationBell />
           <h3 className="font-bold text-lg mb-4">Add Project</h3>
           <form onSubmit={handleAddProject}>
             <input
@@ -117,14 +119,17 @@ const WorkspaceDetailPage = () => {
           <h2 className="card-title text-white font-bold text-[1.3em]">
             Workspace {data.nama} Division
           </h2>
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() =>
-              document.getElementById("addProjectModal").showModal()
-            }
-          >
-            Add Project
-          </button>
+          <div className="flex flex-row gap-2 items-center">
+            <NotificationBell />
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() =>
+                document.getElementById("addProjectModal").showModal()
+              }
+            >
+              Add Project
+            </button>
+          </div>
         </div>
         <CollaborationTab workspaceId={id} />
       </div>

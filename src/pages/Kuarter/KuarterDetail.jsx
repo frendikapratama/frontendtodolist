@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useKuarter } from "../../hook/useKuarter";
 import WorkspaceIndex from "../Workspaces/Index";
 import WorkspaceDetailPanel from "../Workspaces/WorkspaceDetailPanel";
+import NotificationBell from "../../components/ui/NotificationBell";
 
 const KuarterDetail = () => {
   const { id } = useParams();
@@ -33,7 +34,7 @@ const KuarterDetail = () => {
   const kuarterData = kuarterDetailQuery.data;
 
   return (
-    <div className="p-3 overflow-hidden">
+    <div className="p-2s overflow-hidden">
       <div className="flex flex-row justify-between">
         <button
           onClick={() => navigate(-1)}
@@ -44,7 +45,7 @@ const KuarterDetail = () => {
         <h1 className="text-[1.3em] font-bold">
           Detail Quarter: {kuarterData.nama}
         </h1>
-        <p></p>
+        <NotificationBell/>
       </div>
 
       <div className="mt-6 flex flex-row gap-4">

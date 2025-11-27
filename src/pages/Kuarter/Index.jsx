@@ -3,6 +3,7 @@ import { useKuarter } from "../../hook/useKuarter";
 import { useNavigate } from "react-router-dom";
 import { KuarterForm } from "./KuarterForm";
 import { Dot, Trash2, Eye } from "lucide-react"
+import NotificationBell from "../../components/ui/NotificationBell";
 
 const Kuarter = () => {
   const { kuarterQuery, updatedKuarterMutation, deleteMutation } = useKuarter();
@@ -52,15 +53,18 @@ const Kuarter = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-2">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white drop-shadow-lg">List Quarters</h1>
+        <div className="flex flex-row gap-2 items-center">
+        <NotificationBell/>
         <button
           onClick={openCreateModal}
           className="px-6 py-2.5 bg-primary hover:from-blue-400 text-white font-medium rounded-xl shadow-lg shadow-blue-500/50 transition-all duration-300 hover:shadow-xl"
         >
           Add Quarter
         </button>
+        </div>
       </div>
 
       <dialog id="createModal" className="modal">

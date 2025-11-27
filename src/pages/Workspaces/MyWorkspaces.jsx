@@ -4,6 +4,7 @@ import { useAuth } from '../../hook/useContext';
 import { useMyWork } from '../../hook/useTask';
 import { useLog, useLogId } from '../../hook/useLog';
 import { useNavigate } from 'react-router-dom';
+import NotificationBell from "../../components/ui/NotificationBell";
 
 const MyWorkspaces = () => {
     const { user } = useAuth();
@@ -272,10 +273,11 @@ const MyWorkspaces = () => {
     if (error) return <p>Error ....</p>
 
     return (
-        <div className="p-6 bg-linear-to-tl from-[#1A3D64] to-[#1D546C] min-h-screen">
+        <div className="p-2 bg-linear-to-tl from-[#1A3D64] to-[#1D546C] min-h-screen">
             {user && (
-                <div className="flex flex-row justify-start mb-6">
+                <div className="flex flex-row justify-between mb-6">
                     <h1 className="text-2xl text-white font-semibold drop-shadow-lg">{greeting()}, {user.username}</h1>
+                    <NotificationBell/>
                 </div>
             )
             }

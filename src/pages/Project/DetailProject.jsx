@@ -15,6 +15,7 @@ import CalendarView from "../Task/CalendarView";
 import GanttChart from "../../components/ui/GanttChart";
 import { useEffect, useState } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
+import NotificationBell from "../../components/ui/NotificationBell";
 
 const ProjectDetailPage = () => {
   const { projectDetail } = useProject();
@@ -82,22 +83,20 @@ const ProjectDetailPage = () => {
             <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200">
               <button
                 onClick={() => setViewMode("table")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
-                  viewMode === "table"
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "table"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <Table className="w-4 h-4" />
                 Table
               </button>
               <button
                 onClick={() => setViewMode("kanban")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
-                  viewMode === "kanban"
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "kanban"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <Layout className="w-4 h-4" />
                 Kanban
@@ -105,8 +104,8 @@ const ProjectDetailPage = () => {
               <button
                 onClick={() => setViewMode("gantt")}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "gantt"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:text-gray-800"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-800"
                   }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -115,11 +114,10 @@ const ProjectDetailPage = () => {
 
               <button
                 onClick={() => setViewMode("calendar")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
-                  viewMode === "calendar"
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "calendar"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <CalendarIcon className="w-4 h-4" />
                 Calendar
@@ -134,6 +132,9 @@ const ProjectDetailPage = () => {
                 <Plus className="w-4 h-4" />
                 New Group
               </button>
+              <div className="bg-black/20 rounded-4xl">
+                <NotificationBell className="" />
+              </div>
             </div>
           </div>
         </div>
