@@ -167,18 +167,26 @@ const TaskList = ({ groupId }) => {
 
   const handlePopupChange = useCallback(
     (taskId, field, value) => {
-      const task = localTasks.find(t => t._id === taskId);
+      const task = localTasks.find((t) => t._id === taskId);
       if (!task) {
         updateTaskMutation.mutate({ taskId, data: { [field]: value } });
         setActivePopup(null);
         return;
       }
       let updateData = { [field]: value };
-      if (field !== "note" && (field === "status" || field === "due_date" || field === "finish_date")) {
+      if (
+        field !== "note" &&
+        (field === "status" || field === "due_date" || field === "finish_date")
+      ) {
         const newStatus = field === "status" ? value : task.status;
         const newDueDate = field === "due_date" ? value : task.due_date;
-        const newFinishDate = field === "finish_date" ? value : task.finish_date;
-        const autoNote = calculateAutoNote(newStatus, newDueDate, newFinishDate);
+        const newFinishDate =
+          field === "finish_date" ? value : task.finish_date;
+        const autoNote = calculateAutoNote(
+          newStatus,
+          newDueDate,
+          newFinishDate
+        );
 
         if (autoNote) {
           updateData.note = autoNote;
@@ -372,7 +380,8 @@ const TaskList = ({ groupId }) => {
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}a
+                onDragEnd={handleDragEnd}
+                a
                 className={`flex items-center hover:bg-none ${
                   isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
                 } ${
@@ -625,8 +634,11 @@ const TaskList = ({ groupId }) => {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
                         })
-                      : "Set date"}
+                      : "Set date & time"}
                   </span>
                   {activePopup?.taskId === task._id &&
                     activePopup?.field === "meeting_date" && (
@@ -640,6 +652,7 @@ const TaskList = ({ groupId }) => {
                           current:
                             buttonRefs.current[`meeting_date-${task._id}`],
                         }}
+                        showTimeSelect={true}
                       />
                     )}
                 </div>
