@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getProgressByGroup,
+  getProgressbyKuarter,
   getProgressbyProject,
   getProgressbyWorkspace,
 } from "../services/progress";
@@ -44,5 +45,18 @@ export const useWorkspaceStats = (workspaceId) => {
 
   return {
     workspaceStats,
+  };
+};
+export const useKuarterStats = (kuarterId) => {
+  const kuarterStats = useQuery({
+    queryKey: ["kuarter-stats", kuarterId],
+    queryFn: () => getProgressbyKuarter(kuarterId),
+    enabled: !!kuarterId,
+    staleTime: 30000,
+    refetchOnWindowFocus: true,
+  });
+
+  return {
+    kuarterStats,
   };
 };

@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Briefcase,
   FolderOpen,
-  BookOpen
+  BookOpen,
+  FolderKanban
 } from "lucide-react";
 
 const iconMap = {
@@ -32,7 +33,8 @@ const iconMap = {
   settings: Settings,
   briefcase: Briefcase,
   folder: FolderOpen,
-  bookopen: BookOpen
+  bookopen: BookOpen,
+  folderkanban: FolderKanban
 };
 
 export default function Sidebar() {

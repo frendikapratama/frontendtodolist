@@ -4,12 +4,192 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useTaskByProject, useUpdateTask } from "../../hook/useTask";
-import { Calendar } from "lucide-react";
+import { Calendar, X, AlertCircle } from "lucide-react";
+
+const EventDetailsDialog = ({ event, onClose }) => {
+  if (!event) return null;
+
+  const props = event.extendedProps;
+  const statusColors = {
+    "To Do": "bg-gray-100 text-gray-800",
+    "In Progress": "bg-blue-100 text-blue-800",
+    "Done": "bg-green-100 text-green-800",
+    "Blocked": "bg-red-100 text-red-800",
+    "Hold": "bg-yellow-100 text-yellow-800",
+  };
+
+  const priorityColors = {
+    "Low": "bg-blue-100 text-blue-800",
+    "Medium": "bg-yellow-100 text-yellow-800",
+    "High": "bg-red-100 text-red-800",
+    "Urgent": "bg-purple-100 text-purple-800",
+  };
+
+  const typeIcons = {
+    "start": "🟢",
+    "due": "🔴",
+    "meeting": "🔵",
+    "finish": "✅",
+  };
+
+  const typeLabels = {
+    "start": "Start Date",
+    "due": "Due Date",
+    "meeting": "Meeting Date",
+    "finish": "Finish Date",
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop with blur */}
+      <div
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300"
+        onClick={onClose}
+      />
+
+      {/* Dialog */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-in fade-in zoom-in-95">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3 flex-1">
+            <span className="text-2xl">{typeIcons[props.type]}</span>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
+                {event.title.replace(` (${props.type.charAt(0).toUpperCase() + props.type.slice(1)})`, "")}
+              </h3>
+              <p className="text-xs text-gray-500">{typeLabels[props.type]}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-4">
+          {/* Date */}
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Date</p>
+              <p className="text-sm font-semibold text-gray-900 mt-1">
+                {event.start.toLocaleDateString("id-ID", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+          </div>
+
+          {/* Group */}
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+              <AlertCircle className="w-4 h-4 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Group</p>
+              <p className="text-sm font-semibold text-gray-900 mt-1">{props.groupName}</p>
+            </div>
+          </div>
+
+          {/* Status & Priority Row */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            {/* Status */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Status</p>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusColors[props.status] || "bg-gray-100 text-gray-800"}`}>
+                {props.status}
+              </span>
+            </div>
+
+            {/* Priority */}
+            {props.priority && (
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Priority</p>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${priorityColors[props.priority] || "bg-gray-100 text-gray-800"}`}>
+                  {props.priority}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Meeting Link */}
+          {props.meeting_link && (
+            <div className="flex items-start gap-3 pt-2">
+              <div className="shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <span className="text-sm font-bold text-green-600">🔗</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Meeting Link</p>
+                <a
+                  href={props.meeting_link.startsWith('http') ? props.meeting_link : `https://${props.meeting_link}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+                >
+                  {props.meeting_link}
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 p-6 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes zoomIn {
+          from {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        .animate-in.fade-in {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-in.zoom-in-95 {
+          animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+      `}</style>
+    </div>
+  );
+};
 
 const CalendarView = ({ projectId }) => {
   const tasksQuery = useTaskByProject(projectId);
   const updateTaskMutation = useUpdateTask();
   const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const allTasks = useMemo(() => {
     return (
@@ -44,6 +224,7 @@ const CalendarView = ({ projectId }) => {
               status: task.status,
               groupName: task.groupName,
               priority: task.priority,
+              meeting_link: task.meeting_link,
             },
           });
         }
@@ -64,6 +245,7 @@ const CalendarView = ({ projectId }) => {
               status: task.status,
               groupName: task.groupName,
               priority: task.priority,
+              meeting_link: task.meeting_link,
             },
           });
         }
@@ -77,13 +259,14 @@ const CalendarView = ({ projectId }) => {
             allDay: true,
             backgroundColor: "#2196f3",
             borderColor: "#2196f3",
-            editable: false, // Meeting date tidak bisa di-drag
+            editable: true, // Meeting date tidak bisa di-drag
             extendedProps: {
               taskId: task._id,
               type: "meeting",
               status: task.status,
               groupName: task.groupName,
               priority: task.priority,
+              meeting_link: task.meeting_link,
             },
           });
         }
@@ -104,6 +287,7 @@ const CalendarView = ({ projectId }) => {
               status: task.status,
               groupName: task.groupName,
               priority: task.priority,
+              meeting_link: task.meeting_link,
             },
           });
         }
@@ -116,19 +300,7 @@ const CalendarView = ({ projectId }) => {
   }, [allTasks]);
 
   const handleEventClick = (info) => {
-    const { event } = info;
-    const props = event.extendedProps;
-
-    const eventDetails = `
-Task: ${event.title}
-Group: ${props.groupName}
-Status: ${props.status}
-Priority: ${props.priority || "N/A"}
-Type: ${props.type}
-Date: ${event.start.toLocaleDateString()}
-    `;
-
-    alert(eventDetails);
+    setSelectedEvent(info.event);
   };
 
   // Handle event drop (drag and drop)
@@ -136,46 +308,41 @@ Date: ${event.start.toLocaleDateString()}
     const { event } = info;
     const props = event.extendedProps;
 
-    // Hanya update jika type adalah 'due'
-    if (props.type !== "due") {
-      info.revert(); // Kembalikan posisi event jika bukan due date
+    if (props.type !== "due" && props.type !== "meeting") {
+      info.revert();
       return;
     }
 
     const newDate = event.start;
     const taskId = props.taskId;
-
-    // Fix timezone issue: ambil tahun, bulan, tanggal dari local date
     const year = newDate.getFullYear();
     const month = String(newDate.getMonth() + 1).padStart(2, "0");
     const day = String(newDate.getDate()).padStart(2, "0");
     const formattedDate = `${year}-${month}-${day}`;
 
-    // Update task langsung tanpa konfirmasi
+    const updateField = props.type === "due" ? "due_date" : "meeting_date";
     updateTaskMutation.mutate(
       {
         taskId: taskId,
-        data: { due_date: formattedDate },
+        data: { [updateField]: formattedDate },
       },
       {
         onSuccess: () => {
-          console.log("Due date updated successfully to:", formattedDate);
+          console.log(`${props.type} date updated successfully to:`, formattedDate);
         },
         onError: (error) => {
-          console.error("Failed to update due date:", error);
-          info.revert(); // Kembalikan posisi event jika gagal
+          console.error(`Failed to update ${props.type} date:`, error);
+          info.revert(); 
         },
       }
     );
   };
 
-  // Handle event resize (optional, untuk extend duration)
   const handleEventResize = (info) => {
     const { event } = info;
     const props = event.extendedProps;
 
-    // Hanya update jika type adalah 'due'
-    if (props.type !== "due") {
+    if (props.type !== "due" && props.type !== "meeting") {
       info.revert();
       return;
     }
@@ -189,13 +356,19 @@ Date: ${event.start.toLocaleDateString()}
     const day = String(newDate.getDate()).padStart(2, "0");
     const formattedDate = `${year}-${month}-${day}`;
 
+    const updateField = props.type === "due" ? "due_date" : "meeting_date";
+
     updateTaskMutation.mutate(
       {
         taskId: taskId,
-        data: { due_date: formattedDate },
+        data: { [updateField]: formattedDate },
       },
       {
-        onError: () => {
+        onSuccess: () => {
+          console.log(`${props.type} date updated successfully to:`, formattedDate);
+        },
+        onError: (error) => {
+          console.error(`Failed to update ${props.type} date:`, error);
           info.revert();
         },
       }
@@ -248,7 +421,7 @@ Date: ${event.start.toLocaleDateString()}
                 className="w-4 h-4 rounded"
                 style={{ backgroundColor: "#2196f3" }}
               ></div>
-              <span className="text-gray-600">Meeting Date</span>
+              <span className="text-gray-600">Meeting Date (Draggable)</span>
             </div>
             <div className="flex items-center gap-2">
               <div
@@ -300,6 +473,12 @@ Date: ${event.start.toLocaleDateString()}
           </div>
         </div>
       )}
+
+      {/* Event Details Dialog */}
+      <EventDetailsDialog 
+        event={selectedEvent} 
+        onClose={() => setSelectedEvent(null)} 
+      />
     </div>
   );
 };
