@@ -11,7 +11,7 @@ const Layout = () => {
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden bg-linear-to-tl from-[#1A3D64] to-[#1D546C]">
-        <TopBar />
+        {/* <TopBar /> */}
         <main
           className={`flex-1 overflow-y-auto bg-linear-to-tl from-[#1A3D64] to-[#1D546C] transition-all duration-500 ${
             isOpen ? "mr-96" : "mr-0"

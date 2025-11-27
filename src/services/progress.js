@@ -12,3 +12,7 @@ export async function getProgressbyWorkspace(workspaceId) {
   const res = await api.get(`progress/workspace/${workspaceId}`);
   return res.data.data;
 }
+export async function getProgressbyKuarter(kuarterId) {
+  const res = await api.get(`progress/kuarter/${kuarterId}`);
+  return res.data.data;
+}

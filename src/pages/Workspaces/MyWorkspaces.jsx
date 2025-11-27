@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Clock, Calendar, ChevronDown, ChevronRight, CheckCircle2, Circle, Pause, AlertCircle } from 'lucide-react';
+import { Clock, Calendar, ChevronDown, ChevronRight, CheckCircle2, Circle, Pause, AlertCircle, FlagTriangleRight } from 'lucide-react';
 import { useAuth } from '../../hook/useContext';
 import { useMyWork } from '../../hook/useTask';
 import { useLog, useLogId } from '../../hook/useLog';
+import { useNavigate } from 'react-router-dom';
+import NotificationBell from "../../components/ui/NotificationBell";
 
 const MyWorkspaces = () => {
     const { user } = useAuth();
     const { data, isLoading, refetch, error } = useMyWork()
-    const [selectedPeriod, setSelectedPeriod] = useState('today');
+    const [selectedPeriod, setSelectedPeriod] = useState('all');
+    const navigate = useNavigate();
     const { logsById } = useLogId(user?._id)
     const [expandedStatuses, setExpandedStatuses] = useState({
         done: true,
@@ -118,6 +121,7 @@ const MyWorkspaces = () => {
                 dueDate: task.due_date,
                 isSubtask: false,
                 status: task.status,
+                projectId: task.projectId
             };
             if (!task.subtask || !Array.isArray(task.subtask)) {
                 return [mainTask];
@@ -133,6 +137,7 @@ const MyWorkspaces = () => {
                 dueDate: st.due_date,
                 isSubtask: true,
                 status: st.status || "To Do",
+                projectId: task.projectId
             }));
             if (filteredSubTasks.length > 0) {
                 return [mainTask, ...subtasks];
@@ -186,12 +191,12 @@ const MyWorkspaces = () => {
     };
     const getPriorityColor = (priority) => {
         const colors = {
-            urgent: 'text-red-500 bg-red-500/10',
-            high: 'text-orange-500 bg-orange-500/10',
-            medium: 'text-yellow-500 bg-yellow-500/10',
-            low: 'text-green-500 bg-green-500/10'
+            Urgent: 'text-red-500 bg-red-500/10',
+            High: 'text-orange-500 bg-orange-500/10',
+            Medium: 'text-yellow-500 bg-yellow-500/10',
+            Low: 'text-green-500 bg-green-500/10'
         };
-        return colors[priority] || colors.medium;
+        return colors[priority] || colors.Medium;
     };
 
     const getStatusIcon = (status) => {
@@ -248,6 +253,10 @@ const MyWorkspaces = () => {
                 parentId: task._id,
                 parentName: task.nama,
                 due_date: st.due_date || task.due_date,
+                workspace: task.workspace,
+                project: task.project,
+                group: task.group,
+                meeting_date: st.meeting_date || task.meeting_date,
             }));
             return [
                 { ...task, isSubtask: false },
@@ -256,14 +265,19 @@ const MyWorkspaces = () => {
         });
         return allTasks.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
     }, [data]);
+    function splitFormatDate( date ){
+        const result = date.replace("T", " ").replace(".000Z", "");
+        return result
+    } 
     if (isLoading) return <p>Loading Data ....</p>
     if (error) return <p>Error ....</p>
 
     return (
-        <div className="p-6 bg-linear-to-tl from-[#1A3D64] to-[#1D546C] min-h-screen">
+        <div className="p-2 bg-linear-to-tl from-[#1A3D64] to-[#1D546C] min-h-screen">
             {user && (
-                <div className="flex flex-row justify-start mb-6">
+                <div className="flex flex-row justify-between mb-6">
                     <h1 className="text-2xl text-white font-semibold drop-shadow-lg">{greeting()}, {user.username}</h1>
+                    <NotificationBell/>
                 </div>
             )
             }
@@ -331,10 +345,10 @@ const MyWorkspaces = () => {
                 <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300">
                     <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                         <Calendar className="w-5 h-5" />
-                        Agenda
+                        Agenda - Meeting
                     </h2>
                     <div className="space-y-3 max-h-64 overflow-y-auto">
-                        {data?.tasks?.map(agenda => (
+                        {flatList?.filter(a => a.meeting_date).map(agenda => (
                             <div key={agenda._id} className="p-3 bg-white/5 backdrop-blur-sm rounded-xl hover:bg-white/10 transition-all duration-200 border border-white/5 shadow-lg">
                                 <div className="flex items-start justify-between mb-2">
                                     <div>
@@ -343,8 +357,8 @@ const MyWorkspaces = () => {
                                     </div>
                                     <span className="text-xs text-gray-400 shrink-0">{agenda.date}</span>
                                 </div>
-                                <p className="text-xs text-gray-300 mb-1">{agenda.group} - {agenda.project}</p>
-                                <p className="text-xs text-gray-400">From Id: {agenda._id}</p>
+                                <p className="text-xs text-gray-300 mb-1">{agenda.group} - {splitFormatDate(agenda.meeting_date)}</p>
+                                <p className="text-xs text-gray-400">From: {agenda.project}</p>
                             </div>
                         ))}
                     </div>
@@ -419,7 +433,9 @@ const MyWorkspaces = () => {
                                 {expandedStatuses[status] && (
                                     <div className="p-2 space-y-1 bg-black/20 backdrop-blur-sm">
                                         {items.map((item) => (
-                                            <div key={item.id} className="p-2 rounded-lg hover:bg-white/5 transition-all duration-200">
+                                            <div key={item.id}
+                                            onClick={() => navigate(`/project/${item.projectId}`)}
+                                            className="p-2 rounded-lg hover:bg-white/5 transition-all duration-200">
                                                 <div className="flex items-start gap-2">
                                                     <span className="text-xs text-gray-500 mt-1">
                                                         {item.isSubtask ? "↳" : "•"}
@@ -459,8 +475,8 @@ const MyWorkspaces = () => {
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm text-white font-medium">{task.nama}</p>
                                             <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                                <span className={`text-xs px-2 py-1 rounded font-medium uppercase ${getPriorityColor(task.priority)}`}>
-                                                    {task.priority}
+                                                <span className={`text-xs flex flex-row gap-1 px-2 py-1 font-bold rounded uppercase ${getPriorityColor(task.priority)}`}>
+                                                    <FlagTriangleRight className='w-4 h-4'/>{task.priority}
                                                 </span>
                                                 <span className="text-xs text-gray-400 flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
