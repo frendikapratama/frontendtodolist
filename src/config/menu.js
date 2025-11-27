@@ -6,9 +6,15 @@ export const menuItems = [
     icon: "bookopen",
   },
   {
+    id: "Dashboard",
+    label: "Dashboard",
+    path: "/dashboard",
+    icon: "dashboard",
+  },
+  {
     id: "All Kuarter",
     label: "Quarter",
     path: "/Kuarter",
-    icon: "dashboard",
+    icon: "folderkanban",
   },
 ];

@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addGroupToProject, updategroup, deleteGroup } from "../services/group";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { addGroupToProject, updategroup, deleteGroup, getGroupsByKuarter } from "../services/group";
 import toast from "react-hot-toast";
 export const useGroup = () => {
   const queryClient = useQueryClient();
@@ -60,4 +60,16 @@ export const useGroup = () => {
     updateGroupMutation,
     deleteMutation,
   };
+};
+
+export const useGroupsByKuarter = (kuarterId) => {
+  const groupsQuery = useQuery({
+    queryKey: ["groups-kuarter", kuarterId],
+    queryFn: () => getGroupsByKuarter(kuarterId),
+    enabled: !!kuarterId,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+  });
+
+  return groupsQuery;
 };

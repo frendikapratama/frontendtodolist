@@ -70,10 +70,9 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
 
     newSocket.on("chat:message", (message) => {
       setMessages((prev) => {
-        // Cek apakah pesan sudah ada berdasarkan _id
         const exists = prev.some((msg) => msg._id === message._id);
         if (exists) {
-          return prev; // Jangan tambahkan jika sudah ada
+          return prev;
         }
         return [...prev, message];
       });
