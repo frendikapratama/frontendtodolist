@@ -153,7 +153,7 @@ const WorkspaceCard = ({
                             flex items-center justify-center text-white font-semibold text-sm
                             ring-2 ring-white shadow-md
                             transform transition-all duration-300 ease-out
-                            hover:scale-110 hover:-translate-y-1 hover:z-50
+                            hover:scale-110 hover:-translate-y-1 hover:z-10
                             hover:ring-2 hover:ring-blue-400
                             ${selectedMember?._id === member._id ? "scale-110 -translate-y-1 ring-2 ring-blue-400" : ""}
                           `}
@@ -165,7 +165,7 @@ const WorkspaceCard = ({
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 
                           bg-gray-900 text-white text-xs rounded-md whitespace-nowrap
                           opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                          pointer-events-none shadow-lg z-50">
+                          pointer-events-none shadow-lg z-10">
                           {member.user.username}
                           <div className="absolute top-full left-1/2 -translate-x-1/2 
                             border-4 border-transparent border-t-gray-900" />
@@ -199,7 +199,7 @@ const WorkspaceCard = ({
                       left: popoverPos.x,
                       top: popoverPos.y,
                       transform: "translateX(-50%)",
-                      zIndex: 100,
+                      zIndex: 10,
                       animation: "fadeSlideIn 0.2s ease-out",
                     }}
                     onClick={(e) => e.stopPropagation()}
