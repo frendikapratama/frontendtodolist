@@ -3,6 +3,96 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import AnimatedNumber from "../../components/ui/AnimatedNumber";
 import { useWorkspaceStats } from "../../hook/useProgress";
 
+// ==================== ANIMATED DIVISION NAME COMPONENT ====================
+const AnimatedDivisionName = ({ name }) => {
+  const [prevName, setPrevName] = useState(name);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (name !== prevName) {
+      setIsAnimating(true);
+      const timer = setTimeout(() => {
+        setPrevName(name);
+        setIsAnimating(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [name, prevName]);
+
+  return (
+    <div className="division-name-container">
+      <style>{`
+        .division-name-container {
+          {/* width: full; */}
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 0.75rem;
+          padding: 1rem 1.5rem;
+          margin-bottom: 1rem;
+        }
+
+        .division-name-wrapper {
+          position: relative;
+          height: 2.5rem;
+          overflow: hidden;
+        }
+
+        .division-name-text {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: white;
+          position: absolute;
+          width: 100%;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .division-name-text.current {
+          animation: slideDown 0.5s ease-out forwards;
+        }
+
+        .division-name-text.previous {
+          animation: slideUp 0.5s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+          from {
+            transform: translateY(-100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+        }
+      `}</style>
+      
+      <div className="division-name-wrapper">
+        {isAnimating && (
+          <div className="division-name-text previous">
+            {prevName}
+          </div>
+        )}
+        <div className={`division-name-text ${isAnimating ? 'current' : ''}`} style={{ animation: isAnimating ? 'slideDown 0.5s ease-out forwards' : 'none' }}>
+          {name}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==================== CUSTOM TOOLTIP ====================
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
@@ -25,10 +115,7 @@ const CustomTooltip = ({ active, payload }) => {
 const WorkspaceDetailPanel = ({ workspace }) => {
   const [activeIndex, setActiveIndex] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  // Fetch workspace statistics dari API (optional)
   const { workspaceStats } = useWorkspaceStats(workspace?._id);
-
   useEffect(() => {
     setIsAnimating(true);
     const timer = setTimeout(() => setIsAnimating(false), 1200);
@@ -56,10 +143,7 @@ const WorkspaceDetailPanel = ({ workspace }) => {
     );
   }
 
-  // Gunakan data dari API jika ada, fallback ke props workspace
   const apiData = workspaceStats.data;
-
-  // Merge data: prioritas API data, fallback ke workspace props
   const mergedData = {
     inProgress: apiData?.inProgressProject ?? workspace.inProgress ?? 0,
     completed: apiData?.completedProject ?? workspace.completed ?? 0,
@@ -68,22 +152,19 @@ const WorkspaceDetailPanel = ({ workspace }) => {
     totalTask:
       apiData?.totalProject ?? workspace.totalTask ?? workspace.totaltask ?? 0,
     totalGroupTask: apiData?.totalGroup ?? workspace.totalGroup ?? 0,
-
     progress: apiData?.progress ?? 0,
     projects: apiData?.projects ?? [],
   };
 
-  // Hitung total dari semua task (tetap gunakan logic asli)
   const totalTaskCalculated =
     (mergedData.inProgress || 0) +
     (mergedData.completed || 0) +
     (mergedData.undated || 0) +
     (mergedData.planned || 0);
-
   const totalTaskForCalculation =
     mergedData.totalTask || totalTaskCalculated || 1;
 
-  // Chart data (tetap gunakan variable asli)
+  // Chart data 
   const chartData = [
     {
       name: "In Progress",
@@ -97,8 +178,6 @@ const WorkspaceDetailPanel = ({ workspace }) => {
     ...item,
     percentage: ((item.value / totalTaskForCalculation) * 100).toFixed(1),
   }));
-
-  // Stats (tetap gunakan variable asli)
   const stats = [
     {
       label: "In Progress",
@@ -207,13 +286,11 @@ const WorkspaceDetailPanel = ({ workspace }) => {
                 }
             `}</style>
 
-      <div className="space-y-6 animate-fadeIn">
+      <div className="space-y-4 animate-fadeIn">
         {/* Header */}
         <div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">
-            {workspace.nama}
-          </h3>
-          <p className="text-sm text-gray-500">Division Statistics</p>
+          <AnimatedDivisionName name={workspace.nama} />
+          <p className="text-sm text-white mt-2">Division Statistics</p>
         </div>
 
         {/* Pie Chart */}

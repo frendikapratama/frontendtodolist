@@ -108,13 +108,9 @@ const compactLayout = (cardsToCompact, movingCardId = null) => {
     }
 
     let newCard = { ...card };
-
-    // Ensure card doesn't exceed grid bounds
-    if (newCard.x + newCard.w > GRID_COLS) {
+        if (newCard.x + newCard.w > GRID_COLS) {
       newCard.x = Math.max(0, GRID_COLS - newCard.w);
     }
-
-    // Find best position
     for (let y = 0; y < card.y; y++) {
       const testCard = { ...newCard, y };
       const hasCollision = result.some((c) => checkCollision(testCard, c));
@@ -297,8 +293,7 @@ const ActivityHeatmap = ({ logs }) => {
 
                 let shouldShowMonth = false;
                 if (weekIndex === 0) {
-                  // Only show if it's not December (which means it's current year January or later)
-                  shouldShowMonth = firstDayInWeek.month !== "Dec";
+                  shouldShowMonth = firstDayInWeek.month !== 'Dec';
                 } else {
                   const prevWeek = filteredWeeks[weekIndex - 1];
                   const prevFirstDay = prevWeek.find((d) => d !== null);
@@ -476,12 +471,8 @@ const QuarterSelectionDialog = ({ quarters, onSelect, isLoading }) => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white/80 text-sm">
-                      {quarter.totalProject} Projects
-                    </p>
-                    <p className="text-emerald-400 text-xs">
-                      {quarter.progress}% Progress
-                    </p>
+                    <p className="text-white/80 text-sm">{quarter.totalProject || quarter.totalproject || quarter.project} Projects</p>
+                    <p className="text-emerald-400 text-xs">{quarter?.progress}% Progress</p>
                   </div>
                 </div>
               </button>
@@ -503,10 +494,9 @@ const InteractivePieChart = ({ pieData }) => {
   const [isAnimating, setIsAnimating] = useState(true);
   const PIE_DATA = pieData;
 
-  // Trigger animation reset when pieData changes
   useEffect(() => {
     setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 1200); // Animation duration
+    const timer = setTimeout(() => setIsAnimating(false), 1200);
     return () => clearTimeout(timer);
   }, [pieData]);
 
@@ -1094,19 +1084,9 @@ export default function Dashboard() {
       const deltaX = e.clientX - resizing.startX;
       const deltaY = e.clientY - resizing.startY;
 
-      // Calculate new width and height with constraints
-      const maxW = GRID_COLS - card.x; // Don't exceed container width
-      const newW = Math.max(
-        2,
-        Math.min(
-          maxW,
-          resizing.originalW + Math.round(deltaX / (colWidth + GAP))
-        )
-      );
-      const newH = Math.max(
-        2,
-        resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP))
-      );
+      const maxW = GRID_COLS - card.x; 
+      const newW = Math.max(2, Math.min(maxW, resizing.originalW + Math.round(deltaX / (colWidth + GAP))));
+      const newH = Math.max(2, resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP)));
 
       const tempCards = cards.map((c) =>
         c.id === resizing.id ? { ...c, w: newW, h: newH } : c
@@ -1196,7 +1176,6 @@ export default function Dashboard() {
       />
     );
   }
-
   if (isLoading || kuarterStats.isLoading) {
     return (
       <div className="p-6 bg-linear-to-br from-[#1A3D64] to-[#1D546C] min-h-screen flex items-center justify-center">
