@@ -6,7 +6,7 @@ import {
   getSubtaskByTask,
   assignPicSubtask,
   removePicSubtask,
-  deleteSubTask
+  deleteSubTask,
 } from "../services/subtask";
 
 import toast from "react-hot-toast";
@@ -89,8 +89,8 @@ export const useSubTask = (taskId, groupId) => {
   });
   const deleteSubTaskMutation = useMutation({
     mutationFn: (subtaskId) => {
-      console.log("mutationFn called with taskId:", subtaskId)
-      return deleteSubTask(subtaskId)
+      console.log("mutationFn called with taskId:", subtaskId);
+      return deleteSubTask(subtaskId);
     },
     onSuccess: (data) => {
       console.log("Delete success, response:", data);
@@ -142,6 +142,6 @@ export const useSubTask = (taskId, groupId) => {
     assignPicMutation,
     removePicMutation,
     subtaskByTask,
-    deleteSubTaskMutation
+    deleteSubTaskMutation,
   };
 };
