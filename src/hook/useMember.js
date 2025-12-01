@@ -1,7 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { getMembersProject, getMembersWorkspace } from "../services/member";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import {
+  getMembersProject,
+  getMembersWorkspace,
+  inviteMember,
+} from "../services/member";
 
 export const useMember = (type, id) => {
+  const queryClient = useQueryClient();
   const membersWorkspaceQuery = useQuery({
     queryKey: ["members-workspace", id],
     queryFn: () => getMembersWorkspace(id),
@@ -14,8 +20,16 @@ export const useMember = (type, id) => {
     enabled: !!id && type === "project",
   });
 
+  const inviteMemberMutation = useMutation({
+    mutationFn: ({ workspaceId, data }) => inviteMember(workspaceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["members-workspace", id]);
+    },
+  });
+
   return {
     membersProjectQuery,
     membersWorkspaceQuery,
+    inviteMemberMutation,
   };
 };
