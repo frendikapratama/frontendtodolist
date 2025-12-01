@@ -198,13 +198,13 @@ const GroupCard = ({ group, index }) => {
                 <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("reject")}`}>
                   Reject: {progressData.reject}
                 </span>
-              )}  
+              )}
             </div>
             <div className="text-gray-300">
               <button
                 className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${isRecentUpdatesOpen
-                    ? "bg-blue-700 ring-2 ring-blue-300 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                  ? "bg-blue-700 ring-2 ring-blue-300 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
                   }`}
                 onClick={() => toggleRecentUpdates(group._id)}
               >
@@ -218,8 +218,8 @@ const GroupCard = ({ group, index }) => {
       {/* Task List */}
       <div
         className={`
-          ${isDragOver ? "bg-blue-50" : ""}
-          transition-all duration-500 overflow-hidden
+          transition-all duration-700 overflow-hidden
+          ${isCardOpen ? "max-h-[1000px]" : "max-h-0"}
         `}
         onDragOver={(e) => {
           e.preventDefault();
