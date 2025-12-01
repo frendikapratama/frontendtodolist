@@ -62,7 +62,6 @@ const WorkspaceDetailPage = () => {
     <>
       <dialog id="addProjectModal" className="modal">
         <div className="modal-box bg-white text-black">
-          <NotificationBell />
           <h3 className="font-bold text-lg mb-4">Add Project</h3>
           <form onSubmit={handleAddProject}>
             <input

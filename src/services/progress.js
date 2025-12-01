@@ -16,3 +16,7 @@ export async function getProgressbyKuarter(kuarterId) {
   const res = await api.get(`progress/kuarter/${kuarterId}`);
   return res.data.data;
 }
+export async function getProgressbyKuarterAll() {
+  const res = await api.get(`progress/kuarter/all`);
+  return res.data.data;
+}

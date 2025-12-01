@@ -4,6 +4,7 @@ import {
   getProgressbyKuarter,
   getProgressbyProject,
   getProgressbyWorkspace,
+  getProgressbyKuarterAll
 } from "../services/progress";
 
 export const useProgress = (groupId) => {
@@ -52,6 +53,18 @@ export const useKuarterStats = (kuarterId) => {
     queryKey: ["kuarter-stats", kuarterId],
     queryFn: () => getProgressbyKuarter(kuarterId),
     enabled: !!kuarterId,
+    staleTime: 30000,
+    refetchOnWindowFocus: true,
+  });
+
+  return {
+    kuarterStats,
+  };
+};
+export const useKuarterAll = () => {
+  const kuarterStats = useQuery({
+    queryKey: ["kuarter-all"],
+    queryFn: () => getProgressbyKuarterAll(),
     staleTime: 30000,
     refetchOnWindowFocus: true,
   });
