@@ -7,10 +7,11 @@ import {
   SquareDashedKanban,
   X,
 } from "lucide-react";
-import { useKuarterStats, useProgress } from "../hook/useProgress";
+import { useKuarterStats, useProgress, useKuarterAll } from "../hook/useProgress";
 import { useKuarterLogs } from "../hook/useLog";
 import { useGroupsByKuarter } from "../hook/useGroups";
-import { getKuarter } from "../services/kuarter";
+import { useAgendabyKuarter } from "../hook/useAgenda";
+
 import AnimatedNumber from "../components/ui/AnimatedNumber";
 import NotificationBell from "../components/ui/NotificationBell";
 import { progress } from "framer-motion";
@@ -108,7 +109,7 @@ const compactLayout = (cardsToCompact, movingCardId = null) => {
     }
 
     let newCard = { ...card };
-        if (newCard.x + newCard.w > GRID_COLS) {
+    if (newCard.x + newCard.w > GRID_COLS) {
       newCard.x = Math.max(0, GRID_COLS - newCard.w);
     }
     for (let y = 0; y < card.y; y++) {
@@ -452,31 +453,32 @@ const QuarterSelectionDialog = ({ quarters, onSelect, isLoading }) => {
               Loading kuarters...
             </div>
           ) : quarters && quarters.length > 0 ? (
-            quarters.map((quarter) => (
-              <button
-                key={quarter._id}
-                onClick={() => onSelect(quarter._id)}
-                className="w-full text-left bg-linear-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/40 hover:to-purple-500/40 rounded-lg p-4 border border-white/10 hover:border-white/30 transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white font-semibold">
-                      {quarter.kuarterName ||
-                        quarter.nama ||
-                        quarter.name ||
-                        "Unknown Kuarter"}
-                    </p>
-                    <p className="text-white/60 text-sm">
-                      {quarter.departemen || quarter.department || "N/A"}
-                    </p>
+            quarters.map((quarter) => {
+              const quarterId = quarter._id || quarter.kuarterId;
+              const kuarterName = quarter.kuarterName || quarter.nama || quarter.name || "Unknown Kuarter";
+              const departemen = quarter.departemen || quarter.department || "N/A";
+              const progress = quarter.progress || 0;
+              const totalProjects = quarter.totalWorkspace || quarter.totalProject || quarter.totalproject || quarter.project || 0;
+
+              return (
+                <button
+                  key={quarterId}
+                  onClick={() => onSelect(quarterId)}
+                  className="w-full text-left bg-linear-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/40 hover:to-purple-500/40 rounded-lg p-4 border border-white/10 hover:border-white/30 transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white font-semibold">{kuarterName}</p>
+                      <p className="text-white/60 text-sm">{departemen}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white/80 text-sm">{totalProjects} Project</p>
+                      <p className="text-emerald-400 text-xs">{progress}% Progress</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-white/80 text-sm">{quarter.totalProject || quarter.totalproject || quarter.project} Projects</p>
-                    <p className="text-emerald-400 text-xs">{quarter?.progress}% Progress</p>
-                  </div>
-                </div>
-              </button>
-            ))
+                </button>
+              );
+            })
           ) : (
             <div className="text-white/60 text-center py-8">
               No kuarters available
@@ -531,9 +533,8 @@ const InteractivePieChart = ({ pieData }) => {
 
     const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
 
-    return `M ${centerX + offsetX} ${
-      centerY + offsetY
-    } L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    return `M ${centerX + offsetX} ${centerY + offsetY
+      } L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
   };
 
   const getTextPosition = (startAngle, endAngle, isSelected) => {
@@ -581,11 +582,10 @@ const InteractivePieChart = ({ pieData }) => {
         }
         
         .pie-chart-svg {
-          animation: ${
-            isAnimating
-              ? "pieChartDraw 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"
-              : "none"
-          };
+          animation: ${isAnimating
+          ? "pieChartDraw 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"
+          : "none"
+        };
           transform-origin: center;
         }
       `}</style>
@@ -680,12 +680,49 @@ const TasksContent = ({ taskStatuses }) => {
       </div>
     );
   }
-
+  const combinedCard = taskStatuses.slice(0, 2);
+  const otherCards = taskStatuses.slice(2); 
   return (
     <div className="grid grid-cols-4 gap-3 h-full overflow-y-auto scrollbar-thin">
-      {taskStatuses.map((status, i) => (
+      {/* Combined Card dengan Diagonal Split */}
+      <div className="relative rounded-lg overflow-hidden hover:scale-105 transition-transform row-span-2">
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="grad-top" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ef4444" />
+              <stop offset="100%" stopColor="#b91c1c" />
+            </linearGradient>
+            <linearGradient id="grad-bottom" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#6366f1" />
+              <stop offset="100%" stopColor="#4338ca" />
+            </linearGradient>
+          </defs>
+          <polygon points="0,0 100,0 100,100" fill="url(#grad-top)" />
+          <polygon points="0,0 0,100 100,100" fill="url(#grad-bottom)" />
+        </svg>
+        <div className="relative z-10 h-full flex flex-col justify-between p-4">
+          {/* Total Project - Bottom Left */}
+          <div className="text-right">
+            <p className="text-2xl font-bold text-white">
+              <AnimatedNumber value={combinedCard[1]?.count || 0} duration={2000} />
+            </p>
+            <p className="text-white/90 text-xs mt-0.5">{combinedCard[1]?.label}</p>
+          </div>
+          {/* Total Division - Top Right */}
+          <div className="text-left">
+            <p className="text-2xl font-bold text-white">
+              <AnimatedNumber value={combinedCard[0]?.count || 0} duration={2000} />
+            </p>
+            <p className="text-white/90 text-xs mt-0.5">{combinedCard[0]?.label}</p>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Other Cards */}
+      {otherCards.map((status, i) => (
         <div
-          key={i}
+          key={i + 2}
           className={`bg-linear-to-br ${status.color} rounded-lg p-4 text-center hover:scale-105 transition-transform`}
         >
           <p className={`text-3xl font-bold text-white`}>
@@ -752,21 +789,35 @@ const RecentActivitiesContent = ({ activities = [] }) => {
   );
 };
 
-const AgendaContent = () => (
-  <div className="space-y-3 overflow-y-auto h-full">
-    {SAMPLE_TASKS.map((task, i) => (
-      <div
-        key={i}
-        className="bg-linear-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-3 border border-white/10 hover:border-white/30 transition-all"
-      >
-        <p className="text-white font-medium text-sm">{task.title}</p>
-        <p className="text-white/60 text-xs mt-1">
-          Meeting: {task.meetingDate}
-        </p>
+const AgendaContent = ({agendaByKuarter}) => {
+  const tasks = agendaByKuarter?.data?.tasks || [];  
+  if (!tasks || tasks.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <p className="text-white/60 text-lg">There is no agenda yet</p>
       </div>
-    ))}
-  </div>
-);
+    );
+  }
+
+  return (
+    <div className="space-y-3 overflow-y-auto h-full">
+      {tasks.map((agendas, i) => (
+        <div
+          key={i}
+          className="bg-linear-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-3 border border-white/10 hover:border-white/30 transition-all"
+        >
+          <p className="text-white font-medium text-sm">{agendas.task.nama} - {agendas.workspace.nama}</p>
+          <p className="text-white/60 text-xs mt-1">
+            Project: {agendas?.projects?.[0]?.nama}
+          </p>
+          <p className="text-white/60 text-xs mt-1">
+            Meeting Date: {new Date(agendas.task.meeting_date).toLocaleDateString()}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 // ==================== MAIN COMPONENT ====================
 export default function Dashboard() {
@@ -777,8 +828,6 @@ export default function Dashboard() {
   const [placeholder, setPlaceholder] = useState(null);
   const [containerReady, setContainerReady] = useState(false);
   const [selectedKuarterId, setSelectedKuarterId] = useState(null);
-  const [quarters, setQuarters] = useState([]);
-  const [quartersLoading, setQuartersLoading] = useState(true);
   const [pieData, setPieData] = useState([]);
   const [taskStatuses, setTaskStatuses] = useState([]);
   const [activityLogs, setActivityLogs] = useState([]);
@@ -787,22 +836,13 @@ export default function Dashboard() {
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const containerRef = useRef(null);
-
+  
   const { kuarterStats } = useKuarterStats(selectedKuarterId);
   const { kuarterLogs } = useKuarterLogs(selectedKuarterId);
-  useEffect(() => {
-    const loadQuarters = async () => {
-      try {
-        const data = await getKuarter();
-        setQuarters(data || []);
-      } catch (error) {
-        console.error("Failed to load quarters:", error);
-      } finally {
-        setQuartersLoading(false);
-      }
-    };
-    loadQuarters();
-  }, []);
+  const { kuarterStats: kuarterAllData, isLoading: quartersLoading } = useKuarterAll();
+  const { agendasByKuarter } = useAgendabyKuarter(selectedKuarterId)
+  console.log("Data agenda: ",agendasByKuarter)
+  const quarters = kuarterAllData?.data || [];
   useEffect(() => {
     if (kuarterStats.data) {
       const stats = kuarterStats.data;
@@ -814,6 +854,11 @@ export default function Dashboard() {
       }));
       setPieData(pieChartData);
       const updatedTaskStatuses = [
+        {
+          label: "Total Division",
+          count: stats.totalWorkspace || 0,
+          color: "from-red-500 to-red-700",
+        },
         {
           label: "Total Project",
           count: stats.totalProject || 0,
@@ -838,11 +883,6 @@ export default function Dashboard() {
           label: "Not Started",
           count: stats.notStartedProject || 0,
           color: "from-gray-500 to-gray-700",
-        },
-        {
-          label: "Overdue",
-          count: stats.overdueProject || 0,
-          color: "from-red-500 to-red-700",
         },
         {
           label: "Completed",
@@ -889,7 +929,6 @@ export default function Dashboard() {
   // ==================== STORAGE HOOKS ====================
   useEffect(() => {
     const loadLayout = async () => {
-      // Wait for container to be mounted
       if (!containerRef.current) {
         setTimeout(loadLayout, 50);
         return;
@@ -913,7 +952,6 @@ export default function Dashboard() {
           }
         }
       } catch (error) {
-        console.log("Error loading layout:", error);
       }
       const validatedCards = DEFAULT_CARDS.map((card) => ({
         ...card,
@@ -933,7 +971,6 @@ export default function Dashboard() {
     if (!containerRef.current) return;
 
     const resizeObserver = new ResizeObserver(() => {
-      // Re-validate cards when container size changes
       setCards((prevCards) => {
         const validatedCards = prevCards.map((card) => ({
           ...card,
@@ -959,7 +996,6 @@ export default function Dashboard() {
             await window.storage.set("dashboard-layout", JSON.stringify(cards));
           }
         } catch (error) {
-          console.log("Layout saved to memory only");
         }
       };
       saveLayout();
@@ -973,19 +1009,17 @@ export default function Dashboard() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         if (containerRef.current) {
-          // Validate and adjust cards if window resized
           const adjustedCards = cards.map((card) => ({
             ...card,
             x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
             w: Math.min(card.w, GRID_COLS - card.x),
           }));
           const compacted = compactLayout(adjustedCards);
-          // Only update if actually changed
           if (JSON.stringify(compacted) !== JSON.stringify(cards)) {
             setCards(compacted);
           }
         }
-      }, 250); // Debounce resize events
+      }, 250);
     };
 
     window.addEventListener("resize", handleWindowResize);
@@ -1084,7 +1118,7 @@ export default function Dashboard() {
       const deltaX = e.clientX - resizing.startX;
       const deltaY = e.clientY - resizing.startY;
 
-      const maxW = GRID_COLS - card.x; 
+      const maxW = GRID_COLS - card.x;
       const newW = Math.max(2, Math.min(maxW, resizing.originalW + Math.round(deltaX / (colWidth + GAP))));
       const newH = Math.max(2, resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP)));
 
@@ -1124,19 +1158,17 @@ export default function Dashboard() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         if (containerRef.current) {
-          // Validate and adjust cards if window resized
           const adjustedCards = cards.map((card) => ({
             ...card,
             x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
             w: Math.min(card.w, GRID_COLS - card.x),
           }));
           const compacted = compactLayout(adjustedCards);
-          // Only update if actually changed
           if (JSON.stringify(compacted) !== JSON.stringify(cards)) {
             setCards(compacted);
           }
         }
-      }, 250); // Debounce resize events
+      }, 250);
     };
 
     window.addEventListener("resize", handleWindowResize);
@@ -1152,7 +1184,7 @@ export default function Dashboard() {
       case "pie-chart":
         return <InteractivePieChart pieData={pieData} />;
       case "agenda":
-        return <AgendaContent />;
+        return <AgendaContent agendaByKuarter={agendasByKuarter}/>;
       case "tasks":
         return <TasksContent taskStatuses={taskStatuses} />;
       case "recent":
@@ -1258,11 +1290,10 @@ export default function Dashboard() {
           return (
             <div
               key={card.id}
-              className={`absolute bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl transition-all duration-200 ${
-                isDraggingThis || isResizingThis
+              className={`absolute bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl transition-all duration-200 ${isDraggingThis || isResizingThis
                   ? "z-50 shadow-3xl scale-105 opacity-80"
                   : "z-10 hover:bg-white/10"
-              }`}
+                }`}
               style={{
                 left: `${pos.left}px`,
                 top: `${pos.top}px`,
