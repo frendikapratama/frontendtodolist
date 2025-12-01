@@ -45,7 +45,7 @@ const KuarterDetail = () => {
         <h1 className="text-[1.3em] font-bold text-white">
           Detail Quarter: {kuarterData.nama}
         </h1>
-        <NotificationBell/>
+        <NotificationBell />
       </div>
 
       <div className="mt-6 flex flex-row gap-4">

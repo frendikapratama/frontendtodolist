@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell, X, Check, CheckCheck } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
-import { useNavigate } from "react-router-dom";
+import { redirect, useNavigate } from "react-router-dom";
 
 export default function NotificationBell() {
   const {
@@ -41,14 +41,24 @@ export default function NotificationBell() {
     if (!notif.isRead) {
       markAsRead(notif._id);
     }
-
-    if (notif.project) {
-      navigate(`/project/${notif.project}`);
-    }
-
-    setIsOpen(false);
+    // Tidak redirect dan tidak close dropdown
   };
 
+  // Tambahkan handler terpisah jika ingin navigate (opsional)
+  const handleNavigateToProject = (notif, e) => {
+    e.stopPropagation(); // Prevent parent click
+
+    if (notif.project) {
+      // Fix: Extract ID if project is object
+      const projectId =
+        typeof notif.project === "object"
+          ? notif.project._id || notif.project.id
+          : notif.project;
+
+      navigate(`/project/${projectId}`);
+      setIsOpen(false);
+    }
+  };
   const formatDate = (date) => {
     const now = new Date();
     const notifDate = new Date(date);
@@ -163,8 +173,7 @@ export default function NotificationBell() {
                 {notifications.map((notif) => (
                   <div
                     key={notif._id}
-                    onClick={() => handleNotificationClick(notif)}
-                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors  ${
+                    className={`p-4 hover:bg-gray-50 transition-colors  ${
                       !notif.isRead ? `${getNotificationStyle(notif)}` : ""
                     }`}
                   >
@@ -173,7 +182,10 @@ export default function NotificationBell() {
                         {getNotificationIcon(notif.type)}
                       </div>
 
-                      <div className="flex-1 min-w-0">
+                      <div
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => handleNotificationClick(notif)}
+                      >
                         <div className="flex items-start justify-between gap-2">
                           <p
                             className={`font-medium text-sm ${
@@ -212,6 +224,14 @@ export default function NotificationBell() {
                             <Check className="w-3 h-3 text-gray-400" />
                           )}
                         </p>
+                        {notif.project && (
+                          <button
+                            onClick={(e) => handleNavigateToProject(notif, e)}
+                            className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline cursor-pointer"
+                          >
+                            Lihat Project →
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
