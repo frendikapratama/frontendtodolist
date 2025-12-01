@@ -113,7 +113,7 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
     <>
       <div className="bg-white/40 p-4 rounded-lg">
         <div className="flex flex-row backdrop-blur-lg rounded-2xl justify-between items-center sticky top-0 p-1 z-10">
-          <h2 className="text-[1.2em] font-bold mb-4">List Division</h2>
+          <h2 className="text-[1.2em] font-bold mb-4 text-white">List Division</h2>
           <button
             onClick={openCreateModal}
             className="btn btn-primary mb-2"

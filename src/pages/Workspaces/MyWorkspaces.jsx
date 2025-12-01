@@ -89,7 +89,7 @@ const MyWorkspaces = () => {
         };
     };
     const filterByDate = (tasks, period) => {
-        if (!tasks || !Array.isArray(tasks)) return []; 
+        if (!tasks || !Array.isArray(tasks)) return [];
         if (period === 'all') return tasks;
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -113,7 +113,7 @@ const MyWorkspaces = () => {
 
     const allTasksAndSubtasks = useMemo(() => {
         if (!data?.tasks) return [];
-        const filteredTasks = filterByDate(data.tasks, selectedPeriod); 
+        const filteredTasks = filterByDate(data.tasks, selectedPeriod);
         return filteredTasks.flatMap((task) => {
             const mainTask = {
                 id: task._id,
@@ -265,10 +265,10 @@ const MyWorkspaces = () => {
         });
         return allTasks.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
     }, [data]);
-    function splitFormatDate( date ){
+    function splitFormatDate(date) {
         const result = date.replace("T", " ").replace(".000Z", "");
         return result
-    } 
+    }
     if (isLoading) return <p>Loading Data ....</p>
     if (error) return <p>Error ....</p>
 
@@ -277,7 +277,7 @@ const MyWorkspaces = () => {
             {user && (
                 <div className="flex flex-row justify-between mb-6">
                     <h1 className="text-2xl text-white font-semibold drop-shadow-lg">{greeting()}, {user.username}</h1>
-                    <NotificationBell/>
+                    <NotificationBell />
                 </div>
             )
             }
@@ -356,6 +356,12 @@ const MyWorkspaces = () => {
                                         <p className="text-xs font-bold text-blue-400 mt-1">{agenda.workspace}</p>
                                     </div>
                                     <span className="text-xs text-gray-400 shrink-0">{agenda.date}</span>
+                                    <button 
+                                    className='bg-blue-700 hover:bg-blue-500 rounded-xl p-2 text-white'
+                                    onClick={() => window.location.href = `${agenda.meeting_link}`}
+                                    >
+                                        Join Meet
+                                    </button>
                                 </div>
                                 <p className="text-xs text-gray-300 mb-1">{agenda.group} - {splitFormatDate(agenda.meeting_date)}</p>
                                 <p className="text-xs text-gray-400">From: {agenda.project}</p>
@@ -434,8 +440,8 @@ const MyWorkspaces = () => {
                                     <div className="p-2 space-y-1 bg-black/20 backdrop-blur-sm">
                                         {items.map((item) => (
                                             <div key={item.id}
-                                            onClick={() => navigate(`/project/${item.projectId}`)}
-                                            className="p-2 rounded-lg hover:bg-white/5 transition-all duration-200">
+                                                onClick={() => navigate(`/project/${item.projectId}`)}
+                                                className="p-2 rounded-lg hover:bg-white/5 transition-all duration-200">
                                                 <div className="flex items-start gap-2">
                                                     <span className="text-xs text-gray-500 mt-1">
                                                         {item.isSubtask ? "↳" : "•"}
@@ -476,7 +482,7 @@ const MyWorkspaces = () => {
                                             <p className="text-sm text-white font-medium">{task.nama}</p>
                                             <div className="flex items-center gap-2 mt-2 flex-wrap">
                                                 <span className={`text-xs flex flex-row gap-1 px-2 py-1 font-bold rounded uppercase ${getPriorityColor(task.priority)}`}>
-                                                    <FlagTriangleRight className='w-4 h-4'/>{task.priority}
+                                                    <FlagTriangleRight className='w-4 h-4' />{task.priority}
                                                 </span>
                                                 <span className="text-xs text-gray-400 flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
