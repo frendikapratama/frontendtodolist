@@ -45,29 +45,14 @@ const KuarterDetail = () => {
         <h1 className="text-[1.3em] font-bold">
           Detail Quarter: {kuarterData.nama}
         </h1>
-        <NotificationBell/>
+        <NotificationBell />
       </div>
 
       <div className="mt-6 flex flex-row gap-4">
         {/* Left Panel - Quarter Information & Workspace Detail */}
         <div className="md:w-[60%] w-full card bg-white/40 shadow-xl h-[88vh] overflow-y-auto">
           <div className="card-body">
-            <h2 className="card-title text-[1.2em]">Quarter Information</h2>
-            <div className="divider"></div>
-            <div className="text-gray-800">
-              <p>
-                <strong>Name:</strong> {kuarterData.nama}
-              </p>
-              <p>
-                <strong>ID:</strong> {kuarterData._id}
-              </p>
-              <p>
-                <strong>Description:</strong> {kuarterData.deskripsi || "No description"}
-              </p>
-            </div>
-
             {/* Division Details Section */}
-            <div className="divider mt-6"></div>
             <h2 className="card-title text-[1.2em]">Division Details</h2>
             <div className="mt-4">
               <WorkspaceDetailPanel workspace={selectedWorkspace} />
