@@ -97,7 +97,7 @@ const WorkspaceCard = ({
           </div>
         ) : (
           <h2
-            className="card-title hover:bg-gray-100 px-1 rounded"
+            className="card-title hover:bg-gray-100 px-1 rounded text-black/90"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(workspace._id, workspace.nama);
