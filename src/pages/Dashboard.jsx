@@ -11,10 +11,12 @@ import { useKuarterStats, useProgress, useKuarterAll } from "../hook/useProgress
 import { useKuarterLogs } from "../hook/useLog";
 import { useGroupsByKuarter } from "../hook/useGroups";
 import { useAgendabyKuarter } from "../hook/useAgenda";
+import { useNavigate } from 'react-router-dom';
 
 import AnimatedNumber from "../components/ui/AnimatedNumber";
 import NotificationBell from "../components/ui/NotificationBell";
 import { progress } from "framer-motion";
+import { Navigate } from "react-router-dom";
 
 // ==================== CONSTANTS ====================
 const GRID_COLS = 12;
@@ -438,14 +440,26 @@ const ActivityHeatmap = ({ logs }) => {
 };
 
 // ==================== QUARTER SELECTION DIALOG ====================
-const QuarterSelectionDialog = ({ quarters, onSelect, isLoading }) => {
+const QuarterSelectionDialog = ({ quarters, onSelect, isLoading, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10">
-        <h2 className="text-2xl font-bold text-white mb-2">Select Quarter</h2>
-        <p className="text-white/60 text-sm mb-6">
-          Choose a quarter to view the dashboard
-        </p>
+        <div className="flex flex-row justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Select Quarter</h2>
+            <p className="text-white/60 text-sm mb-6">
+              Choose a quarter to view the dashboard
+            </p>
+          </div>
+          <div>
+            <button
+              className="bg-gray-700 p-2 btn-circle hover:bg-gray-400"
+              onClick={onClose}
+            >
+              X
+            </button>
+          </div>
+        </div>
 
         <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
           {isLoading ? (
@@ -681,7 +695,7 @@ const TasksContent = ({ taskStatuses }) => {
     );
   }
   const combinedCard = taskStatuses.slice(0, 2);
-  const otherCards = taskStatuses.slice(2); 
+  const otherCards = taskStatuses.slice(2);
   return (
     <div className="grid grid-cols-4 gap-3 h-full overflow-y-auto scrollbar-thin">
       {/* Combined Card dengan Diagonal Split */}
@@ -789,8 +803,8 @@ const RecentActivitiesContent = ({ activities = [] }) => {
   );
 };
 
-const AgendaContent = ({agendaByKuarter}) => {
-  const tasks = agendaByKuarter?.data?.tasks || [];  
+const AgendaContent = ({ agendaByKuarter }) => {
+  const tasks = agendaByKuarter?.data?.tasks || [];
   if (!tasks || tasks.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -836,12 +850,14 @@ export default function Dashboard() {
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const containerRef = useRef(null);
-  
+  const [showQuarterDialog, setShowQuarterDialog] = useState(true);
+  const navigate = useNavigate();
+
   const { kuarterStats } = useKuarterStats(selectedKuarterId);
   const { kuarterLogs } = useKuarterLogs(selectedKuarterId);
   const { kuarterStats: kuarterAllData, isLoading: quartersLoading } = useKuarterAll();
   const { agendasByKuarter } = useAgendabyKuarter(selectedKuarterId)
-  console.log("Data agenda: ",agendasByKuarter)
+  // console.log("Data agenda: ",agendasByKuarter)
   const quarters = kuarterAllData?.data || [];
   useEffect(() => {
     if (kuarterStats.data) {
@@ -1184,7 +1200,7 @@ export default function Dashboard() {
       case "pie-chart":
         return <InteractivePieChart pieData={pieData} />;
       case "agenda":
-        return <AgendaContent agendaByKuarter={agendasByKuarter}/>;
+        return <AgendaContent agendaByKuarter={agendasByKuarter} />;
       case "tasks":
         return <TasksContent taskStatuses={taskStatuses} />;
       case "recent":
@@ -1195,19 +1211,41 @@ export default function Dashboard() {
         return null;
     }
   };
-
+  const handleCloseQuarterDialog = () => {
+    navigate('/mywork');
+  };
   // ==================== RENDER ====================
   const maxY = cards.reduce((max, card) => Math.max(max, card.y + card.h), 0);
   const containerHeight = maxY * (ROW_HEIGHT + GAP) + GAP;
+
+  if (showQuarterDialog) {
+    return (
+      <QuarterSelectionDialog
+        quarters={quarters}
+        onSelect={(kuarterId) => {
+          handleSelectQuarter(kuarterId);
+          setShowQuarterDialog(false);
+        }}
+        isLoading={quartersLoading}
+        onClose={handleCloseQuarterDialog}
+      />
+    );
+  }
+
   if (!selectedKuarterId) {
     return (
       <QuarterSelectionDialog
         quarters={quarters}
-        onSelect={handleSelectQuarter}
+        onSelect={(kuarterId) => {
+          handleSelectQuarter(kuarterId);
+          setShowQuarterDialog(false);
+        }}
         isLoading={quartersLoading}
+        onClose={() => { }}
       />
     );
   }
+
   if (isLoading || kuarterStats.isLoading) {
     return (
       <div className="p-6 bg-linear-to-br from-[#1A3D64] to-[#1D546C] min-h-screen flex items-center justify-center">
@@ -1224,6 +1262,23 @@ export default function Dashboard() {
     );
   }
 
+  // if (!selectedKuarterId) {
+  //   return (
+  //     <div className="p-6 bg-linear-to-br from-[#1A3D64] to-[#1D546C] min-h-screen flex items-center justify-center">
+  //       <div className="text-center">
+  //         <h2 className="text-2xl font-bold text-white mb-4">No Quarter Selected</h2>
+  //         <p className="text-white/60 mb-6">Please select a quarter to view the dashboard</p>
+  //         <button
+  //           onClick={() => setShowQuarterDialog(true)}
+  //           className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg transition-all"
+  //         >
+  //           Select Quarter
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
   return (
     <div className="p-6 bg-linear-to-br from-[#1A3D64] to-[#1D546C] min-h-screen">
       {/* Header */}
@@ -1232,7 +1287,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
           <div className="flex flex-row gap-2 items-center">
             <button
-              onClick={() => setSelectedKuarterId(null)}
+              onClick={() => setShowQuarterDialog(true)}
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all text-sm"
             >
               <X size={16} />
@@ -1291,8 +1346,8 @@ export default function Dashboard() {
             <div
               key={card.id}
               className={`absolute bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl transition-all duration-200 ${isDraggingThis || isResizingThis
-                  ? "z-50 shadow-3xl scale-105 opacity-80"
-                  : "z-10 hover:bg-white/10"
+                ? "z-50 shadow-3xl scale-105 opacity-80"
+                : "z-10 hover:bg-white/10"
                 }`}
               style={{
                 left: `${pos.left}px`,
