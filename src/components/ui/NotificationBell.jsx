@@ -110,7 +110,7 @@ export default function NotificationBell() {
         className="group relative p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <Bell
-          className={`w-6 h-6 cursor-pointer transition-colors
+          className={`w-6 h-6 text-white cursor-pointer transition-colors
     ${isConnected ? "text-white" : "text-gray-700"}
     group-hover:text-gray-900
   `}

@@ -224,7 +224,7 @@ export default function Sidebar() {
             <div className={`flex items-center transition-all duration-300 ${isSidebarOpen ? "justify-center" : "justify-center"
               }`}>
               <img
-                src="/src/assets/LogoPlanify.png"
+                src={Profile}
                 alt="Logo"
                 className={`transition-all duration-300 ${isSidebarOpen ? "w-9 h-9" : "scale-300"
                   }`}

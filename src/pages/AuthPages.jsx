@@ -206,7 +206,7 @@ export default function AuthCard() {
 
     // Render Login Form
     const renderLoginForm = () => (
-        <div className="w-full h-full">
+        <div className="w-full h-full flex items-start pt-13 justify-center">
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <div className="space-y-5">
                 <div>
@@ -235,12 +235,12 @@ export default function AuthCard() {
                 </div>
                 <button
                     onClick={handleLoginSubmit}
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 my-4 sm:my-5 transition-colors text-sm sm:text-base font-medium shadow-lg"
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 active:bg-blue-800 my-4 sm:my-5 transition-colors text-sm sm:text-base font-medium shadow-lg"
                 >
                     Login
                 </button>
                 <p
-                    className="w-full items-center justify-center flex text-white rounded-lg my-4 sm:my-5 hover:text-blue-700 active:text-blue-800 transition-colors text-sm sm:text-base font-medium cursor-pointer"
+                    className="w-full items-center justify-center flex text-white rounded-lg my-4 sm:my-1 hover:text-blue-700 active:text-blue-800 transition-colors text-sm sm:text-base font-medium cursor-pointer"
                     onClick={handleForgotPasswordClick}
                 >
                     Forget Password?
@@ -370,7 +370,7 @@ export default function AuthCard() {
 
     return (
         <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64] to-[#1D546C] p-4">
-            <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-4 sm:p-6 w-full max-w-4xl mx-4">
+            <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-2 sm:p-6 w-2xl max-w-4xl mx-4">
                 <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
                     {/* Logo Section */}
                     <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
