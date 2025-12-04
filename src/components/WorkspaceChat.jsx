@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import api from "../api/axios";
-
+import { API_URL } from "../api/axios";
 const chatApi = {
   async getWorkspaceMessages(workspaceId, page = 1, limit = 50) {
     const res = await api.get(
@@ -37,7 +37,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     // Guard: pastikan token dan currentUser tersedia
@@ -265,9 +265,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         <div style={styles.divider}></div>
 
         <div style={styles.infoItem}>
-          <span style={styles.infoIcon}>
-            {isConnected ? "🟢" : "🔴"}
-          </span>
+          <span style={styles.infoIcon}>{isConnected ? "🟢" : "🔴"}</span>
           <div style={styles.infoText}>
             <div style={styles.infoLabel}>Status</div>
             <div style={styles.infoValue}>
@@ -311,7 +309,9 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
               }}
             >
               {msg.sender._id !== currentUser._id && (
-                <div style={{ ...styles.senderName, color: "#4F46E5" }}>{msg.sender.username}</div>
+                <div style={{ ...styles.senderName, color: "#4F46E5" }}>
+                  {msg.sender.username}
+                </div>
               )}
 
               {msg.type === "image" && msg.fileUrl && (
@@ -593,7 +593,8 @@ const styles = {
 
 // Add CSS for fadeIn animation
 const styleSheet = document.styleSheets[0];
-styleSheet.insertRule(`
+styleSheet.insertRule(
+  `
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -604,7 +605,9 @@ styleSheet.insertRule(`
       transform: translateY(0);
     }
   }
-`, styleSheet.cssRules.length);
+`,
+  styleSheet.cssRules.length
+);
 
 export default WorkspaceChat;
 export { chatApi };

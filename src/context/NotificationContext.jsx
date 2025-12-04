@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import api from "../api/axios";
 import { AuthContext } from "./AuthContext";
+import { API_URL } from "../api/axios";
 
 const NotificationContext = createContext();
 
@@ -12,7 +13,7 @@ export const NotificationProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (!token) return;
