@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import api from "../api/axios";
-import { API_URL } from "../api/axios";
+import { API_URL, SOCKET_URL } from "../api/axios";
 const chatApi = {
   async getWorkspaceMessages(workspaceId, page = 1, limit = 50) {
     const res = await api.get(
@@ -37,35 +37,33 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
   useEffect(() => {
     // Guard: pastikan token dan currentUser tersedia
     if (!token || !currentUser) {
-      console.warn("Token or currentUser not available yet");
+      // console.warn("Token or currentUser not available yet");
       return;
     }
 
-    const newSocket = io(API_URL, {
+    const newSocket = io(SOCKET_URL, {
       auth: { token },
-      transports: ["polling"],
+      transports: ["polling", "websocket"],
       withCredentials: true,
       reconnection: true,
     });
 
     newSocket.on("connect", () => {
-      console.log("Connected to socket server");
+      // console.log("Connected to socket server");
       setIsConnected(true);
       newSocket.emit("join:workspace", workspaceId);
     });
 
     newSocket.on("disconnect", () => {
-      console.log("Disconnected from socket server");
+      // console.log("Disconnected from socket server");
       setIsConnected(false);
     });
 
     newSocket.on("joined:workspace", (data) => {
-      console.log("Joined workspace:", data.workspaceId);
+      // console.log("Joined workspace:", data.workspaceId);
     });
 
     newSocket.on("chat:message", (message) => {
@@ -79,7 +77,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     });
 
     newSocket.on("user:joined", (data) => {
-      console.log(`${data.username} joined`);
+      // console.log(`${data.username} joined`);
       setOnlineUsers((prev) => {
         if (!prev.find((u) => u.userId === data.userId)) {
           return [...prev, { userId: data.userId, username: data.username }];
@@ -89,7 +87,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     });
 
     newSocket.on("user:left", (data) => {
-      console.log(`${data.username} left`);
+      // console.log(`${data.username} left`);
       setOnlineUsers((prev) => prev.filter((u) => u.userId !== data.userId));
     });
 
@@ -142,7 +140,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     });
 
     newSocket.on("error", (error) => {
-      console.error("Socket error:", error);
+      // console.error("Socket error:", error);
       alert(error.message);
     });
 
@@ -163,7 +161,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         const data = await chatApi.getWorkspaceMessages(workspaceId);
         setMessages(data);
       } catch (error) {
-        console.error("Error loading messages:", error);
+        // console.error("Error loading messages:", error);
         alert("Failed to load messages");
       } finally {
         setIsLoading(false);
@@ -225,7 +223,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         fileInputRef.current.value = "";
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      // console.error("Error sending message:", error);
       alert("Failed to send message");
     }
   };

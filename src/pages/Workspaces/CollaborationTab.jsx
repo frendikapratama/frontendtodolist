@@ -4,17 +4,38 @@ import { useWorkspace } from "../../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
 import AnimatedPercentage from "../../components/ui/AnimatedPercentage";
 import { useProgressProject } from "../../hook/useProgress";
+import { useProject } from "../../hook/useProject";
 
-const ProjectCard = ({ project, isOwner, borderColor, badgeColor, badgeText, collaborationInfo, ownerInfo }) => {
+const ProjectCard = ({
+  project,
+  isOwner,
+  borderColor,
+  badgeColor,
+  badgeText,
+  collaborationInfo,
+  ownerInfo,
+  onDelete,
+}) => {
   const navigate = useNavigate();
   const { progressByProject } = useProgressProject(project._id);
   const progress = progressByProject.data?.progress ?? 0;
 
   return (
     <div
-      className={`card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 ${borderColor}`}
+      className={`card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 ${borderColor} relative`}
       onClick={() => navigate(`/project/${project._id}`)}
     >
+      {isOwner && onDelete && (
+        <button
+          className="btn btn-error btn-xs absolute top-2 right-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(project._id, project.nama);
+          }}
+        >
+          Delete
+        </button>
+      )}
       <div className="mt-2 grid grid-cols-2 gap-10 items-center">
         <div className="flex flex-col gap-1">
           <h4 className="card-title text-[0.9em]">{project.nama}</h4>
@@ -27,13 +48,17 @@ const ProjectCard = ({ project, isOwner, borderColor, badgeColor, badgeText, col
             {new Date(project.createdAt).toLocaleDateString("id-ID")}
           </p>
           <div className="flex gap-2 mt-2 flex-col">
-            <div className={`badge ${badgeColor} badge-sm font-bold text-[0.6em]`}>
+            <div
+              className={`badge ${badgeColor} badge-sm font-bold text-[0.6em]`}
+            >
               {badgeText}
             </div>
 
             {collaborationInfo && (
               <p className="text-black/60 font-semibold text-[0.8em]">
-                <span className="font-medium text-gray-600">Collaboration: </span>
+                <span className="font-medium text-gray-600">
+                  Collaboration:{" "}
+                </span>
                 {collaborationInfo}
               </p>
             )}
@@ -48,7 +73,9 @@ const ProjectCard = ({ project, isOwner, borderColor, badgeColor, badgeText, col
         </div>
 
         <div className="flex items-end justify-center flex-col">
-          <h5 className="text-[0.8em] font-semibold text-gray-700">Total Progress</h5>
+          <h5 className="text-[0.8em] font-semibold text-gray-700">
+            Total Progress
+          </h5>
           {progressByProject.isLoading ? (
             <span className="text-[0.7em] text-gray-400">Loading...</span>
           ) : (
@@ -70,6 +97,7 @@ const CollaborationTab = ({ workspaceId }) => {
   } = useCollaboration();
 
   const { workspacesQuery } = useWorkspace();
+  const { deleteProjectMutation } = useProject();
   const projectsQuery = useWorkspaceProjects(workspaceId);
   const incomingRequests = useCollaborationRequests(
     workspaceId,
@@ -80,6 +108,9 @@ const CollaborationTab = ({ workspaceId }) => {
 
   const [selectedProject, setSelectedProject] = useState("");
   const [selectedWorkspace, setSelectedWorkspace] = useState("");
+
+  const [toDelete, setToDelete] = useState(null);
+
   const [isDragOver, setIsDragOver] = useState(false);
   const navigate = useNavigate();
 
@@ -100,13 +131,19 @@ const CollaborationTab = ({ workspaceId }) => {
     document.getElementById("sendCollabModal").close();
   };
 
+  const handleDeleteProject = (projectId, projectName) => {
+    setToDelete(projectId);
+    document.getElementById("ConfirmationModal").showModal();
+  };
+
   const availableWorkspaces = workspacesQuery.data?.filter(
     (ws) => ws._id !== workspaceId
   );
 
   const ownedOnlyProjects = projectsQuery.data?.owned || [];
   const ownedWithCollaboration = projectsQuery.data?.ownedButCollaborated || [];
-  const collaboratedFromOthers = projectsQuery.data?.collaboratedFromOthers || [];
+  const collaboratedFromOthers =
+    projectsQuery.data?.collaboratedFromOthers || [];
 
   const handleDragStart = (e, requestId) => {
     e.dataTransfer.setData("text/plain", requestId);
@@ -130,12 +167,56 @@ const CollaborationTab = ({ workspaceId }) => {
     setIsDragOver(false);
   };
 
+  const closeModalDelete = () => {
+    document.getElementById("ConfirmationModal").close();
+  };
+
   return (
     <div className="space-y-6 h-screen">
+      <dialog id="ConfirmationModal" className="modal">
+        <div className="modal-box w-11/12 max-w-xl bg-white text-black rounded-2xl shadow-2xl">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b">
+            <h3 className="font-bold text-lg">
+              Are you sure want to delete this project? This action can't be
+              undone.
+            </h3>
+          </div>
+          <div className="flex justify-end gap-4">
+            <button
+              className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-xl transition-all duration-200"
+              onClick={closeModalDelete}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-all duration-200 disabled:opacity-50"
+              onClick={() => {
+                if (toDelete) {
+                  deleteProjectMutation.mutate(toDelete, {
+                    onSuccess: () => {
+                      setToDelete(null);
+                      document.getElementById("ConfirmationModal").close();
+                    },
+                  });
+                }
+              }}
+              disabled={deleteProjectMutation.isLoading}
+            >
+              {deleteProjectMutation.isLoading ? "Deleting..." : "Yes, Delete"}
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={closeModalDelete}>close</button>
+        </form>
+      </dialog>
+
       {/* Modal for Sending Request */}
       <dialog id="sendCollabModal" className="modal">
         <div className="modal-box bg-white text-black">
-          <h3 className="font-bold text-lg mb-4">Sending Collaboration Request</h3>
+          <h3 className="font-bold text-lg mb-4">
+            Sending Collaboration Request
+          </h3>
           <form onSubmit={handleSendRequest} className="space-y-4">
             <div>
               <label className="label">
@@ -205,14 +286,17 @@ const CollaborationTab = ({ workspaceId }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-screen lg:h-screen ">
         {/* Left Column: Projects */}
         <div
-          className={`col-span-1 lg:col-span-2 p-4 bg-white/40 borde-none rounded-lg overflow-y-auto ${isDragOver ? "border-primary border-2" : "border-base-300"
-            }`}
+          className={`col-span-1 lg:col-span-2 p-4 bg-white/40 borde-none rounded-lg overflow-y-auto ${
+            isDragOver ? "border-primary border-2" : "border-base-300"
+          }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[1.1em] font-semibold text-[#EFECE3]">Projects</h3>
+            <h3 className="text-[1.1em] font-semibold text-[#EFECE3]">
+              Projects
+            </h3>
             <button
               className="btn btn-primary btn-sm"
               onClick={() =>
@@ -249,9 +333,11 @@ const CollaborationTab = ({ workspaceId }) => {
                       <ProjectCard
                         key={project._id}
                         project={project}
+                        isOwner={true}
                         borderColor="border-green-500"
                         badgeColor="badge-success"
                         badgeText="Owner"
+                        onDelete={handleDeleteProject}
                       />
                     ))}
                   </div>
@@ -281,14 +367,18 @@ const CollaborationTab = ({ workspaceId }) => {
                       <ProjectCard
                         key={project._id}
                         project={project}
+                        isOwner={true}
                         borderColor="border-blue-500"
                         badgeColor="badge-success"
                         badgeText="Owner"
                         collaborationInfo={
                           project.otherWorkspaces?.length > 0
-                            ? project.otherWorkspaces.map((w) => w.nama).join(", ")
+                            ? project.otherWorkspaces
+                                .map((w) => w.nama)
+                                .join(", ")
                             : null
                         }
+                        onDelete={handleDeleteProject}
                       />
                     ))}
                   </div>
@@ -318,6 +408,7 @@ const CollaborationTab = ({ workspaceId }) => {
                       <ProjectCard
                         key={project._id}
                         project={project}
+                        isOwner={false}
                         borderColor="border-orange-500"
                         badgeColor="badge-warning"
                         badgeText="Collaborator"
@@ -339,7 +430,9 @@ const CollaborationTab = ({ workspaceId }) => {
         <div className="col-span-1 flex flex-col gap-4">
           {/* Incoming Requests (Top Half) */}
           <div className="flex-1 bg-white/40 p-4 border-none rounded-lg overflow-y-auto">
-            <h3 className="text-[1em] font-semibold mb-4 text-[#EFECE3]">Incoming Requests</h3>
+            <h3 className="text-[1em] font-semibold mb-4 text-[#EFECE3]">
+              Incoming Requests
+            </h3>
             {incomingRequests.isLoading ? (
               <p>Loading...</p>
             ) : incomingRequests.data?.length > 0 ? (
@@ -353,15 +446,19 @@ const CollaborationTab = ({ workspaceId }) => {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-semibold text-[0.9em] ">{request.project?.nama}</h4>
+                        <h4 className="font-semibold text-[0.9em] ">
+                          {request.project?.nama}
+                        </h4>
                         <p className="text-[0.8em] font-medium text-gray-600">
-                          From Department:{' '}
+                          From Department:{" "}
                           <span className=" text-black/60 font-semibold">
                             {request.fromWorkspace?.nama}
                           </span>
                         </p>
                         <p className="text-[0.7em] text-gray-500">
-                          {new Date(request.createdAt).toLocaleDateString("id-ID")}
+                          {new Date(request.createdAt).toLocaleDateString(
+                            "id-ID"
+                          )}
                         </p>
                         <div className="badge badge-warning text-[0.7em] font-bold  badge-sm mt-2">
                           {request.status}
@@ -374,7 +471,9 @@ const CollaborationTab = ({ workspaceId }) => {
                         <div>
                           <button
                             className="btn btn-error btn-sm text-[0.7em]"
-                            onClick={() => { rejectMutation.mutate(request._id) }}
+                            onClick={() => {
+                              rejectMutation.mutate(request._id);
+                            }}
                           >
                             Reject
                           </button>
@@ -385,13 +484,17 @@ const CollaborationTab = ({ workspaceId }) => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-[0.8em]">There is no Incoming Request</p>
+              <p className="text-gray-500 text-[0.8em]">
+                There is no Incoming Request
+              </p>
             )}
           </div>
 
           {/* Log Requests (Bottom Half) */}
           <div className="flex-1 bg-white/40 p-4 border-none rounded-lg overflow-y-auto">
-            <h3 className="text-[1em] font-semibold mb-4 text-[#EFECE3]">Log Requests</h3>
+            <h3 className="text-[1em] font-semibold mb-4 text-[#EFECE3]">
+              Log Requests
+            </h3>
             {outgoingRequests.isLoading ? (
               <p>Loading...</p>
             ) : outgoingRequests.data?.length > 0 ? (
@@ -401,9 +504,11 @@ const CollaborationTab = ({ workspaceId }) => {
                     key={request._id}
                     className="card bg-white/60 text-black border border-none p-4"
                   >
-                    <h4 className="font-semibold text-[0.9em]">{request.project?.nama}</h4>
+                    <h4 className="font-semibold text-[0.9em]">
+                      {request.project?.nama}
+                    </h4>
                     <p className="text-[0.8em] font-medium text-gray-600">
-                      To Division: {' '}
+                      To Division:{" "}
                       <span className="text-black/60 font-semibold">
                         {request.toWorkspace?.nama}
                       </span>
@@ -412,12 +517,13 @@ const CollaborationTab = ({ workspaceId }) => {
                       {new Date(request.createdAt).toLocaleDateString("id-ID")}
                     </p>
                     <div
-                      className={`badge badge-sm mt-2 text-[0.7em] font-bold ${request.status === "approved"
+                      className={`badge badge-sm mt-2 text-[0.7em] font-bold ${
+                        request.status === "approved"
                           ? "badge-success"
                           : request.status === "rejected"
-                            ? "badge-error"
-                            : "badge-warning"
-                        }`}
+                          ? "badge-error"
+                          : "badge-warning"
+                      }`}
                     >
                       {request.status}
                     </div>
@@ -425,7 +531,9 @@ const CollaborationTab = ({ workspaceId }) => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-[0.8em]">There is no Sending Request</p>
+              <p className="text-gray-500 text-[0.8em]">
+                There is no Sending Request
+              </p>
             )}
           </div>
         </div>
