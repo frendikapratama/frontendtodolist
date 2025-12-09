@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import api from "../api/axios";
 import { AuthContext } from "./AuthContext";
-import { API_URL } from "../api/axios";
+import { API_URL, SOCKET_URL } from "../api/axios";
 
 const NotificationContext = createContext();
 
@@ -13,27 +13,27 @@ export const NotificationProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
 
-  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_SOCKET_URL || 'https://planify.itvault.cloud' ;
 
   useEffect(() => {
     if (!token) return;
 
-    const newSocket = io(API_URL, {
+    const newSocket = io(SOCKET_URL, {
       auth: { token },
     });
 
     newSocket.on("connect", () => {
-      console.log("Notification socket connected");
+      // console.log("Notification socket connected");
       setIsConnected(true);
     });
 
     newSocket.on("disconnect", () => {
-      console.log("Notification socket disconnected");
+      // console.log("Notification socket disconnected");
       setIsConnected(false);
     });
 
     newSocket.on("notification:new", (notification) => {
-      console.log("New notification received:", notification);
+      // console.log("New notification received:", notification);
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
 
@@ -77,7 +77,7 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount(response.data.data.unreadCount);
       return response.data;
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      // console.error("Error fetching notifications:", error);
       throw error;
     }
   };
