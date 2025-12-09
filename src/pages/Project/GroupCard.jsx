@@ -8,11 +8,17 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useProgress } from "../../hook/useProgress";
 import { useRecentUpdates } from "../../context/RecentlyContext";
 
-const GroupCard = ({ group, index }) => {
+const GroupCard = ({ group, index, workspaceId }) => {
   const { taskByGroup, updateTaskMutation } = useTask(group._id);
   const { updateGroupMutation, deleteMutation } = useGroup();
   const { progressByGroup } = useProgress(group._id);
-  const { toggleRecentUpdates, isOpen: isRecentOpen, selectedGroupId } = useRecentUpdates();
+  const {
+    toggleRecentUpdates,
+    isOpen: isRecentOpen,
+    selectedGroupId,
+  } = useRecentUpdates();
+
+  console.log("GroupCard - workspaceId:", workspaceId);
 
   const [isDragOver, setIsDragOver] = useState(false);
   const [isCardOpen, setIsCardOpen] = useState(true);
@@ -43,7 +49,8 @@ const GroupCard = ({ group, index }) => {
 
   useEffect(() => {
     const handleTaskDrop = (event) => {
-      const { taskId, sourceGroupId, targetGroupId, targetIndex } = event.detail;
+      const { taskId, sourceGroupId, targetGroupId, targetIndex } =
+        event.detail;
       if (targetGroupId === group._id && sourceGroupId !== group._id) {
         updateTaskMutation.mutate({
           taskId,
@@ -98,7 +105,9 @@ const GroupCard = ({ group, index }) => {
       >
         <div className="flex items-center gap-2">
           <ChevronDown
-            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${isCardOpen ? "rotate-0" : "-rotate-90"}`}
+            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${
+              isCardOpen ? "rotate-0" : "-rotate-90"
+            }`}
             onClick={() => setIsCardOpen(!isCardOpen)}
           />
           {isEditing ? (
@@ -161,8 +170,12 @@ const GroupCard = ({ group, index }) => {
         <div className="px-4 py-3 bg-gray-200 border-b border-gray-200">
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[0.8em] font-medium text-gray-700">Progress Task</span>
-              <span className="text-sm font-semibold text-gray-900">{progressData.progress}%</span>
+              <span className="text-[0.8em] font-medium text-gray-700">
+                Progress Task
+              </span>
+              <span className="text-sm font-semibold text-gray-900">
+                {progressData.progress}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div
@@ -175,37 +188,58 @@ const GroupCard = ({ group, index }) => {
           <div className="flex justify-between">
             <div className="flex flex-wrap gap-2 items-center">
               {progressData.done > 0 && (
-                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("done")}`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "done"
+                  )}`}
+                >
                   Done: {progressData.done}
                 </span>
               )}
               {progressData.in_progress > 0 && (
-                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("in_progress")}`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "in_progress"
+                  )}`}
+                >
                   In Progress: {progressData.in_progress}
                 </span>
               )}
               {progressData.to_do > 0 && (
-                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("to_do")}`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "to_do"
+                  )}`}
+                >
                   To Do: {progressData.to_do}
                 </span>
               )}
               {progressData.Hold > 0 && (
-                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("Hold")}`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "Hold"
+                  )}`}
+                >
                   Hold: {progressData.Hold}
                 </span>
               )}
               {progressData.reject > 0 && (
-                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor("reject")}`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "reject"
+                  )}`}
+                >
                   Reject: {progressData.reject}
                 </span>
               )}
             </div>
             <div className="text-gray-300">
               <button
-                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${isRecentUpdatesOpen
-                  ? "bg-blue-700 ring-2 ring-blue-300 text-white"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
+                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${
+                  isRecentUpdatesOpen
+                    ? "bg-blue-700 ring-2 ring-blue-300 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
                 onClick={() => toggleRecentUpdates(group._id)}
               >
                 {isRecentUpdatesOpen ? "Hide Updates" : "Recent Updates"}
@@ -228,7 +262,7 @@ const GroupCard = ({ group, index }) => {
         onDragLeave={() => setIsDragOver(false)}
         onDrop={handleDrop}
       >
-        <TaskList groupId={group._id} />
+        <TaskList groupId={group._id} workspaceId={workspaceId} />
       </div>
     </div>
   );

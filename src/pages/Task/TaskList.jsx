@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTask } from "../../hook/useTask";
+import { useMember } from "../../hook/useMember";
 import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
@@ -10,11 +12,13 @@ import {
   UserPlus,
   X,
   Trash2,
+  ChevronUp,
 } from "lucide-react";
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import toast from "react-hot-toast";
 
-const TaskList = ({ groupId }) => {
+const TaskList = ({ groupId, workspaceId }) => {
   const {
     taskByGroup,
     addTaskMutation,
@@ -24,6 +28,7 @@ const TaskList = ({ groupId }) => {
     removePicMutation,
     deleteTaskMutation,
   } = useTask(groupId);
+  const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
   const { data, isLoading, isError } = taskByGroup;
 
   const [openDialog, setOpenDialog] = useState({ open: false, task: null });
@@ -54,13 +59,16 @@ const TaskList = ({ groupId }) => {
     "Uncomplete",
     "Planning",
   ];
-  const [showPicInput, setShowPicInput] = useState(null);
-  const [picEmail, setPicEmail] = useState("");
 
+  // Tambahkan state untuk popup PIC
+  const [picPopup, setPicPopup] = useState({ show: false, taskId: null });
+
+  // Ganti fungsi handleAssignPic
   const handleAssignPic = useCallback(
-    (taskId) => {
-      const trimmedEmail = picEmail.trim();
+    (taskId, email) => {
+      const trimmedEmail = email.trim();
       if (!trimmedEmail) return;
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmedEmail)) {
         toast.error("Format email tidak valid");
@@ -71,13 +79,12 @@ const TaskList = ({ groupId }) => {
         { taskId, picEmail: trimmedEmail },
         {
           onSuccess: () => {
-            setPicEmail("");
-            setShowPicInput(null);
+            setPicPopup({ show: false, taskId: null });
           },
         }
       );
     },
-    [picEmail, assignPicMutation]
+    [assignPicMutation]
   );
 
   const handleRemovePic = useCallback(
@@ -307,6 +314,113 @@ const TaskList = ({ groupId }) => {
     action: "w-40",
   };
 
+  const PicPopup = ({ members, onSelect, onClose, buttonRef }) => {
+    const [email, setEmail] = useState("");
+    const popupRef = useRef(null);
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (
+          popupRef.current &&
+          !popupRef.current.contains(event.target) &&
+          buttonRef.current &&
+          !buttonRef.current.contains(event.target)
+        ) {
+          onClose();
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }, [onClose, buttonRef]);
+
+    const position = buttonRef.current?.getBoundingClientRect();
+
+    const popupHeight = 300;
+    const spaceBelow = window.innerHeight - (position?.bottom || 0);
+    const shouldShowAbove = spaceBelow < popupHeight;
+
+    return createPortal(
+      <div
+        ref={popupRef}
+        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-[9999] w-64"
+        style={{
+          top: shouldShowAbove
+            ? `${(position?.top || 0) - popupHeight}px`
+            : `${(position?.bottom || 0) + 5}px`,
+          left: `${Math.min(position?.left || 0, window.innerWidth - 270)}px`, // 270 = 264px width + 6px margin
+        }}
+      >
+        <div className="text-xs font-semibold mb-2 text-gray-700">
+          Select Member:
+        </div>
+        <div className="max-h-40 overflow-y-auto mb-3 border border-gray-200 rounded">
+          {members.map((member) => {
+            const user = member.user || member;
+            if (!user?.email) return null;
+
+            return (
+              <button
+                key={user._id || user.email}
+                onClick={() => onSelect(user.email)}
+                className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
+              >
+                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs">
+                  {user.username?.substring(0, 2).toUpperCase() || "?"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{user.username}</div>
+                  <div className="text-gray-500 truncate">{user.email}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="text-xs font-semibold mb-1 text-gray-700">
+          Or enter email:
+        </div>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onSelect(email);
+              setEmail("");
+            }
+            if (e.key === "Escape") onClose();
+          }}
+          className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="email@example.com"
+          autoFocus
+        />
+
+        <div className="flex justify-end gap-2 mt-2">
+          <button
+            onClick={onClose}
+            className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onSelect(email);
+              setEmail("");
+            }}
+            className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            disabled={!email.trim()}
+          >
+            Assign
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   return (
     <div className="overflow-x-auto">
       <div className="w-[50vw] min-w-max">
@@ -453,16 +567,15 @@ const TaskList = ({ groupId }) => {
                   )}
                 </div>
                 {/* PIC */}
-                <div className="flex items-center gap-1 relative group">
+
+                <div
+                  className={`${columnWidths.pic} flex items-center justify-center gap-1 relative`}
+                >
                   {task.pic && task.pic.length > 0 && (
-                    <div className="flex -space-x-3">
+                    <div className="flex -space-x-2">
                       {task.pic.slice(0, 3).map((picUser, idx) => (
-                        <div
-                          key={idx}
-                          className="relative cursor-pointer hover:z-10"
-                          title={picUser.email || "PIC"}
-                        >
-                          <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold">
+                        <div key={idx} className="relative group">
+                          <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
                             {picUser.username
                               ? picUser.username.substring(0, 2).toUpperCase()
                               : "?"}
@@ -473,78 +586,40 @@ const TaskList = ({ groupId }) => {
                             }
                             className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <X className="w-3 h-3 text-white" />
+                            <X size={10} className="text-white" />
                           </button>
                         </div>
                       ))}
-
                       {task.pic.length > 3 && (
-                        <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 cursor-pointer">
+                        <div className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
                           +{task.pic.length - 3}
                         </div>
                       )}
                     </div>
                   )}
 
-                  {task.pic && task.pic.length > 0 && (
-                    <div className="absolute top-8 left-0 hidden group-hover:flex bg-white shadow-lg rounded-lg p-2 z-50">
-                      <div className="flex gap-2">
-                        {task.pic.map((picUser, idx) => (
-                          <div key={idx} className="relative group/avatar">
-                            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-semibold cursor-pointer">
-                              {picUser.username
-                                ? picUser.username.substring(0, 2).toUpperCase()
-                                : "?"}
-                            </div>
-                            <div className="absolute top-7 left-1/2 -translate-x-1/2 hidden group-hover/avatar:flex bg-gray-800 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap pointer-events-none">
-                              <div className="text-center">
-                                <p className="font-semibold">
-                                  {picUser.username}
-                                </p>
-                                <p className="text-gray-300">{picUser.email}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <button
+                    ref={(el) => (buttonRefs.current[`pic-${task._id}`] = el)}
+                    onClick={() =>
+                      setPicPopup({ show: true, taskId: task._id })
+                    }
+                    className="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    title="Assign PIC"
+                  >
+                    <UserPlus size={14} />
+                  </button>
 
-                  {showPicInput === task._id ? (
-                    <input
-                      type="email"
-                      placeholder="email@example.com"
-                      className="w-40 px-2 py-1 text-xs text-black border border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
-                      value={picEmail}
-                      onChange={(e) => setPicEmail(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleAssignPic(task._id);
-                        if (e.key === "Escape") {
-                          setPicEmail("");
-                          setShowPicInput(null);
-                        }
+                  {picPopup.show && picPopup.taskId === task._id && (
+                    <PicPopup
+                      members={membersWorkspaceQuery.data?.members || []}
+                      onSelect={(email) => handleAssignPic(task._id, email)}
+                      onClose={() => setPicPopup({ show: false, taskId: null })}
+                      buttonRef={{
+                        current: buttonRefs.current[`pic-${task._id}`],
                       }}
-                      onBlur={() => {
-                        if (picEmail.trim()) {
-                          handleAssignPic(task._id);
-                        } else {
-                          setPicEmail("");
-                          setShowPicInput(null);
-                        }
-                      }}
-                      autoFocus
                     />
-                  ) : (
-                    <button
-                      onClick={() => setShowPicInput(task._id)}
-                      className="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                      title="Assign PIC"
-                    >
-                      <UserPlus className="w-4 h-4 text-gray-400 hover:text-blue-500" />
-                    </button>
                   )}
                 </div>
-
                 {/* Status */}
                 <div
                   className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}

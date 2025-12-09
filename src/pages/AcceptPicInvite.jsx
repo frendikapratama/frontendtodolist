@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../api/axios";
 
 const AcceptPicInvite = () => {
   const [searchParams] = useSearchParams();
@@ -66,7 +67,7 @@ const AcceptPicInvite = () => {
       const id = subTaskId || taskId;
       const type = subTaskId ? "subTask" : "task";
 
-      const endpoint = `http://localhost:5000/api/${type}/${id}/verify-invite`;
+      const endpoint = `${API_URL}/api/${type}/${id}/verify-invite`;
 
       console.log("Verifying invitation:", { endpoint, token, id, type }); // Debug log
 
@@ -126,7 +127,7 @@ const AcceptPicInvite = () => {
       const id = subTaskId || taskId;
       const type = subTaskId ? "subTask" : "task";
 
-      const endpoint = `http://localhost:5000/api/${type}/${id}/accept-pic-invite?token=${token}`;
+      const endpoint = `${API_URL}/api/${type}/${id}/accept-pic-invite?token=${token}`;
 
       console.log("Submitting to:", endpoint); // Debug log
 
