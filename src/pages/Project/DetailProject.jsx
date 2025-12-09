@@ -23,15 +23,21 @@ const ProjectDetailPage = () => {
   const { addGroupMutation } = useGroup();
   const projectQuery = projectDetail(id);
   const { data, isLoading, isError } = projectQuery;
-  const { setSelectedWorkspaceId } = useSelectedWorkspace();
-  const [viewMode, setViewMode] = useState("table"); // 'table', 'kanban', 'gantt', 'calendar'
+  const { selectedWorkspaceId, setSelectedWorkspaceId } =
+    useSelectedWorkspace();
+  const [viewMode, setViewMode] = useState("table");
 
   useEffect(() => {
     if (!data) return;
     const workspaceId =
       data.workspace?._id || data.workspaceId || data.workspaceId?._id || null;
+    console.log("DetailProject - Data:", data);
+    console.log("DetailProject - WorkspaceId:", workspaceId);
     if (workspaceId) setSelectedWorkspaceId(workspaceId);
   }, [data, setSelectedWorkspaceId]);
+
+  const actualWorkspaceId =
+    data?.workspace?._id || data?.workspaceId || selectedWorkspaceId;
 
   const handleAddProject = () => {
     addGroupMutation.mutate({
@@ -83,30 +89,33 @@ const ProjectDetailPage = () => {
             <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200">
               <button
                 onClick={() => setViewMode("table")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "table"
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
+                  viewMode === "table"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
-                  }`}
+                }`}
               >
                 <Table className="w-4 h-4" />
                 Table
               </button>
               <button
                 onClick={() => setViewMode("kanban")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "kanban"
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
+                  viewMode === "kanban"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
-                  }`}
+                }`}
               >
                 <Layout className="w-4 h-4" />
                 Kanban
               </button>
               <button
                 onClick={() => setViewMode("gantt")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "gantt"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:text-gray-800"
-                  }`}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
+                  viewMode === "gantt"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
               >
                 <BarChart3 className="w-4 h-4" />
                 Gantt
@@ -114,10 +123,11 @@ const ProjectDetailPage = () => {
 
               <button
                 onClick={() => setViewMode("calendar")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${viewMode === "calendar"
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-2 ${
+                  viewMode === "calendar"
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-600 hover:text-gray-800"
-                  }`}
+                }`}
               >
                 <CalendarIcon className="w-4 h-4" />
                 Calendar
@@ -145,7 +155,12 @@ const ProjectDetailPage = () => {
           <div className="space-y-3">
             {data.groups &&
               data.groups.map((group, index) => (
-                <GroupCard key={group._id} group={group} index={index} />
+                <GroupCard
+                  key={group._id}
+                  group={group}
+                  index={index}
+                  workspaceId={actualWorkspaceId}
+                />
               ))}
 
             {(!data.groups || data.groups.length === 0) && (
@@ -175,11 +190,16 @@ const ProjectDetailPage = () => {
           </div>
         )}
 
-        {viewMode === "kanban" && <Kanban projectId={id} />}
+        {viewMode === "kanban" && (
+          <Kanban projectId={id} workspaceId={actualWorkspaceId} />
+        )}
 
-        {viewMode === "calendar" && <CalendarView projectId={id} />}
-        {/* {viewMode === "gantt" && <GanttChart projectId={id} />} */}
-        {viewMode === "gantt" && <GanttChart projectId={id} />}
+        {viewMode === "calendar" && (
+          <CalendarView projectId={id} workspaceId={actualWorkspaceId} />
+        )}
+        {viewMode === "gantt" && (
+          <GanttChart projectId={id} workspaceId={actualWorkspaceId} />
+        )}
       </div>
     </div>
   );

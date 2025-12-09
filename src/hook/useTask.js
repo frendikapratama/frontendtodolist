@@ -8,7 +8,7 @@ import {
   removePic,
   deleteTask,
   getByProjectId,
-  fetchMyWork
+  fetchMyWork,
 } from "../services/task";
 import toast from "react-hot-toast";
 
@@ -150,10 +150,10 @@ export const useUpdateTask = () => {
   });
 };
 
-export const useMyWork = () =>{
+export const useMyWork = () => {
   return useQuery({
     queryKey: ["myWork"],
     queryFn: fetchMyWork,
     refetchInterval: false,
-  })
-}
+  });
+};
