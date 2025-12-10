@@ -27,10 +27,10 @@ export default function Login() {
     if (e.key === "Enter") {
       handleSubmit(e);
     }
-  }
-  const handleForgotPassword = async (e) =>{
-    navigate("/forgot-password")
-  }
+  };
+  const handleForgotPassword = async (e) => {
+    navigate("/forgot-password");
+  };
 
   return (
     <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64]-200 to-[#1D546C] p-4">
@@ -91,7 +91,7 @@ export default function Login() {
                 className="w-full items-center justify-center flex text-white rounded-lg my-4 sm:my-5 hover:text-blue-700 active:text-blue-800 transition-colors text-sm sm:text-base font-medium"
                 onClick={handleForgotPassword}
               >
-              Forget Password? 
+                Forget Password?
               </p>
             </div>
           </div>

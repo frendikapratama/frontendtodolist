@@ -344,7 +344,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     return createPortal(
       <div
         ref={popupRef}
-        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-[9999] w-64"
+        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-90 w-64"
         style={{
           top: shouldShowAbove
             ? `${(position?.top || 0) - popupHeight}px`
@@ -919,6 +919,7 @@ const TaskList = ({ groupId, workspaceId }) => {
                     taskId={task._id}
                     subtasks={task.subtask || []}
                     groupId={groupId}
+                    workspaceId={workspaceId}
                   />
                 </div>
               )}
