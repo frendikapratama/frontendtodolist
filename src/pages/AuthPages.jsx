@@ -6,17 +6,16 @@ import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
 import "../components/ui/AuthPages.css";
 import toast from "react-hot-toast";
-import toast from "react-hot-toast";
 
 export default function AuthCard() {
-    const { login } = useContext(AuthContext);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [success, setSuccess] = useState("");
-    const [currentStep, setCurrentStep] = useState("login");
-    const [isFlipped, setIsFlipped] = useState(false);
+  const { login } = useContext(AuthContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [currentStep, setCurrentStep] = useState("login");
+  const [isFlipped, setIsFlipped] = useState(false);
 
   // States for verify-reset-password
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -31,31 +30,31 @@ export default function AuthCard() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
-    const navigate = useNavigate();
-    const location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    // Sync currentStep dengan location.pathname
-    React.useEffect(() => {
-        if (location.pathname === "/forgot-password") {
-            if (currentStep === "login") {
-                setCurrentStep("forgot");
-                setIsFlipped(true);
-            }
-        } else if (location.pathname === "/login") {
-            setCurrentStep("login");
-            setIsFlipped(false);
-        }
-    }, [location.pathname]);
+  // Sync currentStep dengan location.pathname
+  React.useEffect(() => {
+    if (location.pathname === "/forgot-password") {
+      if (currentStep === "login") {
+        setCurrentStep("forgot");
+        setIsFlipped(true);
+      }
+    } else if (location.pathname === "/login") {
+      setCurrentStep("login");
+      setIsFlipped(false);
+    }
+  }, [location.pathname]);
 
-    // Countdown untuk resend OTP
-    useEffect(() => {
-        if (currentStep === "verify" && countdown > 0) {
-            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-            return () => clearTimeout(timer);
-        } else if (countdown === 0) {
-            setCanResend(true);
-        }
-    }, [countdown, currentStep]);
+  // Countdown untuk resend OTP
+  useEffect(() => {
+    if (currentStep === "verify" && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      setCanResend(true);
+    }
+  }, [countdown, currentStep]);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -95,22 +94,22 @@ export default function AuthCard() {
     }
   };
 
-    // Handlers untuk OTP input
-    const handleOtpChange = (index, value) => {
-        if (!/^\d*$/.test(value)) return;
-        const newOtp = [...otp];
-        newOtp[index] = value;
-        setOtp(newOtp);
-        if (value && index < 5) {
-            inputRefs.current[index + 1]?.focus();
-        }
-    };
+  // Handlers untuk OTP input
+  const handleOtpChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
 
-    const handleKeyDown = (index, e) => {
-        if (e.key === "Backspace" && !otp[index] && index > 0) {
-            inputRefs.current[index - 1]?.focus();
-        }
-    };
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
 
   const handleVerifySubmit = async (e) => {
     e.preventDefault();
@@ -175,39 +174,39 @@ export default function AuthCard() {
     }
   };
 
-    const handleForgotPasswordClick = () => {
-        setError("");
-        setSuccess("");
-        setCurrentStep("forgot");
-        setIsFlipped(true);
-        navigate("/forgot-password");
-    };
+  const handleForgotPasswordClick = () => {
+    setError("");
+    setSuccess("");
+    setCurrentStep("forgot");
+    setIsFlipped(true);
+    navigate("/forgot-password");
+  };
 
-    const handleBackToLoginClick = () => {
-        setCurrentStep("login");
-        setIsFlipped(false);
-        setError("");
-        setSuccess("");
-        setVerifyError("");
-        setVerifySuccess("");
-        navigate("/login");
-    };
+  const handleBackToLoginClick = () => {
+    setCurrentStep("login");
+    setIsFlipped(false);
+    setError("");
+    setSuccess("");
+    setVerifyError("");
+    setVerifySuccess("");
+    navigate("/login");
+  };
 
-    const handleBackToForgot = () => {
-        setCurrentStep("forgot");
-        setIsFlipped(true);
-        setVerifyError("");
-        setVerifySuccess("");
-        setOtp(["", "", "", "", "", ""]);
-        setNewPassword("");
-        setConfirmNewPassword("");
-    };
+  const handleBackToForgot = () => {
+    setCurrentStep("forgot");
+    setIsFlipped(true);
+    setVerifyError("");
+    setVerifySuccess("");
+    setOtp(["", "", "", "", "", ""]);
+    setNewPassword("");
+    setConfirmNewPassword("");
+  };
 
-    const handleKey = (e) => {
-        if (e.key === "Enter") {
-            handleLoginSubmit(e);
-        }
-    };
+  const handleKey = (e) => {
+    if (e.key === "Enter") {
+      handleLoginSubmit(e);
+    }
+  };
 
   const renderLoginForm = () => (
     <div className="w-full h-full flex items-start pt-13 justify-center">
@@ -488,16 +487,16 @@ export default function AuthCard() {
           </div>
         </div>
 
-                {verifyError && (
-                    <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
-                        {verifyError}
-                    </div>
-                )}
-                {verifySuccess && (
-                    <div className="p-3 bg-green-50 text-green-700 rounded-md text-sm">
-                        {verifySuccess}
-                    </div>
-                )}
+        {verifyError && (
+          <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
+            {verifyError}
+          </div>
+        )}
+        {verifySuccess && (
+          <div className="p-3 bg-green-50 text-green-700 rounded-md text-sm">
+            {verifySuccess}
+          </div>
+        )}
 
         <button
           type="submit"
@@ -534,24 +533,24 @@ export default function AuthCard() {
     </div>
   );
 
-    return (
-        <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64] to-[#1D546C] p-4">
-            <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-2 sm:p-6 w-2xl max-w-4xl mx-4">
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
-                    {/* Logo Section */}
-                    <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
-                        <div className="mx-auto flex items-center justify-center flex-col">
-                            <img src={logo} alt="logo" />
-                            <GradientText
-                                colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
-                                animationSpeed={3}
-                                showBorder={false}
-                                className="custom-class text-[4em] transition-opacity duration-300"
-                            >
-                                Planify
-                            </GradientText>
-                        </div>
-                    </div>
+  return (
+    <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64] to-[#1D546C] p-4">
+      <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-2 sm:p-6 w-2xl max-w-4xl mx-4">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
+          {/* Logo Section */}
+          <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
+            <div className="mx-auto flex items-center justify-center flex-col">
+              <img src={logo} alt="logo" />
+              <GradientText
+                colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
+                animationSpeed={3}
+                showBorder={false}
+                className="custom-class text-[4em] transition-opacity duration-300"
+              >
+                Planify
+              </GradientText>
+            </div>
+          </div>
 
           {/* Card Container */}
           <div className="backdrop-blur-lg bg-black/10 shadow-lg rounded-2xl p-4 sm:p-8 w-full min-h-[50vh] max-w-sm sm:max-w-md lg:w-1/2">
@@ -564,13 +563,13 @@ export default function AuthCard() {
                     : renderResetPasswordForm()}
                 </div>
 
-                                {/* Back - Forgot Password */}
-                                <div className="back">{renderForgotPasswordForm()}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* Back - Forgot Password */}
+                <div className="back">{renderForgotPasswordForm()}</div>
+              </div>
             </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
