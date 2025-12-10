@@ -9,6 +9,7 @@ import CollaborationTab from "./CollaborationTab";
 import WorkspaceChat from "../../components/WorkspaceChat";
 import NotificationBell from "../../components/ui/NotificationBell";
 import { UserPlus } from "lucide-react";
+import toast from "react-hot-toast";
 
 const WorkspaceDetailPage = () => {
   const { WorkspaceDetail, addProjectMutation } = useWorkspace();
@@ -71,10 +72,11 @@ const WorkspaceDetailPage = () => {
           setInviteEmail("");
           setInviteRole("member");
           document.getElementById("inviteMemberModal").close();
-          alert("Member invited successfully!");
+          // alert("Member invited successfully!");
+          toast.success("Member's Invited!");
         },
         onError: (error) => {
-          alert(`Failed to invite member: ${error.message}`);
+          toast.error(`Failed to invite member: ${error.message}`);
         },
       }
     );
