@@ -253,7 +253,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
       <div
         className={`
           transition-all duration-700 overflow-hidden
-          ${isCardOpen ? "max-h-[1000px]" : "max-h-0"}
+          ${isCardOpen ? "h-auto" : "max-h-0"}
         `}
         onDragOver={(e) => {
           e.preventDefault();

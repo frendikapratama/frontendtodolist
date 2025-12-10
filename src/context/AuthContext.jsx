@@ -9,7 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const login = async (newToken) => {
-    sessionStorage.setItem("token", newToken);
+    // sessionStorage.setItem("token", newToken);
+    localStorage.setItem("token", newToken);
     setToken(newToken);
     try {
       const res = await api.get("users/me");
@@ -21,13 +22,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    sessionStorage.removeItem("token");
+    // sessionStorage.removeItem("token");
+    localStorage.removeItem("token");
     setToken(null);
     setUser(null);
   };
 
   useEffect(() => {
-    const savedToken = sessionStorage.getItem("token");
+    // const savedToken = sessionStorage.getItem("token");
+    const savedToken = localStorage.getItem("token");
 
     if (savedToken) {
       setToken(savedToken);

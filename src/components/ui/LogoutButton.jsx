@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DoorOpen, DoorClosed } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext"
 
 export default function LogoutButton() {
+    const { logout } = useContext(AuthContext);
     const [isClicked, setIsClicked] = useState(false);
     const navigate = useNavigate();
 
@@ -11,7 +13,9 @@ export default function LogoutButton() {
         if (isClicked) return;
         setIsClicked(true);
         setTimeout(() => {
-            sessionStorage.removeItem("token");
+            // sessionStorage.removeItem("token");
+            // localStorage.clear()
+            logout();
             navigate("/login");
         }, 1200);
     };
