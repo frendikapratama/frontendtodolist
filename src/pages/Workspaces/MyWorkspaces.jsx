@@ -25,8 +25,7 @@ const MyWorkspaces = () => {
     isLoading: isLoadingAgenda,
     error: errorMyagenda,
   } = usemyWorkAgendaMeeting();
-  console.log("dataAgenda full:", dataAgenda);
-  console.log("dataAgenda.data:", dataAgenda?.data);
+
   const [selectedPeriod, setSelectedPeriod] = useState("all");
   const navigate = useNavigate();
   const { logsById } = useLogId(user?._id);

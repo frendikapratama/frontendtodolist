@@ -7,11 +7,15 @@ import {
   SquareDashedKanban,
   X,
 } from "lucide-react";
-import { useKuarterStats, useProgress, useKuarterAll } from "../hook/useProgress";
+import {
+  useKuarterStats,
+  useProgress,
+  useKuarterAll,
+} from "../hook/useProgress";
 import { useKuarterLogs } from "../hook/useLog";
 import { useGroupsByKuarter } from "../hook/useGroups";
 import { useAgendabyKuarter } from "../hook/useAgenda";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 import AnimatedNumber from "../components/ui/AnimatedNumber";
 import NotificationBell from "../components/ui/NotificationBell";
@@ -296,7 +300,7 @@ const ActivityHeatmap = ({ logs }) => {
 
                 let shouldShowMonth = false;
                 if (weekIndex === 0) {
-                  shouldShowMonth = firstDayInWeek.month !== 'Dec';
+                  shouldShowMonth = firstDayInWeek.month !== "Dec";
                 } else {
                   const prevWeek = filteredWeeks[weekIndex - 1];
                   const prevFirstDay = prevWeek.find((d) => d !== null);
@@ -446,7 +450,9 @@ const QuarterSelectionDialog = ({ quarters, onSelect, isLoading, onClose }) => {
       <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10">
         <div className="flex flex-row justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-2">Select Quarter</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Select Quarter
+            </h2>
             <p className="text-white/60 text-sm mb-6">
               Choose a quarter to view the dashboard
             </p>
@@ -469,10 +475,20 @@ const QuarterSelectionDialog = ({ quarters, onSelect, isLoading, onClose }) => {
           ) : quarters && quarters.length > 0 ? (
             quarters.map((quarter) => {
               const quarterId = quarter._id || quarter.kuarterId;
-              const kuarterName = quarter.kuarterName || quarter.nama || quarter.name || "Unknown Kuarter";
-              const departemen = quarter.departemen || quarter.department || "N/A";
+              const kuarterName =
+                quarter.kuarterName ||
+                quarter.nama ||
+                quarter.name ||
+                "Unknown Kuarter";
+              const departemen =
+                quarter.departemen || quarter.department || "N/A";
               const progress = quarter.progress || 0;
-              const totalProjects = quarter.totalWorkspace || quarter.totalProject || quarter.totalproject || quarter.project || 0;
+              const totalProjects =
+                quarter.totalWorkspace ||
+                quarter.totalProject ||
+                quarter.totalproject ||
+                quarter.project ||
+                0;
 
               return (
                 <button
@@ -486,8 +502,12 @@ const QuarterSelectionDialog = ({ quarters, onSelect, isLoading, onClose }) => {
                       <p className="text-white/60 text-sm">{departemen}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-white/80 text-sm">{totalProjects} Project</p>
-                      <p className="text-emerald-400 text-xs">{progress}% Progress</p>
+                      <p className="text-white/80 text-sm">
+                        {totalProjects} Project
+                      </p>
+                      <p className="text-emerald-400 text-xs">
+                        {progress}% Progress
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -547,8 +567,9 @@ const InteractivePieChart = ({ pieData }) => {
 
     const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
 
-    return `M ${centerX + offsetX} ${centerY + offsetY
-      } L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    return `M ${centerX + offsetX} ${
+      centerY + offsetY
+    } L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
   };
 
   const getTextPosition = (startAngle, endAngle, isSelected) => {
@@ -596,10 +617,11 @@ const InteractivePieChart = ({ pieData }) => {
         }
         
         .pie-chart-svg {
-          animation: ${isAnimating
-          ? "pieChartDraw 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"
-          : "none"
-        };
+          animation: ${
+            isAnimating
+              ? "pieChartDraw 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"
+              : "none"
+          };
           transform-origin: center;
         }
       `}</style>
@@ -700,13 +722,23 @@ const TasksContent = ({ taskStatuses }) => {
     <div className="grid grid-cols-4 gap-3 h-full overflow-y-auto scrollbar-thin">
       {/* Combined Card dengan Diagonal Split */}
       <div className="relative rounded-lg overflow-hidden hover:scale-105 transition-transform row-span-2">
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
           <defs>
             <linearGradient id="grad-top" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ef4444" />
               <stop offset="100%" stopColor="#b91c1c" />
             </linearGradient>
-            <linearGradient id="grad-bottom" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id="grad-bottom"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#6366f1" />
               <stop offset="100%" stopColor="#4338ca" />
             </linearGradient>
@@ -718,18 +750,27 @@ const TasksContent = ({ taskStatuses }) => {
           {/* Total Project - Bottom Left */}
           <div className="text-right">
             <p className="text-2xl font-bold text-white">
-              <AnimatedNumber value={combinedCard[1]?.count || 0} duration={2000} />
+              <AnimatedNumber
+                value={combinedCard[1]?.count || 0}
+                duration={2000}
+              />
             </p>
-            <p className="text-white/90 text-xs mt-0.5">{combinedCard[1]?.label}</p>
+            <p className="text-white/90 text-xs mt-0.5">
+              {combinedCard[1]?.label}
+            </p>
           </div>
           {/* Total Division - Top Right */}
           <div className="text-left">
             <p className="text-2xl font-bold text-white">
-              <AnimatedNumber value={combinedCard[0]?.count || 0} duration={2000} />
+              <AnimatedNumber
+                value={combinedCard[0]?.count || 0}
+                duration={2000}
+              />
             </p>
-            <p className="text-white/90 text-xs mt-0.5">{combinedCard[0]?.label}</p>
+            <p className="text-white/90 text-xs mt-0.5">
+              {combinedCard[0]?.label}
+            </p>
           </div>
-
         </div>
       </div>
 
@@ -820,12 +861,15 @@ const AgendaContent = ({ agendaByKuarter }) => {
           key={i}
           className="bg-linear-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-3 border border-white/10 hover:border-white/30 transition-all"
         >
-          <p className="text-white font-medium text-sm">{agendas.task.nama} - {agendas.workspace.nama}</p>
+          <p className="text-white font-medium text-sm">
+            {agendas.task.nama} - {agendas.workspace.nama}
+          </p>
           <p className="text-white/60 text-xs mt-1">
             Project: {agendas?.projects?.[0]?.nama}
           </p>
           <p className="text-white/60 text-xs mt-1">
-            Meeting Date: {new Date(agendas.task.meeting_date).toLocaleDateString()}
+            Meeting Date:{" "}
+            {new Date(agendas.task.meeting_date).toLocaleDateString()}
           </p>
         </div>
       ))}
@@ -855,8 +899,9 @@ export default function Dashboard() {
 
   const { kuarterStats } = useKuarterStats(selectedKuarterId);
   const { kuarterLogs } = useKuarterLogs(selectedKuarterId);
-  const { kuarterStats: kuarterAllData, isLoading: quartersLoading } = useKuarterAll();
-  const { agendasByKuarter } = useAgendabyKuarter(selectedKuarterId)
+  const { kuarterStats: kuarterAllData, isLoading: quartersLoading } =
+    useKuarterAll();
+  const { agendasByKuarter } = useAgendabyKuarter(selectedKuarterId);
   // console.log("Data agenda: ",agendasByKuarter)
   const quarters = kuarterAllData?.data || [];
   useEffect(() => {
@@ -871,38 +916,38 @@ export default function Dashboard() {
       setPieData(pieChartData);
       const updatedTaskStatuses = [
         {
-          label: "Total Division",
-          count: stats.totalWorkspace || 0,
+          label: "Total Project",
+          count: stats.totalProject || 0,
           color: "from-red-500 to-red-700",
         },
         {
-          label: "Total Project",
-          count: stats.totalProject || 0,
+          label: "Total Task",
+          count: stats.totalTask || 0,
           color: "from-indigo-500 to-indigo-700",
         },
         {
           label: "Planning",
-          count: stats.planningProject || 0,
+          count: stats.planningTask || 0,
           color: "from-amber-400 to-orange-500",
         },
         {
-          label: "Undated",
-          count: stats.undatedProject || 0,
+          label: "Hold",
+          count: stats.holdTask || 0,
           color: "from-slate-400 to-slate-600",
         },
         {
           label: "In Progress",
-          count: stats.inProgressProject || 0,
+          count: stats.inProgressTask || 0,
           color: "from-blue-500 to-sky-500",
         },
         {
-          label: "Not Started",
-          count: stats.notStartedProject || 0,
+          label: "Block",
+          count: stats.blockedTask || 0,
           color: "from-gray-500 to-gray-700",
         },
         {
           label: "Completed",
-          count: stats.completedProject || 0,
+          count: stats.doneTask || 0,
           color: "from-emerald-500 to-green-600",
         },
         {
@@ -967,8 +1012,7 @@ export default function Dashboard() {
             return;
           }
         }
-      } catch (error) {
-      }
+      } catch (error) {}
       const validatedCards = DEFAULT_CARDS.map((card) => ({
         ...card,
         x: Math.min(card.x, Math.max(0, GRID_COLS - card.w)),
@@ -1011,8 +1055,7 @@ export default function Dashboard() {
           if (typeof window.storage !== "undefined") {
             await window.storage.set("dashboard-layout", JSON.stringify(cards));
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       };
       saveLayout();
     }
@@ -1135,8 +1178,17 @@ export default function Dashboard() {
       const deltaY = e.clientY - resizing.startY;
 
       const maxW = GRID_COLS - card.x;
-      const newW = Math.max(2, Math.min(maxW, resizing.originalW + Math.round(deltaX / (colWidth + GAP))));
-      const newH = Math.max(2, resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP)));
+      const newW = Math.max(
+        2,
+        Math.min(
+          maxW,
+          resizing.originalW + Math.round(deltaX / (colWidth + GAP))
+        )
+      );
+      const newH = Math.max(
+        2,
+        resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP))
+      );
 
       const tempCards = cards.map((c) =>
         c.id === resizing.id ? { ...c, w: newW, h: newH } : c
@@ -1212,7 +1264,7 @@ export default function Dashboard() {
     }
   };
   const handleCloseQuarterDialog = () => {
-    navigate('/mywork');
+    navigate("/mywork");
   };
   // ==================== RENDER ====================
   const maxY = cards.reduce((max, card) => Math.max(max, card.y + card.h), 0);
@@ -1241,7 +1293,7 @@ export default function Dashboard() {
           setShowQuarterDialog(false);
         }}
         isLoading={quartersLoading}
-        onClose={() => { }}
+        onClose={() => {}}
       />
     );
   }
@@ -1345,10 +1397,11 @@ export default function Dashboard() {
           return (
             <div
               key={card.id}
-              className={`absolute bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl transition-all duration-200 ${isDraggingThis || isResizingThis
-                ? "z-50 shadow-3xl scale-105 opacity-80"
-                : "z-10 hover:bg-white/10"
-                }`}
+              className={`absolute bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl transition-all duration-200 ${
+                isDraggingThis || isResizingThis
+                  ? "z-50 shadow-3xl scale-105 opacity-80"
+                  : "z-10 hover:bg-white/10"
+              }`}
               style={{
                 left: `${pos.left}px`,
                 top: `${pos.top}px`,
