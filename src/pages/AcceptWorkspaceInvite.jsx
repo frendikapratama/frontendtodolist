@@ -4,10 +4,9 @@ import axios from "axios";
 import { API_URL } from "../api/axios";
 import toast from "react-hot-toast";
 
-const AcceptPicInvite = () => {
+const AcceptWorkspaceInvite = () => {
   const [searchParams] = useSearchParams();
   const [isRegistered, setIsRegistered] = useState(false);
-  const [inviteType, setInviteType] = useState("task");
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -22,71 +21,54 @@ const AcceptPicInvite = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [itemInfo, setItemInfo] = useState(null);
+  const [workspaceInfo, setWorkspaceInfo] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // FIX: Konsisten gunakan subTaskId (huruf besar T) untuk subtask
-  const taskId = searchParams.get("taskId");
-  const subTaskId = searchParams.get("subTaskId");
+  const workspaceId = searchParams.get("workspaceId");
   const token = searchParams.get("token");
 
   useEffect(() => {
-    // Validasi parameter
-    if (!taskId && !subTaskId) {
+    if (!workspaceId || !token) {
       setError(
         "Link undangan tidak valid. Pastikan Anda mengakses link yang benar."
       );
       return;
     }
 
-    if (!token) {
-      setError("Token tidak ditemukan dalam link undangan.");
-      return;
-    }
-
-    // Set invite type
-    if (subTaskId) {
-      setInviteType("subTask");
-    } else if (taskId) {
-      setInviteType("task");
-    }
-
-    // Check if user is registered
     const registered = searchParams.get("registered");
     if (registered === "true") {
       setIsRegistered(true);
     }
 
-    // Verify invitation
     verifyInvitation();
   }, []);
 
   const verifyInvitation = async () => {
     try {
-      // Determine which ID to use
-      const id = subTaskId || taskId;
-      const type = subTaskId ? "subTask" : "task";
+      const endpoint = `${API_URL}/api/workspaces/${workspaceId}/verify-invite`;
 
-      const endpoint = `${API_URL}/api/${type}/${id}/verify-invite`;
-
-      console.log("Verifying invitation:", { endpoint, token, id, type }); // Debug log
+      console.log("Verifying workspace invitation:", {
+        endpoint,
+        token,
+        workspaceId,
+      });
 
       const response = await axios.get(endpoint, {
         params: { token },
       });
 
       if (response.data.success) {
-        setItemInfo(response.data.data);
+        setWorkspaceInfo(response.data.data);
         setFormData((prev) => ({
           ...prev,
           email: response.data.data.invitedEmail,
         }));
       }
     } catch (error) {
-      console.error("Verification error:", error.response || error); // Tambahkan logging
+      console.error("Verification error:", error.response || error);
       setError(
         error.response?.data?.message ||
           "Token tidak valid atau sudah kedaluwarsa"
@@ -126,22 +108,17 @@ const AcceptPicInvite = () => {
     setLoading(true);
 
     try {
-      // FIX: Gunakan ID dan type yang tepat
-      const id = subTaskId || taskId;
-      const type = subTaskId ? "subTask" : "task";
+      const endpoint = `${API_URL}/api/workspaces/${workspaceId}/accept-invite?token=${token}`;
 
-      const endpoint = `${API_URL}/api/${type}/${id}/accept-pic-invite?token=${token}`;
-
-      console.log("Submitting to:", endpoint); // Debug log
+      console.log("Submitting to:", endpoint);
 
       const response = await axios.post(endpoint, isRegistered ? {} : formData);
 
       if (response.data.success) {
-        const itemType = inviteType === "subTask" ? "subTask" : "task";
         toast.success(
           isRegistered
-            ? `Undangan berhasil diterima! Anda sekarang menjadi PIC untuk ${itemType} ini.`
-            : `Registrasi berhasil! Anda sekarang menjadi PIC untuk ${itemType} ini.`
+            ? "Undangan berhasil diterima! Anda sekarang menjadi anggota workspace ini."
+            : "Registrasi berhasil! Anda sekarang menjadi anggota workspace ini."
         );
 
         setTimeout(() => {
@@ -149,7 +126,7 @@ const AcceptPicInvite = () => {
         }, 3000);
       }
     } catch (error) {
-      console.error("Submit error:", error); // Tambahkan logging
+      console.error("Submit error:", error);
       setError(
         error.response?.data?.message || "Terjadi kesalahan saat mendaftar"
       );
@@ -158,7 +135,7 @@ const AcceptPicInvite = () => {
     }
   };
 
-  if ((!taskId && !subTaskId) || !token) {
+  if (!workspaceId || !token) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
@@ -181,7 +158,7 @@ const AcceptPicInvite = () => {
     );
   }
 
-  if (error && !itemInfo) {
+  if (error && !workspaceInfo) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
@@ -201,49 +178,48 @@ const AcceptPicInvite = () => {
     );
   }
 
-  const pageTitle = inviteType === "subTask" ? "SubTask" : "Task";
+  const getRoleLabel = (role) => {
+    const roleLabels = {
+      admin: "Admin",
+      project_manager: "Project Manager",
+      member: "Member",
+      viewer: "Viewer",
+    };
+    return roleLabels[role] || role;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-500 text-white p-6 text-center">
-          <div className="text-4xl mb-2">🎯</div>
-          <h1 className="text-2xl font-bold">
-            Terima Undangan PIC {pageTitle}
-          </h1>
+          <div className="text-4xl mb-2">🏢</div>
+          <h1 className="text-2xl font-bold">Terima Undangan Workspace</h1>
           <p className="text-blue-100 mt-2">
-            Daftar akun untuk menjadi Person In Charge
+            {isRegistered
+              ? "Terima undangan untuk bergabung"
+              : "Daftar akun untuk bergabung"}
           </p>
         </div>
 
-        {itemInfo && (
+        {workspaceInfo && (
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mx-6 mt-6 rounded">
-            <h3 className="font-semibold text-blue-800">Detail {pageTitle}:</h3>
-            {inviteType === "subTask" ? (
-              <>
-                <p className="text-blue-700 font-medium">
-                  {itemInfo.subtaskName}
-                </p>
-                <p className="text-blue-600 text-sm">
-                  Task: {itemInfo.taskName}
-                </p>
-                <p className="text-blue-600 text-sm">
-                  Project: {itemInfo.projectName}
-                </p>
-                <p className="text-blue-600 text-sm">
-                  Workspace: {itemInfo.workspaceName}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-blue-700 font-medium">{itemInfo.taskName}</p>
-                <p className="text-blue-600 text-sm">
-                  Project: {itemInfo.projectName}
-                </p>
-                <p className="text-blue-600 text-sm">
-                  Workspace: {itemInfo.workspaceName}
-                </p>
-              </>
+            <h3 className="font-semibold text-blue-800">Detail Workspace:</h3>
+            <p className="text-blue-700 font-medium text-lg">
+              {workspaceInfo.workspaceName}
+            </p>
+            <p className="text-blue-600 text-sm mt-1">
+              Role:{" "}
+              <span className="font-semibold">
+                {getRoleLabel(workspaceInfo.role)}
+              </span>
+            </p>
+            {workspaceInfo.inviterName && (
+              <p className="text-blue-600 text-sm">
+                Diundang oleh:{" "}
+                <span className="font-semibold">
+                  {workspaceInfo.inviterName}
+                </span>
+              </p>
             )}
           </div>
         )}
@@ -264,8 +240,8 @@ const AcceptPicInvite = () => {
           {isRegistered ? (
             <div className="text-center">
               <p className="text-gray-700 mb-4">
-                Klik tombol di bawah untuk menerima undangan dan menjadi PIC
-                {inviteType === "subTask" ? " subTask" : " task"} ini.
+                Klik tombol di bawah untuk menerima undangan dan bergabung ke
+                workspace ini.
               </p>
               <button
                 type="submit"
@@ -292,7 +268,6 @@ const AcceptPicInvite = () => {
                   Email ini digunakan untuk undangan
                 </p>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Username *
@@ -320,9 +295,9 @@ const AcceptPicInvite = () => {
                     onChange={handleChange}
                     required
                     minLength="6"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 pr-10"
                     placeholder="Minimal 6 karakter"
-                  />{" "}
+                  />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -368,7 +343,6 @@ const AcceptPicInvite = () => {
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Konfirmasi Password *
@@ -380,9 +354,9 @@ const AcceptPicInvite = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 pr-10"
                     placeholder="Ulangi password"
-                  />{" "}
+                  />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -428,7 +402,6 @@ const AcceptPicInvite = () => {
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   No. Handphone *
@@ -443,7 +416,6 @@ const AcceptPicInvite = () => {
                   placeholder="Contoh: 081234567890"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Posisi *
@@ -458,19 +430,10 @@ const AcceptPicInvite = () => {
                   placeholder="Contoh: Software Engineer"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Departemen
                 </label>
-                {/* <input
-                  type="text"
-                  name="departemen"
-                  value={formData.departemen}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Opsional"
-                /> */}
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   name="departemen"
@@ -485,19 +448,10 @@ const AcceptPicInvite = () => {
                   <option value="OFFICE">OFFICE</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Divisi
                 </label>
-                {/* <input
-                  type="text"
-                  name="divisi"
-                  value={formData.divisi}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Opsional"
-                /> */}
                 <select
                   name="divisi"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
@@ -524,14 +478,12 @@ const AcceptPicInvite = () => {
                   <option value="Purchasing">Purchasing</option>
                   <option value="Invoicing">Invoicing</option>
                   <option value="QC - RND">QC - RND</option>
-                  <option value="Purchasing">Purchasing</option>
                   <option value="CSD">CSD</option>
                   <option value="HRD">HRD</option>
                   <option value="GA">GA</option>
                   <option value="Finance">Finance</option>
                 </select>
               </div>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -539,11 +491,9 @@ const AcceptPicInvite = () => {
               >
                 {loading ? "Mendaftarkan..." : "Daftar & Terima Undangan"}
               </button>
-
               <p className="text-xs text-gray-500 text-center mt-4">
-                Dengan mendaftar, Anda menyetujui untuk menjadi PIC{" "}
-                {inviteType === "subTask" ? "subTask" : "task"} ini dan
-                bergabung ke workspace terkait.
+                Dengan mendaftar, Anda menyetujui untuk bergabung ke workspace
+                ini.
               </p>
             </>
           )}
@@ -553,4 +503,4 @@ const AcceptPicInvite = () => {
   );
 };
 
-export default AcceptPicInvite;
+export default AcceptWorkspaceInvite;

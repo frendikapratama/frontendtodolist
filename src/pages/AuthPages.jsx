@@ -14,7 +14,7 @@ export default function AuthCard() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState("");
-    const [currentStep, setCurrentStep] = useState('login');
+    const [currentStep, setCurrentStep] = useState("login");
     const [isFlipped, setIsFlipped] = useState(false);
 
     // States for verify-reset-password
@@ -26,6 +26,7 @@ export default function AuthCard() {
     const [countdown, setCountdown] = useState(60);
     const [canResend, setCanResend] = useState(false);
     const inputRefs = useRef([]);
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -33,19 +34,19 @@ export default function AuthCard() {
     // Sync currentStep dengan location.pathname
     React.useEffect(() => {
         if (location.pathname === "/forgot-password") {
-            if (currentStep === 'login') {
-                setCurrentStep('forgot');
+            if (currentStep === "login") {
+                setCurrentStep("forgot");
                 setIsFlipped(true);
             }
         } else if (location.pathname === "/login") {
-            setCurrentStep('login');
+            setCurrentStep("login");
             setIsFlipped(false);
         }
     }, [location.pathname]);
 
     // Countdown untuk resend OTP
     useEffect(() => {
-        if (currentStep === 'verify' && countdown > 0) {
+        if (currentStep === "verify" && countdown > 0) {
             const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
             return () => clearTimeout(timer);
         } else if (countdown === 0) {
@@ -141,7 +142,7 @@ export default function AuthCard() {
             setVerifySuccess("Password berhasil direset!");
             setTimeout(() => {
                 navigate("/login");
-                setCurrentStep('login');
+                setCurrentStep("login");
                 setIsFlipped(false);
                 setEmail("");
                 setPassword("");
@@ -175,13 +176,13 @@ export default function AuthCard() {
     const handleForgotPasswordClick = () => {
         setError("");
         setSuccess("");
-        setCurrentStep('forgot');
+        setCurrentStep("forgot");
         setIsFlipped(true);
         navigate("/forgot-password");
     };
 
     const handleBackToLoginClick = () => {
-        setCurrentStep('login');
+        setCurrentStep("login");
         setIsFlipped(false);
         setError("");
         setSuccess("");
@@ -191,7 +192,7 @@ export default function AuthCard() {
     };
 
     const handleBackToForgot = () => {
-        setCurrentStep('forgot');
+        setCurrentStep("forgot");
         setIsFlipped(true);
         setVerifyError("");
         setVerifySuccess("");
@@ -206,13 +207,14 @@ export default function AuthCard() {
         }
     };
 
-    // Render Login Form
     const renderLoginForm = () => (
         <div className="w-full h-full flex items-start pt-13 justify-center">
-            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <div className="space-y-5">
+                {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
                 <div>
-                    <label className="block text-lg mb-1 text-slate-700 font-semibold">Email</label>
+                    <label className="block text-lg mb-1 text-slate-700 font-semibold">
+                        Email
+                    </label>
                     <input
                         type="email"
                         value={email}
@@ -224,16 +226,63 @@ export default function AuthCard() {
                     />
                 </div>
                 <div>
-                    <label className="block text-lg mb-1 text-slate-700 font-semibold">Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full border-b-2 border-b-blue-500 focus:border-b-blue-300 focus:ring-0 focus:outline-none px-2 sm:px-3 py-2 bg-transparent text-white placeholder-gray-300 text-sm sm:text-base"
-                        placeholder="Enter your password"
-                        onKeyDown={handleKey}
-                        required
-                    />
+                    <label className="block text-lg mb-1 text-slate-700 font-semibold">
+                        Password
+                    </label>
+                    <div className="relative">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full border-b-2 border-b-blue-500 focus:border-b-blue-300 focus:ring-0 focus:outline-none px-2 sm:px-3 py-2 bg-transparent text-white placeholder-gray-300 text-sm sm:text-base pr-10"
+                            placeholder="Enter your password"
+                            onKeyDown={handleKey}
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none"
+                        >
+                            {showPassword ? (
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-cyan-700"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                                    />
+                                </svg>
+                            ) : (
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-cyan-700"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                    />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
                 </div>
                 <button
                     onClick={handleLoginSubmit}
@@ -332,8 +381,16 @@ export default function AuthCard() {
                     />
                 </div>
 
-                {verifyError && <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{verifyError}</div>}
-                {verifySuccess && <div className="p-3 bg-green-50 text-green-700 rounded-md text-sm">{verifySuccess}</div>}
+                {verifyError && (
+                    <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                        {verifyError}
+                    </div>
+                )}
+                {verifySuccess && (
+                    <div className="p-3 bg-green-50 text-green-700 rounded-md text-sm">
+                        {verifySuccess}
+                    </div>
+                )}
 
                 <button
                     type="submit"
@@ -391,17 +448,17 @@ export default function AuthCard() {
 
                     {/* Card Container */}
                     <div className="backdrop-blur-lg bg-black/10 shadow-lg rounded-2xl p-4 sm:p-8 w-full min-h-[50vh] max-w-sm sm:max-w-md lg:w-1/2">
-                        <div className={`flip-container ${isFlipped ? 'flipped' : ''}`}>
+                        <div className={`flip-container ${isFlipped ? "flipped" : ""}`}>
                             <div className="flipper">
                                 {/* Front - Login atau Reset Password */}
                                 <div className="front">
-                                    {currentStep === 'login' ? renderLoginForm() : renderResetPasswordForm()}
+                                    {currentStep === "login"
+                                        ? renderLoginForm()
+                                        : renderResetPasswordForm()}
                                 </div>
 
                                 {/* Back - Forgot Password */}
-                                <div className="back">
-                                    {renderForgotPasswordForm()}
-                                </div>
+                                <div className="back">{renderForgotPasswordForm()}</div>
                             </div>
                         </div>
                     </div>

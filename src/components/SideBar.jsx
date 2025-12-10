@@ -419,7 +419,7 @@ export default function Sidebar() {
 
           {/* Logout Button */}
           {isSidebarOpen && (
-            <div className="flex justify-center items-center">
+            <div className="flex justify-end items-end">
               <LogoutButton />
             </div>
           )}
@@ -428,7 +428,7 @@ export default function Sidebar() {
           <div className={`flex items-center pb-1 gap-3 transition-all duration-300 ${isSidebarOpen ? "justify-end" : "justify-center"
             }`}>
             {isSidebarOpen && user && (
-              <p className="text-black font-semibold text-[1em]">{user.username}</p>
+              <p className={`text-black font-semibold text-[1em] ${isSidebarOpen ? " justify-center" : "justify-end"}`}>{user.username}</p>
             )}
             <img
               className="w-10 h-10 border rounded-full"
@@ -440,7 +440,7 @@ export default function Sidebar() {
       </div>
 
       {/* Toggle Button */}
-      <div className="fixed bottom-3 left-1 z-50">
+      <div className="fixed bottom-18 left-2 z-50">
         <ToggleButtonExit
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}

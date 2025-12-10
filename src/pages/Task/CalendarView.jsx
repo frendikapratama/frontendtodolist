@@ -51,10 +51,10 @@ const EventDetailsDialog = ({ event, onClose }) => {
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-in fade-in zoom-in-95">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3 flex-1">
-            <span className="text-2xl">{typeIcons[props.type]}</span>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <span className="text-2xl shrink-0">{typeIcons[props.type]}</span>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-gray-900 wrap-break-word line-clamp-4">
                 {event.title.replace(` (${props.type.charAt(0).toUpperCase() + props.type.slice(1)})`, "")}
               </h3>
               <p className="text-xs text-gray-500">{typeLabels[props.type]}</p>
@@ -62,7 +62,7 @@ const EventDetailsDialog = ({ event, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1"
+            className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1 ml-2"
           >
             <X className="w-5 h-5" />
           </button>

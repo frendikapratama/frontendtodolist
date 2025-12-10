@@ -7,6 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
 import Login from "./pages/Login";
 import AcceptPicInvite from "./pages/AcceptPicInvite";
+import AcceptWorkspaceInvite from "./pages/AcceptWorkspaceInvite";
 import Dashboard from "./pages/Dashboard";
 import Kuarter from "./pages/Kuarter/Index";
 import MyWork from "./pages/Workspaces/MyWorkspaces";
@@ -31,6 +32,10 @@ export default function App() {
                 <Route
                   path="/accept-pic-invite"
                   element={<AcceptPicInvite />}
+                />
+                <Route
+                  path="/accept-workspace-invite"
+                  element={<AcceptWorkspaceInvite />}
                 />
 
                 <Route element={<ProtectedRoute />}>

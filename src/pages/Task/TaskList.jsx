@@ -344,7 +344,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     return createPortal(
       <div
         ref={popupRef}
-        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-[9999] w-64"
+        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-90 w-64"
         style={{
           top: shouldShowAbove
             ? `${(position?.top || 0) - popupHeight}px`
@@ -515,48 +515,39 @@ const TaskList = ({ groupId, workspaceId }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all ${
-                      task.subtask?.length || isHovered
+                    className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
                         ? "opacity-100 hover:bg-gray-200"
-                        : "opacity-0"
-                    }`}
+                        : "opacity-0" 
+                      }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${
-                          task.subtask?.length
+                        className={`w-4 h-4 ${task.subtask?.length
                             ? "text-gray-700"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       />
                     )}
                   </button>
-                  {/* <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300"
-                  /> */}
-                  {editingField?.taskId === task._id &&
-                  editingField?.field === "nama" ? (
+
+                  {editingField?.taskId === task._id && editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
                       value={editedValue}
                       autoFocus
                       onChange={(e) => setEditedValue(e.target.value)}
-                      onBlur={() =>
-                        handleFieldEdit(task._id, "nama", editedValue)
-                      }
+                      onBlur={() => handleFieldEdit(task._id, "nama", editedValue)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter")
-                          handleFieldEdit(task._id, "nama", editedValue);
+                        if (e.key === "Enter") handleFieldEdit(task._id, "nama", editedValue);
                         if (e.key === "Escape") setEditingField(null);
                       }}
                     />
                   ) : (
                     <span
-                      className="text-[0.8em] truncate text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text"
+                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-2 flex-1 min-w-0"
                       onClick={() => {
                         setEditingField({ taskId: task._id, field: "nama" });
                         setEditedValue(task.nama);
@@ -882,17 +873,19 @@ const TaskList = ({ groupId, workspaceId }) => {
                 </div>
                 {/* Action Button */}
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
-                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
+                  <div className="w-40 px-6 py-3.5 gap-2 border-b border-gray-100 items-center flex justify-center">
                     <button
                       className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
                       onClick={() => setOpenDialog({ open: true, task: task })}
                     >
                       Detail
                     </button>
+                    <div className="bg-gray-100 rounded-lg p-1 pl-2 pr-2 font-medium hover:bg-gray-200">
                     <Trash2
                       className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
                       onClick={() => handleDeleteTask(task._id)}
                     />
+                    </div>
                   </div>
                   {openDialog.open && (
                     <DialogDetail
@@ -919,6 +912,7 @@ const TaskList = ({ groupId, workspaceId }) => {
                     taskId={task._id}
                     subtasks={task.subtask || []}
                     groupId={groupId}
+                    workspaceId={workspaceId}
                   />
                 </div>
               )}
