@@ -868,8 +868,17 @@ const AgendaContent = ({ agendaByKuarter }) => {
             Project: {agendas?.projects?.[0]?.nama}
           </p>
           <p className="text-white/60 text-xs mt-1">
-            Meeting Date:{" "}
-            {new Date(agendas.task.meeting_date).toLocaleDateString()}
+            Meeting Date:
+            {agendas.task.meeting_date
+              ? new Date(agendas.task.meeting_date).toLocaleString("id-ID", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })
+              : "No meeting date"}
           </p>
         </div>
       ))}
