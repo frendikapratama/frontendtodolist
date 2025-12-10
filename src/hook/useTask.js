@@ -9,6 +9,7 @@ import {
   deleteTask,
   getByProjectId,
   fetchMyWork,
+  fetchMyWorkAgendaMeeting,
 } from "../services/task";
 import toast from "react-hot-toast";
 
@@ -154,6 +155,14 @@ export const useMyWork = () => {
   return useQuery({
     queryKey: ["myWork"],
     queryFn: fetchMyWork,
+    refetchInterval: false,
+  });
+};
+
+export const usemyWorkAgendaMeeting = () => {
+  return useQuery({
+    queryKey: ["myWorkAgendaMeeting"],
+    queryFn: fetchMyWorkAgendaMeeting,
     refetchInterval: false,
   });
 };

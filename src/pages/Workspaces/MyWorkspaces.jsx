@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hook/useContext";
 import { useMyWork } from "../../hook/useTask";
+import { usemyWorkAgendaMeeting } from "../../hook/useTask";
 import { useLog, useLogId } from "../../hook/useLog";
 import { useNavigate } from "react-router-dom";
 import NotificationBell from "../../components/ui/NotificationBell";
@@ -19,6 +20,13 @@ import NotificationBell from "../../components/ui/NotificationBell";
 const MyWorkspaces = () => {
   const { user } = useAuth();
   const { data, isLoading, refetch, error } = useMyWork();
+  const {
+    data: dataAgenda,
+    isLoading: isLoadingAgenda,
+    error: errorMyagenda,
+  } = usemyWorkAgendaMeeting();
+  console.log("dataAgenda full:", dataAgenda);
+  console.log("dataAgenda.data:", dataAgenda?.data);
   const [selectedPeriod, setSelectedPeriod] = useState("all");
   const navigate = useNavigate();
   const { logsById } = useLogId(user?._id);
@@ -383,7 +391,6 @@ const MyWorkspaces = () => {
             )}
           </div>
         </div>
-
         {/* Card 2: Agenda */}
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300">
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -391,33 +398,42 @@ const MyWorkspaces = () => {
             Agenda - Meeting
           </h2>
           <div className="space-y-3 max-h-64 overflow-y-auto">
-            {flatList
-              ?.filter((a) => a.meeting_date)
-              .map((agenda) => (
+            {isLoadingAgenda ? (
+              <p className="text-center text-gray-400">Loading agenda...</p>
+            ) : errorMyagenda ? (
+              <p className="text-center text-red-400">Error loading agenda</p>
+            ) : dataAgenda && dataAgenda.length > 0 ? (
+              dataAgenda.map((agenda) => (
                 <div
                   key={agenda._id}
                   className="p-3 bg-white/5 backdrop-blur-sm rounded-xl hover:bg-white/10 transition-all duration-200 border border-white/5 shadow-lg"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm font-semibold text-white">
-                        {agenda.nama}
+                        {agenda.type === "subtask"
+                          ? `↳ ${agenda.nama}`
+                          : agenda.nama}
                       </p>
+                      {agenda.type === "subtask" && agenda.parentTask && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          Parent Task: {agenda.parentTask.nama}
+                        </p>
+                      )}
                       <p className="text-xs font-bold text-blue-400 mt-1">
                         {agenda.workspace}
                       </p>
                     </div>
-                    <span className="text-xs text-gray-400 shrink-0">
-                      {agenda.date}
-                    </span>
-                    <button
-                      className="bg-blue-700 hover:bg-blue-500 rounded-xl p-2 text-white"
-                      onClick={() =>
-                        (window.location.href = `${agenda.meeting_link}`)
-                      }
-                    >
-                      Join Meet
-                    </button>
+                    {agenda.meeting_link && (
+                      <button
+                        className="bg-blue-700 hover:bg-blue-500 rounded-xl px-3 py-2 text-xs text-white transition-all duration-200 shrink-0 ml-2"
+                        onClick={() =>
+                          (window.location.href = agenda.meeting_link)
+                        }
+                      >
+                        Join Meet
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs text-gray-300 mb-1">
                     {agenda.group} -{" "}
@@ -430,14 +446,19 @@ const MyWorkspaces = () => {
                           minute: "2-digit",
                           hour12: false,
                         })
-                      : "Set date & time"}
+                      : "No meeting date"}
                   </p>
-
                   <p className="text-xs text-gray-400">
-                    From: {agenda.project}
+                    Project: {agenda.project}
                   </p>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No upcoming meetings</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
