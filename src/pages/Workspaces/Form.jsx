@@ -63,7 +63,7 @@ export const WorkspaceForm = ({ onClose, kuarterId = null }) => {
           className="btn btn-primary shadow-2xl"
           disabled={createMutation.isPending}
         >
-          {createMutation.isPending ? "Menyimpan..." : "Simpan"}
+          {createMutation.isPending ? "Saving..." : "Save"}
         </button>
       </div>
     </form>

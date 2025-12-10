@@ -5,6 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
 import "../components/ui/AuthPages.css";
+import toast from "react-hot-toast";
 
 export default function AuthCard() {
     const { login } = useContext(AuthContext);
@@ -60,7 +61,8 @@ export default function AuthCard() {
             await login(res.data.token);
             navigate("/kuarter");
         } catch (err) {
-            setError(err.response?.data?.message || "Login gagal");
+            // setError(err.response?.data?.message || "Login gagal");
+            toast.error(err.response?.data?.message || 'Login gagal')
         }
     };
 
@@ -85,7 +87,7 @@ export default function AuthCard() {
                 setTimeout(() => inputRefs.current[0]?.focus(), 700);
             }, 2000);
         } catch (err) {
-            setError(err.response?.data?.message || "Gagal mengirim OTP");
+            setError(err.response?.data?.message || "Failed to sent OTP");
         } finally {
             setIsLoading(false);
         }
@@ -252,8 +254,8 @@ export default function AuthCard() {
     // Render Forgot Password Form
     const renderForgotPasswordForm = () => (
         <div className="bg-none rounded-lg p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Lupa Password</h1>
-            <p className="text-gray-600 mb-6">Masukkan email untuk menerima OTP</p>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">Forget Password</h1>
+            <p className="text-sm text-gray-600 mb-6">Enter email to get the OTP</p>
             <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email:</label>
@@ -272,14 +274,14 @@ export default function AuthCard() {
                     disabled={isLoading}
                     className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 >
-                    {isLoading ? "Mengirim..." : "Kirim OTP"}
+                    {isLoading ? "Sending..." : "Send OTP"}
                 </button>
             </form>
             <button
                 onClick={handleBackToLoginClick}
                 className="w-full mt-4 text-white hover:text-blue-800 text-sm"
             >
-                Kembali ke Login
+                Back to login
             </button>
         </div>
     );
@@ -291,7 +293,7 @@ export default function AuthCard() {
             <p className="text-gray-600 mb-4 text-sm">Email: {email}</p>
             <form onSubmit={handleVerifySubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Kode OTP:</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Code OTP:</label>
                     <div className="flex justify-between gap-2">
                         {otp.map((digit, index) => (
                             <input
@@ -309,7 +311,7 @@ export default function AuthCard() {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Password Baru:</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password:</label>
                     <input
                         type="password"
                         value={newPassword}
@@ -320,7 +322,7 @@ export default function AuthCard() {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password:</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password (Retype):</label>
                     <input
                         type="password"
                         value={confirmNewPassword}
@@ -344,17 +346,17 @@ export default function AuthCard() {
 
             <div className="mt-4 text-center">
                 <p className="text-xs text-gray-600">
-                    Tidak menerima kode?{" "}
+                    Haven't get the code?{" "}
                     {canResend ? (
                         <button
                             onClick={handleResendOTP}
                             disabled={isLoading}
                             className="text-blue-600 hover:text-blue-800 disabled:opacity-50"
                         >
-                            Kirim ulang OTP
+                            Resend OTP
                         </button>
                     ) : (
-                        <span className="text-gray-500">Kirim ulang dalam {countdown} detik</span>
+                        <span className="text-gray-500">Resend OTP in {countdown} seconds</span>
                     )}
                 </p>
             </div>
@@ -363,7 +365,7 @@ export default function AuthCard() {
                 onClick={handleBackToForgot}
                 className="w-full mt-4 text-white hover:text-blue-600 text-sm"
             >
-                Kembali
+                Back
             </button>
         </div>
     );

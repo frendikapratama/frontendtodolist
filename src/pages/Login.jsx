@@ -4,6 +4,7 @@ import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -20,7 +21,8 @@ export default function Login() {
       await login(res.data.token);
       navigate("/kuarter");
     } catch (err) {
-      setError(err.response?.data?.message || "Login gagal");
+      // setError(err.response?.data?.message || "Login gagal");
+      toast.error(err.response?.data?.message || "Login Failed")
     }
   };
   const handleKey = (e) => {
