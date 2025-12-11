@@ -42,7 +42,6 @@ const ProjectDetailPage = () => {
     if (workspaceId) setSelectedWorkspaceId(workspaceId);
   }, [data, setSelectedWorkspaceId]);
 
-  // Update editedName ketika data berubah
   useEffect(() => {
     if (data?.nama) {
       setEditedName(data.nama);
