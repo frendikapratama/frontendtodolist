@@ -8,6 +8,9 @@ import {
   Layout,
   Calendar as CalendarIcon,
   BarChart3,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import GroupCard from "./GroupCard";
 import Kanban from "./Kanban";
@@ -18,7 +21,7 @@ import { useSelectedWorkspace } from "../../context/WorkspaceContext";
 import NotificationBell from "../../components/ui/NotificationBell";
 
 const ProjectDetailPage = () => {
-  const { projectDetail } = useProject();
+  const { projectDetail, updateProjectMutation } = useProject();
   const { id } = useParams();
   const { addGroupMutation } = useGroup();
   const projectQuery = projectDetail(id);
@@ -27,14 +30,24 @@ const ProjectDetailPage = () => {
     useSelectedWorkspace();
   const [viewMode, setViewMode] = useState("table");
 
+  // State untuk edit nama project
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
+
   useEffect(() => {
     if (!data) return;
     const workspaceId =
       data.workspace?._id || data.workspaceId || data.workspaceId?._id || null;
-    console.log("DetailProject - Data:", data);
-    console.log("DetailProject - WorkspaceId:", workspaceId);
+
     if (workspaceId) setSelectedWorkspaceId(workspaceId);
   }, [data, setSelectedWorkspaceId]);
+
+  // Update editedName ketika data berubah
+  useEffect(() => {
+    if (data?.nama) {
+      setEditedName(data.nama);
+    }
+  }, [data?.nama]);
 
   const actualWorkspaceId =
     data?.workspace?._id || data?.workspaceId || selectedWorkspaceId;
@@ -43,6 +56,57 @@ const ProjectDetailPage = () => {
     addGroupMutation.mutate({
       projectId: id,
     });
+  };
+
+  const handleStartEdit = () => {
+    setIsEditingName(true);
+    setEditedName(data.nama);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setEditedName(data.nama);
+  };
+
+  const handleSaveEdit = () => {
+    const newName = editedName.trim();
+
+    if (!newName) {
+      handleCancelEdit();
+      return;
+    }
+
+    if (newName === data.nama) {
+      setIsEditingName(false);
+      return;
+    }
+
+    updateProjectMutation.mutate(
+      {
+        projectId: id,
+        data: {
+          nama: newName,
+          workspaceId: actualWorkspaceId,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsEditingName(false);
+        },
+        onError: () => {
+          setEditedName(data.nama);
+          setIsEditingName(false);
+        },
+      }
+    );
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSaveEdit();
+    } else if (e.key === "Escape") {
+      handleCancelEdit();
+    }
   };
 
   if (isLoading) {
@@ -78,9 +142,48 @@ const ProjectDetailPage = () => {
               </button>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-[1.2em] font-bold text-gray-800">
-                    {data.nama}
-                  </h1>
+                  {isEditingName ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editedName}
+                        onChange={(e) => setEditedName(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        autoFocus
+                        className="text-[1.2em] font-bold text-gray-800 bg-white border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500"
+                        disabled={updateProjectMutation.isPending}
+                      />
+                      <button
+                        onClick={handleSaveEdit}
+                        disabled={updateProjectMutation.isPending}
+                        className="p-1.5 bg-[#0E7490] hover:bg-blue-700 text-white rounded-lg transition disabled:opacity-50 shadow-sm"
+                        title="Save"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        disabled={updateProjectMutation.isPending}
+                        className="p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition disabled:opacity-50 shadow-sm"
+                        title="Cancel"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 group">
+                      <h1 className="text-[1.2em] font-bold text-gray-800">
+                        {data.nama}
+                      </h1>
+                      <button
+                        onClick={handleStartEdit}
+                        className="p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-200 rounded transition"
+                        title="Edit project name"
+                      >
+                        <Edit2 className="w-4 h-4 text-gray-600" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -137,7 +240,7 @@ const ProjectDetailPage = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleAddProject}
-                className="px-1 py-2 text-[0.7em] font-medium text-white bg-[#0E7490] rounded-lg hover:bg-blue-700 transition flex items-center gap-1 shadow-sm"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#0E7490] rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 New Group

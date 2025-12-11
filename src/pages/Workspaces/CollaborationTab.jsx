@@ -8,6 +8,7 @@ import { useProject } from "../../hook/useProject";
 
 const ProjectCard = ({
   project,
+  workspaceId,
   isOwner,
   borderColor,
   badgeColor,
@@ -19,11 +20,55 @@ const ProjectCard = ({
   const navigate = useNavigate();
   const { progressByProject } = useProgressProject(project._id);
   const progress = progressByProject.data?.progress ?? 0;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(project.nama);
+  const { updateProjectMutation } = useProject();
+
+  const handleNameEdit = (e) => {
+    e.preventDefault();
+    const newName = editedName.trim();
+    if (!newName || newName === project.nama) {
+      setIsEditing(false);
+      setEditedName(project.nama);
+      return;
+    }
+
+    updateProjectMutation.mutate(
+      {
+        projectId: project._id,
+        data: {
+          nama: newName,
+          workspaceId: workspaceId,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
+        onError: () => {
+          setEditedName(project.nama);
+          setIsEditing(false);
+        },
+      }
+    );
+  };
+
+  const handleCardClick = () => {
+    if (!isEditing) {
+      navigate(`/project/${project._id}`);
+    }
+  };
+
+  const handleStartEdit = (e) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditedName(project.nama);
+  };
 
   return (
     <div
       className={`card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 ${borderColor} relative`}
-      onClick={() => navigate(`/project/${project._id}`)}
+      onClick={handleCardClick}
     >
       {isOwner && onDelete && (
         <button
@@ -38,7 +83,30 @@ const ProjectCard = ({
       )}
       <div className="mt-2 grid grid-cols-2 gap-10 items-center">
         <div className="flex flex-col gap-1">
-          <h4 className="card-title text-[0.9em]">{project.nama}</h4>
+          {isEditing ? (
+            <input
+              type="text"
+              className="card-title text-[0.9em] bg-white border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={editedName}
+              autoFocus
+              onChange={(e) => setEditedName(e.target.value)}
+              onBlur={handleNameEdit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleNameEdit(e);
+                else if (e.key === "Escape") {
+                  setIsEditing(false);
+                  setEditedName(project.nama);
+                }
+              }}
+            />
+          ) : (
+            <h4
+              className="card-title text-[0.9em] cursor-pointer hover:underline"
+              onClick={handleStartEdit}
+            >
+              {project.nama}
+            </h4>
+          )}
           {project.description && (
             <p className="text-[0.8em] text-gray-600 mb-2">
               {project.description}
@@ -88,6 +156,7 @@ const ProjectCard = ({
 };
 
 const CollaborationTab = ({ workspaceId }) => {
+  console.log("CollaborationTab received workspaceId:", workspaceId);
   const {
     useWorkspaceProjects,
     useCollaborationRequests,
@@ -333,6 +402,7 @@ const CollaborationTab = ({ workspaceId }) => {
                       <ProjectCard
                         key={project._id}
                         project={project}
+                        workspaceId={workspaceId}
                         isOwner={true}
                         borderColor="border-green-500"
                         badgeColor="badge-success"
@@ -368,6 +438,7 @@ const CollaborationTab = ({ workspaceId }) => {
                         key={project._id}
                         project={project}
                         isOwner={true}
+                        workspaceId={workspaceId}
                         borderColor="border-blue-500"
                         badgeColor="badge-success"
                         badgeText="Owner"
@@ -409,6 +480,7 @@ const CollaborationTab = ({ workspaceId }) => {
                         key={project._id}
                         project={project}
                         isOwner={false}
+                        workspaceId={workspaceId}
                         borderColor="border-orange-500"
                         badgeColor="badge-warning"
                         badgeText="Collaborator"
