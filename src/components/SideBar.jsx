@@ -24,6 +24,7 @@ import {
   BookOpen,
   FolderKanban
 } from "lucide-react";
+import ProfileDialog from "./ui/ProfileDialog";
 
 const iconMap = {
   dashboard: LayoutDashboard,
@@ -43,6 +44,7 @@ export default function Sidebar() {
   const [showQuartersSection, setShowQuartersSection] = useState(false);
   const [selectedQuarterId, setSelectedQuarterId] = useState(null);
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState({open: null, profile: null})
   const { user, logout } = useAuth();
   const location = useLocation();
 
@@ -434,18 +436,35 @@ export default function Sidebar() {
               className="w-10 h-10 border rounded-full"
               src={Profile}
               alt="Profile"
+              onClick={() => setOpenDialog({open: true, profile: user})}
             />
+            {openDialog.open &&(
+              <ProfileDialog
+                show={openDialog.open}
+                onClose={() => setOpenDialog({ open:false, profile: null})}
+                userId = {openDialog.user?._id}
+                profileData={openDialog.profile}
+              />
+            )}
           </div>
         </aside>
       </div>
-
+      
       {/* Toggle Button */}
-      <div className="fixed bottom-18 left-2 z-50">
+      {!openDialog.open && (
+        <div className="fixed bottom-18 left-2 z-40">
+          <ToggleButtonExit
+            isOpen={isSidebarOpen}
+            setIsOpen={setIsSidebarOpen}
+          />
+        </div>
+      )}
+      {/* <div className="fixed bottom-18 left-2 z-40">
         <ToggleButtonExit
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
         />
-      </div>
+      </div> */}
     </>
   );
 }

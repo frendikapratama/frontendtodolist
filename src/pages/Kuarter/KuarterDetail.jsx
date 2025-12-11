@@ -61,9 +61,6 @@ const KuarterDetail = () => {
               <p className="text-white">
                 <strong className="text-gray-900">ID:</strong> {kuarterData._id}
               </p>
-              <p className="text-white">
-                <strong className="text-gray-800">Description:</strong> {kuarterData.deskripsi || "No description"}
-              </p>
             </div>
 
             {/* Division Details Section */}

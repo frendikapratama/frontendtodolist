@@ -216,7 +216,7 @@ const WorkspaceCard = ({
             </div>
 
             {/* Member Avatar Stack */}
-            <div className="mt-2 relative z-50" ref={containerRef}>
+            <div className="mt-2 relative z-20" ref={containerRef}>
               <p className="text-[0.8em] font-semibold mb-2 text-gray-800">
                 Members ({membersWorkspaceQuery.data?.totalMembers || 0})
               </p>
