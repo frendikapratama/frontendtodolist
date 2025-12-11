@@ -77,14 +77,19 @@ const AnimatedDivisionName = ({ name }) => {
           }
         }
       `}</style>
-      
+
       <div className="division-name-wrapper">
         {isAnimating && (
-          <div className="division-name-text previous">
-            {prevName}
-          </div>
+          <div className="division-name-text previous">{prevName}</div>
         )}
-        <div className={`division-name-text ${isAnimating ? 'current' : ''}`} style={{ animation: isAnimating ? 'slideDown 0.5s ease-out forwards' : 'none' }}>
+        <div
+          className={`division-name-text ${isAnimating ? "current" : ""}`}
+          style={{
+            animation: isAnimating
+              ? "slideDown 0.5s ease-out forwards"
+              : "none",
+          }}
+        >
           {name}
         </div>
       </div>
@@ -145,35 +150,43 @@ const WorkspaceDetailPanel = ({ workspace }) => {
 
   const apiData = workspaceStats.data;
   const mergedData = {
-    inProgress: apiData?.inProgressProject ?? workspace.inProgress ?? 0,
-    completed: apiData?.completedProject ?? workspace.completed ?? 0,
-    undated: apiData?.undatedProject ?? workspace.undated ?? 0,
-    planned: apiData?.planned ?? workspace.planned ?? 0,
+    inProgressTask: apiData?.inProgressTask ?? workspace.inProgressTask ?? 0,
+    completedTask: apiData?.completedTask ?? workspace.completedTask ?? 0,
+    holdBlockedTask: apiData?.holdBlockedTask ?? workspace.holdBlockedTask ?? 0,
+    planningTask: apiData?.planningTask ?? workspace.planningTask ?? 0,
     totalTask:
-      apiData?.totalProject ?? workspace.totalTask ?? workspace.totaltask ?? 0,
-    totalGroupTask: apiData?.totalGroup ?? workspace.totalGroup ?? 0,
+      apiData?.totalTask ?? workspace.totalTask ?? workspace.totalTask ?? 0,
+    totalProject: apiData?.totalProject ?? workspace.totalProject ?? 0,
     progress: apiData?.progress ?? 0,
     projects: apiData?.projects ?? [],
   };
 
   const totalTaskCalculated =
-    (mergedData.inProgress || 0) +
-    (mergedData.completed || 0) +
-    (mergedData.undated || 0) +
-    (mergedData.planned || 0);
+    (mergedData.inProgressTask || 0) +
+    (mergedData.completedTask || 0) +
+    (mergedData.holdBlockedTask || 0) +
+    (mergedData.planningTask || 0);
   const totalTaskForCalculation =
     mergedData.totalTask || totalTaskCalculated || 1;
 
-  // Chart data 
+  // Chart data
   const chartData = [
     {
       name: "In Progress",
-      value: mergedData.inProgress || 0,
+      value: mergedData.inProgressTask || 0,
       color: "#3b82f6",
     },
-    { name: "Completed", value: mergedData.completed || 0, color: "#10b981" },
-    { name: "Undated", value: mergedData.undated || 0, color: "#6b7280" },
-    { name: "Planned", value: mergedData.planned || 0, color: "#f59e0b" },
+    {
+      name: "Completed",
+      value: mergedData.completedTask || 0,
+      color: "#10b981",
+    },
+    {
+      name: "Hold & Block",
+      value: mergedData.holdBlockedTask || 0,
+      color: "#6b7280",
+    },
+    { name: "Planned", value: mergedData.planningTask || 0, color: "#f59e0b" },
   ].map((item) => ({
     ...item,
     percentage: ((item.value / totalTaskForCalculation) * 100).toFixed(1),
@@ -181,37 +194,37 @@ const WorkspaceDetailPanel = ({ workspace }) => {
   const stats = [
     {
       label: "In Progress",
-      value: mergedData.inProgress || 0,
+      value: mergedData.inProgressTask || 0,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
       label: "Completed",
-      value: mergedData.completed || 0,
+      value: mergedData.completedTask || 0,
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
-      label: "Undated",
-      value: mergedData.undated || 0,
+      label: "Hold & Blcok",
+      value: mergedData.holdBlockedTask || 0,
       color: "text-gray-600",
       bgColor: "bg-gray-50",
     },
     {
       label: "Planned",
-      value: mergedData.planned || 0,
+      value: mergedData.planningTask || 0,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
     },
     {
-      label: "Total Project",
+      label: "Total Task",
       value: mergedData.totalTask || 0,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
     {
-      label: "Total Group Tasks",
-      value: mergedData.totalGroupTask || 0,
+      label: "Total Project",
+      value: mergedData.totalProject || 0,
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
     },
