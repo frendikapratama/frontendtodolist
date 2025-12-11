@@ -42,11 +42,12 @@ export const KuarterForm = ({ onClose }) => {
           value={formData.departemen}
           onChange={handleChange}
           required
-          >
+        >
           <option value="">Select Department</option>
           <option value="PBPG">PBPG</option>
           <option value="HPC">HPC</option>
           <option value="PT">PT</option>
+          <option value="OFFICE">OFFICE</option>
         </select>
       </div>
 
@@ -64,7 +65,7 @@ export const KuarterForm = ({ onClose }) => {
           className="btn btn-primary shadow-2xl"
           disabled={createMutation.isPending}
         >
-          {createMutation.isPending ? "Saving..." : "Save"}
+          {createMutation.isPending ? "Menyimpan..." : "Simpan"}
         </button>
       </div>
     </form>

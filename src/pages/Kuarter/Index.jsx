@@ -57,13 +57,13 @@ const Kuarter = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white drop-shadow-lg">List Quarters</h1>
         <div className="flex flex-row gap-2 items-center">
-        <NotificationBell/>
-        <button
-          onClick={openCreateModal}
-          className="px-6 py-2.5 bg-primary hover:from-blue-400 text-white font-medium rounded-xl shadow-lg shadow-blue-500/50 transition-all duration-300 hover:shadow-xl"
-        >
-          Add Quarter
-        </button>
+          <NotificationBell />
+          <button
+            onClick={openCreateModal}
+            className="px-6 py-2.5 bg-primary hover:from-blue-400 text-white font-medium rounded-xl shadow-lg shadow-blue-500/50 transition-all duration-300 hover:shadow-xl"
+          >
+            Add Quarter
+          </button>
         </div>
       </div>
 
@@ -152,9 +152,11 @@ const Kuarter = () => {
 
                   <div className="flex flex-col gap-3 mt-4">
                     <div className={`flex items-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 w-fit ${kuarter.departemen === "PBPG"
-                        ? "text-blue-400"
-                        : kuarter.departemen === "HPC"
-                          ? "text-green-400"
+                      ? "text-blue-400"
+                      : kuarter.departemen === "HPC"
+                        ? "text-green-400"
+                        : kuarter.departemen === "PT"
+                          ? "text-yellow-400"
                           : "text-red-400"
                       }`}>
                       <Dot className="w-9 h-9 animate-pulse" />

@@ -9,6 +9,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useMember } from "../../hook/useMember";
 import { createPortal } from "react-dom";
 
+// const SubtaskList = ({ taskId, groupId, workspaceId, onSubtaskStatusChange }) => {
 const SubtaskList = ({ taskId, groupId, workspaceId }) => {
   const {
     subtaskByTask,
@@ -36,7 +37,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
 
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = [
-    "Not Started",
+    "To Do",
     "In Progress",
     "Done",
     "Blocked",
@@ -118,6 +119,18 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
         updateSubTaskMutation.mutate({ subtaskId, data: updateData });
         setActivePopup(null);
       },
+      //   updateSubTaskMutation.mutate({ subtaskId, data: updateData },
+      //     {
+      //       onSuccess: ()=>{
+      //         if(field === "status" && onSubtaskStatusChange){
+      //           onSubtaskStatusChange();
+      //         }
+      //       }
+      //     }
+      //   );
+      //   setActivePopup(null);
+      // },
+      // [localSubtasks, updateSubTaskMutation, onSubtaskStatusChange]
       [localSubtasks, updateSubTaskMutation]
     );
 
@@ -410,7 +423,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               />
             ) : (
               <span
-                className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text whitespace-normal break-all"
+                className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text whitespace-normal break-all line-clamp-5"
                 onClick={() => {
                   setEditingSubtaskId(s._id);
                   setEditedName(s.nama);

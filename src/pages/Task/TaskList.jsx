@@ -5,6 +5,8 @@ import { useMember } from "../../hook/useMember";
 import SubtaskList from "../Subtask/SubTaskList";
 import PopupSelect from "./PopupSelect";
 import DatePickerPopup from "./DatePickerPopup";
+import { useStatusSync } from "../../hook/useStatusSync";
+import { useSubTask } from "../../hook/useSubTask";
 import {
   Plus,
   ChevronDown,
@@ -29,8 +31,9 @@ const TaskList = ({ groupId, workspaceId }) => {
     deleteTaskMutation,
   } = useTask(groupId);
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
+  const { updateSubTaskMutation } = useSubTask(null, groupId);
   const { data, isLoading, isError } = taskByGroup;
-
+  const { syncTasktoSubtasks, syncSubtasktoTask } = useStatusSync();
   const [openDialog, setOpenDialog] = useState({ open: false, task: null });
   const [showAddTask, setShowAddTask] = useState(false);
   const [openSubtasks, setOpenSubtasks] = useState({});
@@ -199,9 +202,13 @@ const TaskList = ({ groupId, workspaceId }) => {
           updateData.note = autoNote;
         }
       }
+      // if(field === "status" && task.subtask && task.subtask.length > 0){
+      //   syncTasktoSubtasks(value, task.subtask, updateSubTaskMutation)
+      // }
       updateTaskMutation.mutate({ taskId, data: updateData });
       setActivePopup(null);
     },
+    // [localTasks, updateTaskMutation, updateSubTaskMutation, syncTasktoSubtasks]
     [localTasks, updateTaskMutation]
   );
 
@@ -547,7 +554,7 @@ const TaskList = ({ groupId, workspaceId }) => {
                     />
                   ) : (
                     <span
-                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-2 flex-1 min-w-0"
+                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-5 flex-1 min-w-0"
                       onClick={() => {
                         setEditingField({ taskId: task._id, field: "nama" });
                         setEditedValue(task.nama);

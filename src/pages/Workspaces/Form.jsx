@@ -42,8 +42,24 @@ export const WorkspaceForm = ({ onClose, kuarterId = null }) => {
         >
           <option value="">Select Division</option>
           <option value="IT">IT</option>
+          <option value="Production">Production</option>
+          <option value="Accounting">Accounting</option>
+          <option value="Corporate Secretary">Corporate Secretary</option>
+          <option value="Collector">Collector</option>
+          <option value="Audit Internal">Audit Internal</option>
+          <option value="Administration">Administration</option>
+          <option value="PPIC - PT">PPIC - PT</option>
+          <option value="PPIC - HPC">PPIC - HPC</option>
+          <option value="PPIC - PBPG">PPIC - PBPBG</option>
+          <option value="Designer">Designer</option>
+          <option value="Costing">Costing</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Purchasing">Purchasing</option>
+          <option value="Invoicing">Invoicing</option>
+          <option value="QC - RND">QC - RND</option>
           <option value="Purchasing">Purchasing</option>
           <option value="CSD">CSD</option>
+          <option value="HRD">HRD</option>
           <option value="GA">GA</option>
           <option value="Finance">Finance</option>
         </select>
@@ -63,7 +79,7 @@ export const WorkspaceForm = ({ onClose, kuarterId = null }) => {
           className="btn btn-primary shadow-2xl"
           disabled={createMutation.isPending}
         >
-          {createMutation.isPending ? "Saving..." : "Save"}
+          {createMutation.isPending ? "Menyimpan..." : "Simpan"}
         </button>
       </div>
     </form>
