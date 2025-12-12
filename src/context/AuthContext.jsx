@@ -30,6 +30,12 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updateData) => {
     try {
       console.log("Sending update data:", updateData);
+      if (updateData instanceof FormData) {
+        console.log("FormData entries:");
+        for (let pair of updateData.entries()) {
+          console.log(pair[0], ':', pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1]);
+        }
+      }
       const res = await api.put("users/me", updateData);
       console.log("Update response:", res.data);
       setUser(res.data.data);

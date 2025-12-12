@@ -55,6 +55,7 @@ const ProfileDialog = ({ show, onClose }) => {
                 setError('Image size must be less than 5MB');
                 return;
             }
+            console.log('Photo selected:', file.name, file.size, file.type);
             setSelectedPhoto(file);
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -83,9 +84,10 @@ const ProfileDialog = ({ show, onClose }) => {
                 }
                 formData.append('password', newPassword);
             }
-            if (selectedPhoto) {
+            if (selectedPhoto && selectedPhoto instanceof File) {
                 formData.append('photo', selectedPhoto);
-            }   
+                console.log('Photo appended:', selectedPhoto.name, selectedPhoto.size);
+            }  
             const result = await updateProfile(formData);
 
             if (result.success) {
