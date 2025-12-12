@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import api from "../api/axios";
 import { AuthContext } from "./AuthContext";
 import { API_URL, SOCKET_URL } from "../api/axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 const NotificationContext = createContext();
 
@@ -12,6 +13,7 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  const queryClient = useQueryClient();
 
   // const API_URL = import.meta.env.VITE_SOCKET_URL || 'https://planify.itvault.cloud' ;
 
@@ -43,6 +45,60 @@ export const NotificationProvider = ({ children }) => {
           icon: "/icon.png",
         });
       }
+    });
+
+    // Di NotificationContext.jsx, dalam useEffect socket
+    // Setelah listener notification:new, tambahkan:
+
+    newSocket.on("notification:comment", (data) => {
+      console.log("Comment notification received:", data);
+      // Invalidate query untuk refresh comments
+      queryClient.invalidateQueries(["comment", data.taskId]);
+
+      // Tampilkan notifikasi jika bukan user yang comment
+      setNotifications((prev) => [
+        {
+          _id: Date.now().toString(),
+          type: "TASK_COMMENT",
+          title: data.title,
+          message: data.message,
+          isRead: false,
+          createdAt: data.timestamp,
+          project: data.projectId,
+          metadata: {
+            taskName: data.taskName,
+            projectId: data.projectId,
+            workspaceId: data.workspaceId,
+          },
+        },
+        ...prev,
+      ]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    newSocket.on("notification:reply", (data) => {
+      console.log("Reply notification received:", data);
+      // Invalidate query untuk refresh comments
+      queryClient.invalidateQueries(["comment", data.taskId]);
+
+      setNotifications((prev) => [
+        {
+          _id: Date.now().toString(),
+          type: "TASK_REPLY_COMMENT",
+          title: data.title,
+          message: data.message,
+          isRead: false,
+          createdAt: data.timestamp,
+          project: data.projectId,
+          metadata: {
+            taskName: data.taskName,
+            projectId: data.projectId,
+            workspaceId: data.workspaceId,
+          },
+        },
+        ...prev,
+      ]);
+      setUnreadCount((prev) => prev + 1);
     });
 
     newSocket.on("notification:marked-read", ({ notificationId }) => {

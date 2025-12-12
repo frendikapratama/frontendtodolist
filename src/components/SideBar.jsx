@@ -44,8 +44,9 @@ export default function Sidebar() {
   const [showQuartersSection, setShowQuartersSection] = useState(false);
   const [selectedQuarterId, setSelectedQuarterId] = useState(null);
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState({open: null, profile: null})
+  const [openDialog, setOpenDialog] = useState({ open: null, profile: null })
   const { user, logout } = useAuth();
+  const currentPhotoUrl =(user.photo ? `${import.meta.env.VITE_API_URL}/uploads/users/${user.photo}` : "https://placehold.co/400");
   const location = useLocation();
 
   const navigate = useNavigate();
@@ -405,8 +406,8 @@ export default function Sidebar() {
                           title={k.nama}
                         >
                           <div className={`w-7 h-7 rounded flex items-center justify-center text-[0.8em] font-semibold ${location.pathname === `/kuarter/${k._id}` || selectedQuarterId === k._id
-                              ? "bg-blue-600 rounded-xl text-white"
-                              : "bg-green-500 text-white"
+                            ? "bg-blue-600 rounded-xl text-white"
+                            : "bg-green-500 text-white"
                             }`}>
                             {k.nama.charAt(0).toUpperCase()}
                           </div>
@@ -434,22 +435,22 @@ export default function Sidebar() {
             )}
             <img
               className="w-10 h-10 border rounded-full"
-              src={Profile}
+              src={currentPhotoUrl}
               alt="Profile"
-              onClick={() => setOpenDialog({open: true, profile: user})}
+              onClick={() => setOpenDialog({ open: true, profile: user })}
             />
-            {openDialog.open &&(
+            {openDialog.open && (
               <ProfileDialog
                 show={openDialog.open}
-                onClose={() => setOpenDialog({ open:false, profile: null})}
-                userId = {openDialog.user?._id}
+                onClose={() => setOpenDialog({ open: false, profile: null })}
+                userId={openDialog.user?._id}
                 profileData={openDialog.profile}
               />
             )}
           </div>
         </aside>
       </div>
-      
+
       {/* Toggle Button */}
       {!openDialog.open && (
         <div className="fixed bottom-18 left-2 z-40">

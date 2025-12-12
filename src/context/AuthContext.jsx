@@ -29,15 +29,11 @@ export const AuthProvider = ({ children }) => {
   };
   const updateProfile = async (updateData) => {
     try {
-      console.log("Sending update data:", updateData);
-      if (updateData instanceof FormData) {
-        console.log("FormData entries:");
-        for (let pair of updateData.entries()) {
-          console.log(pair[0], ':', pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1]);
-        }
-      }
-      const res = await api.put("users/me", updateData);
-      console.log("Update response:", res.data);
+      const res = await api.put("users/me", updateData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setUser(res.data.data);
       return { success: true, data: res.data.data };
     } catch (err) {
@@ -45,12 +41,15 @@ export const AuthProvider = ({ children }) => {
         message: err.response?.data?.message,
         errors: err.response?.data?.errors,
         data: err.response?.data,
-        status: err.response?.status
+        status: err.response?.status,
       });
 
       return {
         success: false,
-        message: err.response?.data?.message || err.response?.data?.error || "Update failed"
+        message:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Update failed",
       };
     }
   };
