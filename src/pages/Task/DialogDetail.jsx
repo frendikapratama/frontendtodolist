@@ -19,7 +19,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/id";
 import { useAttachment } from "../../hook/useAttachment";
-
+import { useNotifications } from "../../context/NotificationContext";
 dayjs.extend(relativeTime);
 dayjs.locale("id");
 
@@ -52,6 +52,44 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
 
   const [editingDescription, setEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
+  const { socket } = useNotifications();
+
+  useEffect(() => {
+    if (!socket || !taskId) return;
+
+    // Join task room when dialog opens
+    socket.emit("task:join", taskId);
+    console.log(`Joined task room: ${taskId}`);
+
+    // Listen for new comments
+    const handleNewComment = (data) => {
+      if (data.taskId === taskId) {
+        console.log("Real-time comment received:", data);
+        commentQuery.refetch(); // Refresh comments
+        toast.success(`New comment from ${data.comment.user.username}`);
+      }
+    };
+
+    // Listen for new replies
+    const handleNewReply = (data) => {
+      if (data.taskId === taskId) {
+        console.log("Real-time reply received:", data);
+        commentQuery.refetch(); // Refresh comments
+        toast.success(`New reply from ${data.reply.user.username}`);
+      }
+    };
+
+    socket.on("comment:created", handleNewComment);
+    socket.on("reply:created", handleNewReply);
+
+    // Cleanup: leave room when dialog closes
+    return () => {
+      socket.emit("task:leave", taskId);
+      socket.off("comment:created", handleNewComment);
+      socket.off("reply:created", handleNewReply);
+      console.log(`Left task room: ${taskId}`);
+    };
+  }, [socket, taskId, commentQuery]);
 
   useEffect(() => {
     if (taskData) {
