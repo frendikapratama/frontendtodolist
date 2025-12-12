@@ -12,10 +12,7 @@ export const useComment = (taskId) => {
   });
   const createCommentMutation = useMutation({
     mutationFn: ({ taskId, data }) => createComment(taskId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["comment", taskId]);
-      toast.success("Add Comment successfully");
-    },
+    onSuccess: () => {},
     onError: () => {
       toast.error("Failed to add comment");
     },
@@ -25,7 +22,6 @@ export const useComment = (taskId) => {
     mutationFn: ({ taskId, commentId, data }) =>
       replyComment(taskId, commentId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["comment", taskId]);
       toast.success("Reply Successfully");
     },
     onError: () => {
