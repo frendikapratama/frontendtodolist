@@ -89,6 +89,8 @@ export default function NotificationBell() {
         return "💬";
       case "MENTION":
         return "🏷️";
+      case "TASK_ATTACHMENT_UPLOADED":
+        return "📎";
       default:
         return "🔔";
     }

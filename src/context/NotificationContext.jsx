@@ -117,6 +117,34 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount(unreadCount);
     });
 
+    newSocket.on("notification:attachment", (data) => {
+      console.log("Attachment notification received:", data);
+
+      // Invalidate query untuk refresh attachments
+      queryClient.invalidateQueries(["attachments", data.taskId]);
+
+      // Tampilkan notifikasi
+      setNotifications((prev) => [
+        {
+          _id: Date.now().toString(),
+          type: "TASK_ATTACHMENT_UPLOADED",
+          title: data.title,
+          message: data.message,
+          isRead: false,
+          createdAt: data.timestamp,
+          project: data.projectId,
+          metadata: {
+            taskName: data.taskName,
+            fileName: data.fileName,
+            projectId: data.projectId,
+            workspaceId: data.workspaceId,
+          },
+        },
+        ...prev,
+      ]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
     setSocket(newSocket);
 
     return () => {
