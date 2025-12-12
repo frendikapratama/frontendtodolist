@@ -205,7 +205,7 @@ const WorkspaceDetailPanel = ({ workspace }) => {
       bgColor: "bg-green-50",
     },
     {
-      label: "Hold & Blcok",
+      label: "Hold & Block",
       value: mergedData.holdBlockedTask || 0,
       color: "text-gray-600",
       bgColor: "bg-gray-50",
