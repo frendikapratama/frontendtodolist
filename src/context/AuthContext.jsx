@@ -30,7 +30,11 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updateData) => {
     try {
       console.log("Sending update data:", updateData);
-      const res = await api.put("users/me", updateData);
+      const res = await api.put("users/me", updateData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       console.log("Update response:", res.data);
       setUser(res.data.data);
       return { success: true, data: res.data.data };
@@ -39,12 +43,15 @@ export const AuthProvider = ({ children }) => {
         message: err.response?.data?.message,
         errors: err.response?.data?.errors,
         data: err.response?.data,
-        status: err.response?.status
+        status: err.response?.status,
       });
 
       return {
         success: false,
-        message: err.response?.data?.message || err.response?.data?.error || "Update failed"
+        message:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Update failed",
       };
     }
   };
