@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useComment } from "../../hook/useComment";
 import { useTask } from "../../hook/useTask";
+import { useSubTask } from "../../hook/useSubTask";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/id";
@@ -23,15 +24,28 @@ import { useNotifications } from "../../context/NotificationContext";
 dayjs.extend(relativeTime);
 dayjs.locale("id");
 
-const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
+const DialogDetail = ({
+  onClose,
+  show,
+  taskId,
+  taskData: propTaskData,
+  isSubtask = false,
+  subtaskId = null,
+}) => {
+  const itemId = isSubtask ? subtaskId : taskId;
+
+  // Conditionally use task or subtask hooks
   const { commentQuery, createCommentMutation, replyCommentMutation } =
-    useComment(taskId);
+    useComment(itemId, isSubtask);
   const { updateTaskMutation } = useTask();
+  const { updateSubTaskMutation } = useSubTask();
+  const updateMutation = isSubtask ? updateSubTaskMutation : updateTaskMutation;
+
   const {
     uploadAttachmentMutation,
     deleteAttachmentMutation,
     attachmentsQuery,
-  } = useAttachment(taskId);
+  } = useAttachment(itemId, isSubtask);
 
   const serverAttachments = attachmentsQuery.data || [];
   const dialogRef = useRef(null);
@@ -55,41 +69,50 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   const { socket } = useNotifications();
 
   useEffect(() => {
-    if (!socket || !taskId) return;
+    if (!socket || !itemId) return;
 
-    // Join task room when dialog opens
-    socket.emit("task:join", taskId);
-    console.log(`Joined task room: ${taskId}`);
+    // Join room (task or subtask)
+    const roomEvent = isSubtask ? "subtask:join" : "task:join";
+    const leaveEvent = isSubtask ? "subtask:leave" : "task:leave";
+    const commentCreatedEvent = isSubtask
+      ? "subtask-comment:created"
+      : "comment:created";
+    const replyCreatedEvent = isSubtask
+      ? "subtask-reply:created"
+      : "reply:created";
+
+    socket.emit(roomEvent, itemId);
+    console.log(`Joined ${isSubtask ? "subtask" : "task"} room: ${itemId}`);
 
     // Listen for new comments
     const handleNewComment = (data) => {
-      if (data.taskId === taskId) {
+      const dataKey = isSubtask ? data.subtaskId : data.taskId;
+      if (dataKey === itemId) {
         console.log("Real-time comment received:", data);
         commentQuery.refetch(); // Refresh comments
-        toast.success(`New comment from ${data.comment.user.username}`);
       }
     };
 
     // Listen for new replies
     const handleNewReply = (data) => {
-      if (data.taskId === taskId) {
+      const dataKey = isSubtask ? data.subtaskId : data.taskId;
+      if (dataKey === itemId) {
         console.log("Real-time reply received:", data);
         commentQuery.refetch(); // Refresh comments
-        toast.success(`New reply from ${data.reply.user.username}`);
       }
     };
 
-    socket.on("comment:created", handleNewComment);
-    socket.on("reply:created", handleNewReply);
+    socket.on(commentCreatedEvent, handleNewComment);
+    socket.on(replyCreatedEvent, handleNewReply);
 
     // Cleanup: leave room when dialog closes
     return () => {
-      socket.emit("task:leave", taskId);
-      socket.off("comment:created", handleNewComment);
-      socket.off("reply:created", handleNewReply);
-      console.log(`Left task room: ${taskId}`);
+      socket.emit(leaveEvent, itemId);
+      socket.off(commentCreatedEvent, handleNewComment);
+      socket.off(replyCreatedEvent, handleNewReply);
+      console.log(`Left ${isSubtask ? "subtask" : "task"} room: ${itemId}`);
     };
-  }, [socket, taskId, commentQuery]);
+  }, [socket, itemId, commentQuery, isSubtask]);
 
   useEffect(() => {
     if (taskData) {
@@ -104,9 +127,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   const handleMeetingDateChange = (newMeetingDate) => {
     const iso = newMeetingDate ? dayjs(newMeetingDate).toISOString() : "";
     setMeetingDate(iso);
-    if (taskId) {
-      updateTaskMutation.mutate({
-        taskId,
+    if (itemId) {
+      updateMutation.mutate({
+        [isSubtask ? "subtaskId" : "taskId"]: itemId,
         data: { meeting_date: iso },
       });
     }
@@ -118,9 +141,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
     if (linkTimer) clearTimeout(linkTimer);
 
     const newTimer = setTimeout(() => {
-      if (taskId) {
-        updateTaskMutation.mutate({
-          taskId,
+      if (itemId) {
+        updateMutation.mutate({
+          [isSubtask ? "subtaskId" : "taskId"]: itemId,
           data: { meeting_link: newMeetingLink },
         });
       }
@@ -133,14 +156,16 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
     if (message.trim()) {
       if (replyTo) {
         replyCommentMutation.mutate({
-          taskId,
+          taskId: isSubtask ? undefined : itemId,
+          subtaskId: isSubtask ? itemId : undefined,
           commentId: replyTo,
           data: { text: message },
         });
         setReplyTo(null);
       } else {
         createCommentMutation.mutate({
-          taskId,
+          taskId: isSubtask ? undefined : itemId,
+          subtaskId: isSubtask ? itemId : undefined,
           data: { text: message },
         });
       }
@@ -207,9 +232,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   };
   const handleEditDescription = () => {
     const trimmedValue = editedDescription.trim();
-    if (taskId) {
-      updateTaskMutation.mutate({
-        taskId,
+    if (itemId) {
+      updateMutation.mutate({
+        [isSubtask ? "subtaskId" : "taskId"]: itemId,
         data: { description: trimmedValue },
       });
     }
@@ -219,12 +244,13 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
 
   const handleDownloadFile = async (fileObj) => {
     try {
-      const response = await api.get(
-        `/attachment/${taskId}/download/${fileObj._id}`,
-        {
-          responseType: "blob",
-        }
-      );
+      const endpoint = isSubtask
+        ? `/attachment/subtask/${itemId}/download/${fileObj._id}`
+        : `/attachment/${itemId}/download/${fileObj._id}`;
+
+      const response = await api.get(endpoint, {
+        responseType: "blob",
+      });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -258,10 +284,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="bg-white w-full max-w-4xl h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-xl font-semibold text-gray-800">
-                Detail Task
+                Detail {isSubtask ? "Subtask" : "Task"}
               </h2>
               <button
                 onClick={onClose}
@@ -339,7 +364,7 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                   {replyTo && (
                     <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-lg">
                       <Reply className="w-4 h-4" />
-                      <span>Membalas komentar...</span>
+                      <span>Reply comment...</span>
                       <button
                         onClick={() => setReplyTo(null)}
                         className="ml-auto text-gray-500 hover:text-gray-700"
@@ -356,7 +381,7 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                       onKeyPress={(e) =>
                         e.key === "Enter" && handleSendMessage()
                       }
-                      placeholder="Tulis komentar..."
+                      placeholder="Write a comment..."
                       className="flex-1 text-black px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button

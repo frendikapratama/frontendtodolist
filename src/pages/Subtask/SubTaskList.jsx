@@ -21,7 +21,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     deleteSubTaskMutation,
   } = useSubTask(taskId, groupId);
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openDialog, setOpenDialog] = useState({ open: false, subtask: null });
   const [subtaskName, setSubtaskName] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingSubtaskId, setEditingSubtaskId] = useState(null);
@@ -36,13 +36,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
   });
 
   const buttonRefs = useRef({});
-  const STATUS_OPTIONS = [
-    "To Do",
-    "In Progress",
-    "Done",
-    "Blocked",
-    "Hold",
-  ];
+  const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
   const NOTE_OPTIONS = [
     "Completed - On Time",
@@ -90,49 +84,49 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     [removePicMutation]
   );
   const handlePopupChange = useCallback(
-      (subtaskId, field, value) => {
-        const task = localSubtasks.find((t) => t._id === subtaskId);
-        if (!task) {
-          updateSubTaskMutation.mutate({ subtaskId, data: { [field]: value } });
-          setActivePopup(null);
-          return;
-        }
-        let updateData = { [field]: value };
-        if (
-          field !== "note" &&
-          (field === "status" || field === "due_date" || field === "finish_date")
-        ) {
-          const newStatus = field === "status" ? value : task.status;
-          const newDueDate = field === "due_date" ? value : task.due_date;
-          const newFinishDate =
-            field === "finish_date" ? value : task.finish_date;
-          const autoNote = calculateAutoNote(
-            newStatus,
-            newDueDate,
-            newFinishDate
-          );
-  
-          if (autoNote) {
-            updateData.note = autoNote;
-          }
-        }
-        updateSubTaskMutation.mutate({ subtaskId, data: updateData });
+    (subtaskId, field, value) => {
+      const task = localSubtasks.find((t) => t._id === subtaskId);
+      if (!task) {
+        updateSubTaskMutation.mutate({ subtaskId, data: { [field]: value } });
         setActivePopup(null);
-      },
-      //   updateSubTaskMutation.mutate({ subtaskId, data: updateData },
-      //     {
-      //       onSuccess: ()=>{
-      //         if(field === "status" && onSubtaskStatusChange){
-      //           onSubtaskStatusChange();
-      //         }
-      //       }
-      //     }
-      //   );
-      //   setActivePopup(null);
-      // },
-      // [localSubtasks, updateSubTaskMutation, onSubtaskStatusChange]
-      [localSubtasks, updateSubTaskMutation]
-    );
+        return;
+      }
+      let updateData = { [field]: value };
+      if (
+        field !== "note" &&
+        (field === "status" || field === "due_date" || field === "finish_date")
+      ) {
+        const newStatus = field === "status" ? value : task.status;
+        const newDueDate = field === "due_date" ? value : task.due_date;
+        const newFinishDate =
+          field === "finish_date" ? value : task.finish_date;
+        const autoNote = calculateAutoNote(
+          newStatus,
+          newDueDate,
+          newFinishDate
+        );
+
+        if (autoNote) {
+          updateData.note = autoNote;
+        }
+      }
+      updateSubTaskMutation.mutate({ subtaskId, data: updateData });
+      setActivePopup(null);
+    },
+    //   updateSubTaskMutation.mutate({ subtaskId, data: updateData },
+    //     {
+    //       onSuccess: ()=>{
+    //         if(field === "status" && onSubtaskStatusChange){
+    //           onSubtaskStatusChange();
+    //         }
+    //       }
+    //     }
+    //   );
+    //   setActivePopup(null);
+    // },
+    // [localSubtasks, updateSubTaskMutation, onSubtaskStatusChange]
+    [localSubtasks, updateSubTaskMutation]
+  );
 
   const handleDragStart = (e, index) => {
     setDraggedItem(index);
@@ -383,8 +377,9 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           onDragOver={(e) => handleDragOver(e, index)}
           onDrop={handleDrop}
           onDragEnd={handleDragEnd}
-          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""
-            }`}
+          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${
+            draggedItem === index ? "opacity-40" : ""
+          }`}
         >
           {/* Name Column */}
           <div
@@ -521,14 +516,15 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           >
             <span
               ref={(el) => (buttonRefs.current[`priority-${s._id}`] = el)}
-              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${s.priority === "Urgent"
-                ? "text-red-700 bg-red-200"
-                : s.priority === "High"
+              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                s.priority === "Urgent"
+                  ? "text-red-700 bg-red-200"
+                  : s.priority === "High"
                   ? "text-orange-800 bg-orange-200"
                   : s.priority === "Medium"
-                    ? "text-blue-800 bg-blue-200"
-                    : "text-gray-800 bg-gray-200"
-                }`}
+                  ? "text-blue-800 bg-blue-200"
+                  : "text-gray-800 bg-gray-200"
+              }`}
               onClick={() =>
                 setActivePopup({ subtaskId: s._id, field: "priority" })
               }
@@ -567,13 +563,13 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             >
               {s.meeting_date
                 ? new Date(s.meeting_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })
                 : "Set date & time"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -608,10 +604,10 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             >
               {s.start_date
                 ? new Date(s.start_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -642,10 +638,10 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             >
               {s.due_date
                 ? new Date(s.due_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -676,10 +672,10 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             >
               {s.finish_date
                 ? new Date(s.finish_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -703,16 +699,17 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           >
             <span
               ref={(el) => (buttonRefs.current[`note-${s._id}`] = el)}
-              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full cursor-pointer ${s.note === "Planning"
-                ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                : s.note === "Uncomplete"
+              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full cursor-pointer ${
+                s.note === "Planning"
+                  ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                  : s.note === "Uncomplete"
                   ? "text-red-100 bg-red-900 hover:bg-red-400"
                   : s.note === "Completed - On Time"
-                    ? "text-green-700 bg-green-100 hover:bg-green-200"
-                    : s.note === "Completed - Overdue"
-                      ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                      : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                }`}
+                  ? "text-green-700 bg-green-100 hover:bg-green-200"
+                  : s.note === "Completed - Overdue"
+                  ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                  : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+              }`}
               onClick={() =>
                 setActivePopup({ subtaskId: s._id, field: "note" })
               }
@@ -739,7 +736,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           >
             <button
               className="bg-gray-100 rounded-xl p-1 text-black font-medium text-[0.7em] w-18 hover:bg-gray-200"
-              onClick={() => setOpenDialog(true)}
+              onClick={() => setOpenDialog({ open: true, subtask: s })}
             >
               Detail
             </button>
@@ -749,10 +746,15 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
                 onClick={() => handleDeleteTask(s._id)}
               />
             </div>
-            <DialogDetail
-              show={openDialog}
-              onClose={() => setOpenDialog(false)}
-            />
+            {openDialog.open && (
+              <DialogDetail
+                show={openDialog.open}
+                onClose={() => setOpenDialog({ open: false, subtask: null })}
+                subtaskId={openDialog.subtask?._id}
+                taskData={openDialog.subtask}
+                isSubtask={true}
+              />
+            )}
           </div>
           <ConfirmDialog
             show={confirmDelete.show}
