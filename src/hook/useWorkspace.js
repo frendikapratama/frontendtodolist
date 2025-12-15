@@ -116,7 +116,7 @@ export const useWorkspace = (kuarterId = null) => {
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteWorkspace(id),
     onSuccess: () => {
-      toast.success("Berhasil menghapus workspace");
+      toast.success("Succes Delete Division");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       if (kuarterId) {
         queryClient.invalidateQueries({
@@ -131,7 +131,7 @@ export const useWorkspace = (kuarterId = null) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menghapus workspace");
+        toast.error("Failed delete division");
       }
     },
   });

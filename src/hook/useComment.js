@@ -6,6 +6,8 @@ import {
   getCommentSubtask,
   createCommentSubtask,
   replyCommentSubtask,
+  deleteComment,
+  deleteCommentSubtask,
 } from "../services/comment";
 import toast from "react-hot-toast";
 
@@ -16,6 +18,7 @@ export const useComment = (itemId, isSubtask = false) => {
   const getCommentFn = isSubtask ? getCommentSubtask : getComment;
   const createCommentFn = isSubtask ? createCommentSubtask : createComment;
   const replyCommentFn = isSubtask ? replyCommentSubtask : replyComment;
+  const deleteCommentFn = isSubtask ? deleteCommentSubtask : deleteComment;
 
   // Use different query keys for task and subtask comments
   const queryKey = isSubtask
@@ -55,9 +58,23 @@ export const useComment = (itemId, isSubtask = false) => {
     },
   });
 
+  const deleteCommentMutation = useMutation({
+    mutationFn: (id) => deleteCommentFn(id),
+    onSuccess: () => {
+      toast.success("Comment deleted successfully");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: () => {
+      toast.error(
+        "Failed to delete comment, yo dont have acces delete this comment!"
+      );
+    },
+  });
+
   return {
     commentQuery,
     replyCommentMutation,
     createCommentMutation,
+    deleteCommentMutation,
   };
 };

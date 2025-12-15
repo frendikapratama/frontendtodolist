@@ -35,8 +35,12 @@ const DialogDetail = ({
   const itemId = isSubtask ? subtaskId : taskId;
 
   // Conditionally use task or subtask hooks
-  const { commentQuery, createCommentMutation, replyCommentMutation } =
-    useComment(itemId, isSubtask);
+  const {
+    commentQuery,
+    createCommentMutation,
+    replyCommentMutation,
+    deleteCommentMutation,
+  } = useComment(itemId, isSubtask);
   const { updateTaskMutation } = useTask();
   const { updateSubTaskMutation } = useSubTask();
   const updateMutation = isSubtask ? updateSubTaskMutation : updateTaskMutation;
@@ -66,6 +70,10 @@ const DialogDetail = ({
 
   const [editingDescription, setEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    commentId: null,
+  });
   const { socket } = useNotifications();
 
   useEffect(() => {
@@ -317,8 +325,17 @@ const DialogDetail = ({
                                 {dayjs(comment.createdAt).fromNow()}
                               </p>
                             </div>
-                            <button className="text-gray-400 hover:text-gray-600">
-                              <MoreVertical className="w-4 h-4" />
+                            <button
+                              onClick={() =>
+                                setConfirmDelete({
+                                  show: true,
+                                  commentId: comment._id,
+                                })
+                              }
+                              className="text-gray-400 hover:text-red-600 transition-colors"
+                              title="Delete comment"
+                            >
+                              <X className="w-4 h-4" />
                             </button>
                           </div>
                           <p className="text-gray-700">{comment.text}</p>
@@ -331,7 +348,6 @@ const DialogDetail = ({
                           </button>
                         </div>
                       </div>
-
                       {/* Replies */}
                       {(comment.replies || []).map((reply) => (
                         <div key={reply._id} className="flex gap-3 ml-12">
@@ -348,13 +364,25 @@ const DialogDetail = ({
                                   {dayjs(reply.createdAt).fromNow()}
                                 </p>
                               </div>
+                              <button
+                                onClick={() =>
+                                  setConfirmDelete({
+                                    show: true,
+                                    commentId: reply._id,
+                                  })
+                                }
+                                className="text-gray-400 hover:text-red-600 transition-colors"
+                                title="Delete reply"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
                             </div>
                             <p className="text-sm text-gray-700">
                               {reply.text}
                             </p>
                           </div>
                         </div>
-                      ))}
+                      ))}{" "}
                     </div>
                   ))}
                 </div>
@@ -655,6 +683,59 @@ const DialogDetail = ({
                     className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                     onClick={(e) => e.stopPropagation()}
                   />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+              {confirmDelete.show && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/40 flex items-center justify-center z-50"
+                  onClick={() =>
+                    setConfirmDelete({ show: false, commentId: null })
+                  }
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                      Delete Comment
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Are you sure you want to delete this comment? This action
+                      cannot be undone.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                      <button
+                        onClick={() =>
+                          setConfirmDelete({ show: false, commentId: null })
+                        }
+                        className="px-4 py-2 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          deleteCommentMutation.mutate(confirmDelete.commentId);
+                          setConfirmDelete({ show: false, commentId: null });
+                        }}
+                        disabled={deleteCommentMutation.isLoading}
+                        className="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors font-medium"
+                      >
+                        {deleteCommentMutation.isLoading
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    </div>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
