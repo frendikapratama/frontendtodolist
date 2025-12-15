@@ -386,7 +386,7 @@ const GanttChart = ({ projectId }) => {
                                             )}
                                         </button>
                                         <div className="flex-1 min-w-0">
-                                            <div className="font-semibold text-slate-800 mb-1 wrap-break-word">{group.nama}</div>
+                                            <div className="font-semibold text-slate-800 mb-1 wrap-break-word line-clamp-1">{group.nama}</div>
                                             <div className="flex items-center gap-3 text-xs text-slate-600">
                                                 <span className="flex items-center gap-1">
                                                     <CheckCircle size={12} />
@@ -408,7 +408,7 @@ const GanttChart = ({ projectId }) => {
                                             onMouseLeave={() => setHoveredItem(null)}
                                         >
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-slate-700 mb-1 wrap-break-word">{task.nama}</div>
+                                                <div className="text-slate-700 mb-1 line-clamp-1 wrap-break-word">{task.nama}</div>
                                                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(task.status)}`}>
                                                     {task.status}
                                                 </span>

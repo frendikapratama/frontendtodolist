@@ -297,7 +297,7 @@ const Kanban = ({ projectId }) => {
                     />
                   ) : (
                     <h4
-                      className="font-medium text-sm text-gray-800 mb-2 hover:bg-gray-100 px-1 rounded cursor-text"
+                      className="font-medium text-sm text-gray-800 mb-2 hover:bg-gray-100 px-1 rounded cursor-text line-clamp-5 wrap-break-word"
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingField({ taskId: task._id, field: "nama" });
