@@ -207,7 +207,7 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   };
   const handleEditDescription = () => {
     const trimmedValue = editedDescription.trim();
-    if (!taskId) {
+    if (taskId) {
       updateTaskMutation.mutate({
         taskId,
         data: { description: trimmedValue },
