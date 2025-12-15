@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useComment } from "../../hook/useComment";
 import { useTask } from "../../hook/useTask";
+import { useSubTask } from "../../hook/useSubTask";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/id";
@@ -23,15 +24,32 @@ import { useNotifications } from "../../context/NotificationContext";
 dayjs.extend(relativeTime);
 dayjs.locale("id");
 
-const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
-  const { commentQuery, createCommentMutation, replyCommentMutation } =
-    useComment(taskId);
+const DialogDetail = ({
+  onClose,
+  show,
+  taskId,
+  taskData: propTaskData,
+  isSubtask = false,
+  subtaskId = null,
+}) => {
+  const itemId = isSubtask ? subtaskId : taskId;
+
+  // Conditionally use task or subtask hooks
+  const {
+    commentQuery,
+    createCommentMutation,
+    replyCommentMutation,
+    deleteCommentMutation,
+  } = useComment(itemId, isSubtask);
   const { updateTaskMutation } = useTask();
+  const { updateSubTaskMutation } = useSubTask();
+  const updateMutation = isSubtask ? updateSubTaskMutation : updateTaskMutation;
+
   const {
     uploadAttachmentMutation,
     deleteAttachmentMutation,
     attachmentsQuery,
-  } = useAttachment(taskId);
+  } = useAttachment(itemId, isSubtask);
 
   const serverAttachments = attachmentsQuery.data || [];
   const dialogRef = useRef(null);
@@ -52,44 +70,57 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
 
   const [editingDescription, setEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    commentId: null,
+  });
   const { socket } = useNotifications();
 
   useEffect(() => {
-    if (!socket || !taskId) return;
+    if (!socket || !itemId) return;
 
-    // Join task room when dialog opens
-    socket.emit("task:join", taskId);
-    console.log(`Joined task room: ${taskId}`);
+    // Join room (task or subtask)
+    const roomEvent = isSubtask ? "subtask:join" : "task:join";
+    const leaveEvent = isSubtask ? "subtask:leave" : "task:leave";
+    const commentCreatedEvent = isSubtask
+      ? "subtask-comment:created"
+      : "comment:created";
+    const replyCreatedEvent = isSubtask
+      ? "subtask-reply:created"
+      : "reply:created";
+
+    socket.emit(roomEvent, itemId);
+    console.log(`Joined ${isSubtask ? "subtask" : "task"} room: ${itemId}`);
 
     // Listen for new comments
     const handleNewComment = (data) => {
-      if (data.taskId === taskId) {
+      const dataKey = isSubtask ? data.subtaskId : data.taskId;
+      if (dataKey === itemId) {
         console.log("Real-time comment received:", data);
         commentQuery.refetch(); // Refresh comments
-        toast.success(`New comment from ${data.comment.user.username}`);
       }
     };
 
     // Listen for new replies
     const handleNewReply = (data) => {
-      if (data.taskId === taskId) {
+      const dataKey = isSubtask ? data.subtaskId : data.taskId;
+      if (dataKey === itemId) {
         console.log("Real-time reply received:", data);
         commentQuery.refetch(); // Refresh comments
-        toast.success(`New reply from ${data.reply.user.username}`);
       }
     };
 
-    socket.on("comment:created", handleNewComment);
-    socket.on("reply:created", handleNewReply);
+    socket.on(commentCreatedEvent, handleNewComment);
+    socket.on(replyCreatedEvent, handleNewReply);
 
     // Cleanup: leave room when dialog closes
     return () => {
-      socket.emit("task:leave", taskId);
-      socket.off("comment:created", handleNewComment);
-      socket.off("reply:created", handleNewReply);
-      console.log(`Left task room: ${taskId}`);
+      socket.emit(leaveEvent, itemId);
+      socket.off(commentCreatedEvent, handleNewComment);
+      socket.off(replyCreatedEvent, handleNewReply);
+      console.log(`Left ${isSubtask ? "subtask" : "task"} room: ${itemId}`);
     };
-  }, [socket, taskId, commentQuery]);
+  }, [socket, itemId, commentQuery, isSubtask]);
 
   useEffect(() => {
     if (taskData) {
@@ -104,9 +135,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   const handleMeetingDateChange = (newMeetingDate) => {
     const iso = newMeetingDate ? dayjs(newMeetingDate).toISOString() : "";
     setMeetingDate(iso);
-    if (taskId) {
-      updateTaskMutation.mutate({
-        taskId,
+    if (itemId) {
+      updateMutation.mutate({
+        [isSubtask ? "subtaskId" : "taskId"]: itemId,
         data: { meeting_date: iso },
       });
     }
@@ -118,9 +149,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
     if (linkTimer) clearTimeout(linkTimer);
 
     const newTimer = setTimeout(() => {
-      if (taskId) {
-        updateTaskMutation.mutate({
-          taskId,
+      if (itemId) {
+        updateMutation.mutate({
+          [isSubtask ? "subtaskId" : "taskId"]: itemId,
           data: { meeting_link: newMeetingLink },
         });
       }
@@ -133,14 +164,16 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
     if (message.trim()) {
       if (replyTo) {
         replyCommentMutation.mutate({
-          taskId,
+          taskId: isSubtask ? undefined : itemId,
+          subtaskId: isSubtask ? itemId : undefined,
           commentId: replyTo,
           data: { text: message },
         });
         setReplyTo(null);
       } else {
         createCommentMutation.mutate({
-          taskId,
+          taskId: isSubtask ? undefined : itemId,
+          subtaskId: isSubtask ? itemId : undefined,
           data: { text: message },
         });
       }
@@ -207,9 +240,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
   };
   const handleEditDescription = () => {
     const trimmedValue = editedDescription.trim();
-    if (taskId) {
-      updateTaskMutation.mutate({
-        taskId,
+    if (itemId) {
+      updateMutation.mutate({
+        [isSubtask ? "subtaskId" : "taskId"]: itemId,
         data: { description: trimmedValue },
       });
     }
@@ -219,12 +252,13 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
 
   const handleDownloadFile = async (fileObj) => {
     try {
-      const response = await api.get(
-        `/attachment/${taskId}/download/${fileObj._id}`,
-        {
-          responseType: "blob",
-        }
-      );
+      const endpoint = isSubtask
+        ? `/attachment/subtask/${itemId}/download/${fileObj._id}`
+        : `/attachment/${itemId}/download/${fileObj._id}`;
+
+      const response = await api.get(endpoint, {
+        responseType: "blob",
+      });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -258,10 +292,9 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="bg-white w-full max-w-4xl h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-xl font-semibold text-gray-800">
-                Detail Task
+                Detail {isSubtask ? "Subtask" : "Task"}
               </h2>
               <button
                 onClick={onClose}
@@ -292,8 +325,17 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                                 {dayjs(comment.createdAt).fromNow()}
                               </p>
                             </div>
-                            <button className="text-gray-400 hover:text-gray-600">
-                              <MoreVertical className="w-4 h-4" />
+                            <button
+                              onClick={() =>
+                                setConfirmDelete({
+                                  show: true,
+                                  commentId: comment._id,
+                                })
+                              }
+                              className="text-gray-400 hover:text-red-600 transition-colors"
+                              title="Delete comment"
+                            >
+                              <X className="w-4 h-4" />
                             </button>
                           </div>
                           <p className="text-gray-700">{comment.text}</p>
@@ -306,7 +348,6 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                           </button>
                         </div>
                       </div>
-
                       {/* Replies */}
                       {(comment.replies || []).map((reply) => (
                         <div key={reply._id} className="flex gap-3 ml-12">
@@ -323,13 +364,25 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                                   {dayjs(reply.createdAt).fromNow()}
                                 </p>
                               </div>
+                              <button
+                                onClick={() =>
+                                  setConfirmDelete({
+                                    show: true,
+                                    commentId: reply._id,
+                                  })
+                                }
+                                className="text-gray-400 hover:text-red-600 transition-colors"
+                                title="Delete reply"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
                             </div>
                             <p className="text-sm text-gray-700">
                               {reply.text}
                             </p>
                           </div>
                         </div>
-                      ))}
+                      ))}{" "}
                     </div>
                   ))}
                 </div>
@@ -339,7 +392,7 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                   {replyTo && (
                     <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-lg">
                       <Reply className="w-4 h-4" />
-                      <span>Membalas komentar...</span>
+                      <span>Reply comment...</span>
                       <button
                         onClick={() => setReplyTo(null)}
                         className="ml-auto text-gray-500 hover:text-gray-700"
@@ -356,7 +409,7 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                       onKeyPress={(e) =>
                         e.key === "Enter" && handleSendMessage()
                       }
-                      placeholder="Tulis komentar..."
+                      placeholder="Write a comment..."
                       className="flex-1 text-black px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
@@ -630,6 +683,59 @@ const DialogDetail = ({ onClose, show, taskId, taskData: propTaskData }) => {
                     className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                     onClick={(e) => e.stopPropagation()}
                   />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+              {confirmDelete.show && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/40 flex items-center justify-center z-50"
+                  onClick={() =>
+                    setConfirmDelete({ show: false, commentId: null })
+                  }
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                      Delete Comment
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Are you sure you want to delete this comment? This action
+                      cannot be undone.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                      <button
+                        onClick={() =>
+                          setConfirmDelete({ show: false, commentId: null })
+                        }
+                        className="px-4 py-2 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          deleteCommentMutation.mutate(confirmDelete.commentId);
+                          setConfirmDelete({ show: false, commentId: null });
+                        }}
+                        disabled={deleteCommentMutation.isLoading}
+                        className="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors font-medium"
+                      >
+                        {deleteCommentMutation.isLoading
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    </div>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>

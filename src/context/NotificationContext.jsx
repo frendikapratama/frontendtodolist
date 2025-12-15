@@ -101,6 +101,56 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount((prev) => prev + 1);
     });
 
+    newSocket.on("notification:subtask-comment", (data) => {
+      console.log("Subtask comment notification received:", data);
+      // Invalidate dengan query key yang benar
+      queryClient.invalidateQueries(["subtask-comment", data.subtaskId]);
+
+      setNotifications((prev) => [
+        {
+          _id: Date.now().toString(),
+          type: "SUBTASK_COMMENT",
+          title: data.title,
+          message: data.message,
+          isRead: false,
+          createdAt: data.timestamp,
+          project: data.projectId,
+          metadata: {
+            subtaskName: data.subtaskName,
+            taskName: data.taskName,
+            projectId: data.projectId,
+            workspaceId: data.workspaceId,
+          },
+        },
+        ...prev,
+      ]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    newSocket.on("notification:subtask-reply", (data) => {
+      console.log("Subtask reply notification received:", data);
+      queryClient.invalidateQueries(["subtask-comment", data.subtaskId]);
+
+      setNotifications((prev) => [
+        {
+          _id: Date.now().toString(),
+          type: "SUBTASK_REPLY_COMMENT",
+          title: data.title,
+          message: data.message,
+          isRead: false,
+          createdAt: data.timestamp,
+          project: data.projectId,
+          metadata: {
+            subtaskName: data.subtaskName,
+            taskName: data.taskName,
+            projectId: data.projectId,
+            workspaceId: data.workspaceId,
+          },
+        },
+        ...prev,
+      ]);
+      setUnreadCount((prev) => prev + 1);
+    });
     newSocket.on("notification:marked-read", ({ notificationId }) => {
       setNotifications((prev) =>
         prev.map((notif) =>
