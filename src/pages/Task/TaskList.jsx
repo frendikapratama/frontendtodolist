@@ -688,7 +688,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             Action
           </div>
         </div>
-        ``
         {/*  "No results" section to use searchQuery instead of debouncedSearch */}
         {displayTasks?.length === 0 && hasActiveFilters && (
           <div className="px-6 py-8 text-center text-gray-500">
