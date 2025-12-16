@@ -503,11 +503,11 @@ const QuarterSelectionDialog = ({ quarters, onSelect, isLoading, onClose }) => {
                     </div>
                     <div className="text-right">
                       <p className="text-white/80 text-sm">
-                        {totalProjects} Project
+                        {totalProjects} DIvision
                       </p>
-                      <p className="text-emerald-400 text-xs">
+                      {/* <p className="text-emerald-400 text-xs">
                         {progress}% Progress
-                      </p>
+                      </p> */}
                     </div>
                   </div>
                 </button>
