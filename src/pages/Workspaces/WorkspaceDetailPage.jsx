@@ -263,7 +263,7 @@ const WorkspaceDetailPage = () => {
             </button>
           </div>
         </div>
-        <CollaborationTab workspaceId={id} currentKuarterId={data?.kuarter} />
+        <CollaborationTab workspaceId={id} currentKuarterId={data?.kuarterId} />
       </div>
       {isMember && user && token && (
         <div

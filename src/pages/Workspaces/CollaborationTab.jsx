@@ -205,7 +205,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   };
 
   const availableWorkspaces = workspacesQuery.data?.filter(
-    (ws) => ws._id !== workspaceId && ws.kuarter === currentKuarterId
+    (ws) => ws._id !== workspaceId && ws.kuarterId === currentKuarterId
   );
 
   const ownedOnlyProjects = projectsQuery.data?.owned || [];
