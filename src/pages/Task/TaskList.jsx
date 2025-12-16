@@ -71,7 +71,7 @@ const TaskList = ({ groupId, workspaceId }) => {
   const tableEndRef = useRef(null);
   const headerRef = useRef(null);
   const [sortConfig, setSortConfig] = useState({
-    key:null,
+    key: null,
     direction: 'asc'
   });
   const handleSort = useCallback((key) => {
@@ -538,11 +538,11 @@ const TaskList = ({ groupId, workspaceId }) => {
       <div className="w-[50vw] min-w-max">
         <div
           ref={headerRef}
-          className={`flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-10 transition-all duration-200 ${isHeaderSticky ? 'sticky top-0 shadow-md' : ''
-            }`}>
-          {/* Task Column - Sortable */}
+          className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 sticky top-0 z-20 shadow-md"
+        >
+          {/* Task Column - Sortable and Sticky */}
           <div
-            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors sticky left-0 bg-[#D2C1B6] z-30`}
             onClick={() => handleSort('nama')}
           >
             <span className="flex items-center">
@@ -663,16 +663,16 @@ const TaskList = ({ groupId, workspaceId }) => {
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                a
                 className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
                   } ${isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
                   }`}
               >
-                {/* Name */}
+                {/* Name - Sticky Column (TASK) */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}
+                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${isDragging ? "bg-gray-600" : ""
+                    } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
@@ -681,41 +681,25 @@ const TaskList = ({ groupId, workspaceId }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-<<<<<<< HEAD
                     className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
-                      ? "opacity-100 hover:bg-gray-200"
-                      : "opacity-0"
-                      }`}
-=======
-                    className={`p-0.5 rounded transition-all shrink-0 ${
-                      task.subtask?.length || isHovered
                         ? "opacity-100 hover:bg-gray-200"
                         : "opacity-0"
-                    }`}
->>>>>>> b2456fafb115cc98bfd87c4c5c32fcc230db9ac9
+                      }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-<<<<<<< HEAD
                         className={`w-4 h-4 ${task.subtask?.length
-                          ? "text-gray-700"
-                          : "text-gray-400"
-                          }`}
-=======
-                        className={`w-4 h-4 ${
-                          task.subtask?.length
                             ? "text-gray-700"
                             : "text-gray-400"
-                        }`}
->>>>>>> b2456fafb115cc98bfd87c4c5c32fcc230db9ac9
+                          }`}
                       />
                     )}
                   </button>
 
                   {editingField?.taskId === task._id &&
-                  editingField?.field === "nama" ? (
+                    editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
