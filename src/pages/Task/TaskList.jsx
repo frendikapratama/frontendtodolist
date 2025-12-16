@@ -62,6 +62,74 @@ const TaskList = ({ groupId, workspaceId }) => {
     "Uncomplete",
     "Planning",
   ];
+  const [isHeaderSticky, setIsHeaderSticky] = useState(false);
+  const tableEndRef = useRef(null);
+  const headerRef = useRef(null);
+  const [sortConfig, setSortConfig] = useState({
+    key:null,
+    direction: 'asc'
+  });
+  const handleSort = useCallback((key) => {
+    setSortConfig(prevConfig => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  }, []);
+  const getSortedTasks = useCallback(() => {
+    if (!sortConfig.key || !localTasks) return localTasks;
+
+    const sorted = [...localTasks].sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      // Handle different data types
+      if (sortConfig.key === 'nama') {
+        aValue = aValue?.toLowerCase() || '';
+        bValue = bValue?.toLowerCase() || '';
+      } else if (['start_date', 'due_date', 'finish_date', 'meeting_date'].includes(sortConfig.key)) {
+        aValue = aValue ? new Date(aValue).getTime() : 0;
+        bValue = bValue ? new Date(bValue).getTime() : 0;
+      } else if (sortConfig.key === 'priority') {
+        const priorityOrder = { 'Low': 1, 'Medium': 2, 'High': 3, 'Urgent': 4 };
+        aValue = priorityOrder[aValue] || 0;
+        bValue = priorityOrder[bValue] || 0;
+      } else if (sortConfig.key === 'status') {
+        const statusOrder = { 'To Do': 1, 'In Progress': 2, 'Hold': 3, 'Blocked': 4, 'Done': 5 };
+        aValue = statusOrder[aValue] || 0;
+        bValue = statusOrder[bValue] || 0;
+      } else if (sortConfig.key === 'pic') {
+        aValue = a.pic?.length || 0;
+        bValue = b.pic?.length || 0;
+      }
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+    return sorted;
+  }, [localTasks, sortConfig]);
+  const SortIcon = ({ columnKey }) => {
+    if (sortConfig.key !== columnKey) {
+      return (
+        <svg className="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+      );
+    }
+    return sortConfig.direction === 'asc' ? (
+      <svg className="w-3 h-3 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="w-3 h-3 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+  };
+  const displayTasks = getSortedTasks();
 
   // Tambahkan state untuk popup PIC
   const [picPopup, setPicPopup] = useState({ show: false, taskId: null });
@@ -120,6 +188,26 @@ const TaskList = ({ groupId, workspaceId }) => {
   useEffect(() => {
     if (data) setLocalTasks(data);
   }, [data]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsHeaderSticky(!entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+        rootMargin: '0px',
+      }
+    );
+    if (tableEndRef.current) {
+      observer.observe(tableEndRef.current);
+    }
+    return () => {
+      if (tableEndRef.current) {
+        observer.unobserve(tableEndRef.current)
+      }
+    }
+  }, []);
 
   const handleAddTask = useCallback(() => {
     const trimmedName = taskName.trim();
@@ -356,7 +444,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           top: shouldShowAbove
             ? `${(position?.top || 0) - popupHeight}px`
             : `${(position?.bottom || 0) + 5}px`,
-          left: `${Math.min(position?.left || 0, window.innerWidth - 270)}px`, // 270 = 264px width + 6px margin
+          left: `${Math.min(position?.left || 0, window.innerWidth - 270)}px`,
         }}
       >
         <div className="text-xs font-semibold mb-2 text-gray-700">
@@ -431,51 +519,107 @@ const TaskList = ({ groupId, workspaceId }) => {
   return (
     <div className="overflow-x-auto">
       <div className="w-[50vw] min-w-max">
-        <div className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 ">
+        <div
+          ref={headerRef}
+          className={`flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-10 transition-all duration-200 ${isHeaderSticky ? 'sticky top-0 shadow-md' : ''
+            }`}>
+          {/* Task Column - Sortable */}
           <div
-            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('nama')}
           >
-            Task
+            <span className="flex items-center">
+              Task
+              <SortIcon columnKey="nama" />
+            </span>
           </div>
+
+          {/* PIC Column - Sortable by count */}
           <div
-            className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+            className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('pic')}
           >
-            PIC
+            <span className="flex items-center">
+              PIC
+              <SortIcon columnKey="pic" />
+            </span>
           </div>
+
+          {/* Status Column - Sortable */}
           <div
-            className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center `}
+            className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('status')}
           >
-            Status
+            <span className="flex items-center">
+              Status
+              <SortIcon columnKey="status" />
+            </span>
           </div>
+
+          {/* Priority Column - Sortable */}
           <div
-            className={`${columnWidths.priority} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+            className={`${columnWidths.priority} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('priority')}
           >
-            Priority
+            <span className="flex items-center">
+              Priority
+              <SortIcon columnKey="priority" />
+            </span>
           </div>
+
+          {/* Meeting Date Column - Sortable */}
           <div
-            className={`${columnWidths.meetingDate} px-6 py-3 font-semibold text-gray-600 uppercase  items-center flex justify-center`}
+            className={`${columnWidths.meetingDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('meeting_date')}
           >
-            Meeting Date
+            <span className="flex items-center">
+              Meeting Date
+              <SortIcon columnKey="meeting_date" />
+            </span>
           </div>
+
+          {/* Start Date Column - Sortable */}
           <div
-            className={`${columnWidths.startDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+            className={`${columnWidths.startDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('start_date')}
           >
-            Start Date
+            <span className="flex items-center">
+              Start Date
+              <SortIcon columnKey="start_date" />
+            </span>
           </div>
+
+          {/* Due Date Column - Sortable */}
           <div
-            className={`${columnWidths.dueDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+            className={`${columnWidths.dueDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('due_date')}
           >
-            Due Date
+            <span className="flex items-center">
+              Due Date
+              <SortIcon columnKey="due_date" />
+            </span>
           </div>
+
+          {/* Finish Date Column - Sortable */}
           <div
-            className={`${columnWidths.finishDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+            className={`${columnWidths.finishDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('finish_date')}
           >
-            Finish Date
+            <span className="flex items-center">
+              Finish Date
+              <SortIcon columnKey="finish_date" />
+            </span>
           </div>
+
+          {/* Note Column - Sortable */}
           <div
-            className={`${columnWidths.note} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+            className={`${columnWidths.note} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort('note')}
           >
-            Note
+            <span className="flex items-center">
+              Note
+              <SortIcon columnKey="note" />
+            </span>
           </div>
           <div
             className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
@@ -484,7 +628,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           </div>
         </div>
 
-        {localTasks?.map((task, index) => {
+        {displayTasks?.map((task, index) => {
           const isDragging =
             dragState.index === index && dragState.fromGroup === groupId;
           const isPreview = task._isPreview;
@@ -503,13 +647,11 @@ const TaskList = ({ groupId, workspaceId }) => {
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 a
-                className={`flex items-center hover:bg-none ${
-                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                } ${
-                  isPreview
+                className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                  } ${isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                }`}
+                  }`}
               >
                 {/* Name */}
                 <div
@@ -523,8 +665,8 @@ const TaskList = ({ groupId, workspaceId }) => {
                       }))
                     }
                     className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
-                        ? "opacity-100 hover:bg-gray-200"
-                        : "opacity-0" 
+                      ? "opacity-100 hover:bg-gray-200"
+                      : "opacity-0"
                       }`}
                   >
                     {openSubtasks[task._id] ? (
@@ -532,8 +674,8 @@ const TaskList = ({ groupId, workspaceId }) => {
                     ) : (
                       <ChevronRight
                         className={`w-4 h-4 ${task.subtask?.length
-                            ? "text-gray-700"
-                            : "text-gray-400"
+                          ? "text-gray-700"
+                          : "text-gray-400"
                           }`}
                       />
                     )}
@@ -656,15 +798,14 @@ const TaskList = ({ groupId, workspaceId }) => {
                     ref={(el) =>
                       (buttonRefs.current[`priority-${task._id}`] = el)
                     }
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
-                      task.priority === "Urgent"
-                        ? "text-red-700 bg-red-200"
-                        : task.priority === "High"
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
+                      ? "text-red-700 bg-red-200"
+                      : task.priority === "High"
                         ? "text-orange-800 bg-orange-200"
                         : task.priority === "Medium"
-                        ? "text-blue-800 bg-blue-200"
-                        : "text-gray-800 bg-gray-200"
-                    }`}
+                          ? "text-blue-800 bg-blue-200"
+                          : "text-gray-800 bg-gray-200"
+                      }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "priority" })
                     }
@@ -704,13 +845,13 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })
                       : "Set date & time"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -747,10 +888,10 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -782,10 +923,10 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -817,10 +958,10 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.finish_date
                       ? new Date(task.finish_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -846,17 +987,16 @@ const TaskList = ({ groupId, workspaceId }) => {
                     ref={(el) => {
                       buttonRefs.current[`note-${task._id}`] = el;
                     }}
-                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
-                      task.note === "Planning"
-                        ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                        : task.note === "Uncomplete"
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
+                      ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                      : task.note === "Uncomplete"
                         ? "text-red-100 bg-red-900 hover:bg-red-400"
                         : task.note === "Completed - On Time"
-                        ? "text-green-700 bg-green-100 hover:bg-green-200"
-                        : task.note === "Completed - Overdue"
-                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                    }`}
+                          ? "text-green-700 bg-green-100 hover:bg-green-200"
+                          : task.note === "Completed - Overdue"
+                            ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                            : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                      }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
@@ -888,10 +1028,10 @@ const TaskList = ({ groupId, workspaceId }) => {
                       Detail
                     </button>
                     <div className="bg-gray-100 rounded-lg p-1 pl-2 pr-2 font-medium hover:bg-gray-200">
-                    <Trash2
-                      className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
-                      onClick={() => handleDeleteTask(task._id)}
-                    />
+                      <Trash2
+                        className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
+                        onClick={() => handleDeleteTask(task._id)}
+                      />
                     </div>
                   </div>
                   {openDialog.open && (
@@ -1053,6 +1193,7 @@ const TaskList = ({ groupId, workspaceId }) => {
               </button>
             </div>
           ))}
+        <div ref={tableEndRef} className="h-1" />
       </div>
     </div>
   );

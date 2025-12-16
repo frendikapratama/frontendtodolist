@@ -234,15 +234,16 @@ export default function AuthCard() {
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border-b-2 border-b-blue-500 focus:border-b-blue-300 focus:ring-0 focus:outline-none px-2 sm:px-3 py-2 bg-transparent text-white placeholder-gray-300 text-sm sm:text-base pr-7"
+                            className="w-full border-b-2 border-b-blue-500 focus:border-b-blue-300 focus:ring-0 focus:outline-none px-2 sm:px-3 py-2 pr-10 bg-transparent text-white placeholder-gray-300 text-sm sm:text-base"
                             placeholder="Enter your password"
                             onKeyDown={handleKey}
                             required
+                            style={{ paddingRight: '2rem' }}
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute -right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none"
+                            className="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none p-1"
                         >
                             {showPassword ? (
                                 <svg
@@ -382,11 +383,12 @@ export default function AuthCard() {
                             onChange={(e) => setNewPassword(e.target.value)}
                             required
                             className="w-full pr-6 pl-2 py-2 border border-gray-300 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            style={{ paddingRight: '2rem' }}
                         />
                         <button
                             type="button"
                             onClick={() => setShowNewPassword(!showNewPassword)}
-                            className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none"
+                            className="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none"
                         >
                             {showNewPassword ? (
                                 <svg
