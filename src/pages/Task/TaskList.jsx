@@ -581,13 +581,11 @@ const TaskList = ({ groupId, workspaceId }) => {
       <div className="w-[50vw] min-w-max">
         <div
           ref={headerRef}
-          className={`flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-10 transition-all duration-200 ${
-            isHeaderSticky ? "sticky top-0 shadow-md" : ""
-          }`}
+          className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 sticky top-0 z-20 shadow-md"
         >
-          {/* Task Column - Sortable */}
+          {/* Task Column - Sortable and Sticky */}
           <div
-            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors sticky left-0 bg-[#D2C1B6] z-30`}
             onClick={() => handleSort("nama")}
           >
             <span className="flex items-center">
@@ -708,7 +706,6 @@ const TaskList = ({ groupId, workspaceId }) => {
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                a
                 className={`flex items-center hover:bg-none ${
                   isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
                 } ${
