@@ -116,7 +116,7 @@ const DatePickerPopup = ({
   return (
     <div
       ref={popupRef}
-      className="fixed z-50 bg-white rounded-lg"
+      className="fixed z-50 bg-white rounded-lg "
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -134,20 +134,43 @@ const DatePickerPopup = ({
         calendarClassName="shadow-lg border border-gray-200 rounded-lg"
       />
 
-      {/* Tombol Confirm untuk Time Picker */}
-      {showTimeSelect && (
-        <div className="px-4 pb-3 flex gap-2 justify-end border-t border-gray-200 pt-2">
+      {/* GANTI bagian ini */}
+      {showTimeSelect ? (
+        <div className="px-4 pb-3 flex gap-2 justify-between border-t border-gray-200 pt-2">
           <button
-            onClick={onClose}
+            onClick={() => {
+              onChange(null);
+              onClose();
+            }}
             className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded"
           >
-            Cancel
+            Clear date
           </button>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleTimeConfirm}
+              className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="px-4 pb-3 border-t border-gray-200 pt-2">
           <button
-            onClick={handleTimeConfirm}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={() => {
+              onChange(null);
+              onClose();
+            }}
+            className="w-full px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
           >
-            Confirm
+            Clear date
           </button>
         </div>
       )}

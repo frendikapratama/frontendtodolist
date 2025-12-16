@@ -51,6 +51,11 @@ const TaskList = ({ groupId, workspaceId }) => {
     show: false,
     taskId: null,
   });
+  const [confirmDeletePIC, setConfirmDeletePIC] = useState({
+    show: false,
+    taskId: null,
+    userId: null,
+  });
   const [hoveredRow, setHoveredRow] = useState(null);
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
@@ -158,14 +163,21 @@ const TaskList = ({ groupId, workspaceId }) => {
     [assignPicMutation]
   );
 
-  const handleRemovePic = useCallback(
-    (taskId, userId) => {
-      if (window.confirm("Delete this PIC?")) {
-        removePicMutation.mutate({ taskId, userId });
-      }
-    },
-    [removePicMutation]
-  );
+  const handleDeletePICTask = useCallback((taskId, userId) => {
+    setConfirmDeletePIC({ show: true, taskId: taskId, userId: userId });
+  }, []);
+
+  const confirmDeleteTaskPIC = useCallback(() => {
+    if (confirmDeletePIC.taskId && confirmDeletePIC.userId) {
+      removePicMutation.mutate({
+        taskId: confirmDeletePIC.taskId,
+        userId: confirmDeletePIC.userId,
+      });
+      setConfirmDelete({ show: false, taskId: null, userId: null });
+    } else {
+      console.log("no taskid or userId found in confirmaationdelete");
+    }
+  }, [confirmDeletePIC.taskId, setConfirmDeletePIC.userId, removePicMutation]);
 
   useEffect(() => {
     const handleGlobalDragEnd = () => {
@@ -370,13 +382,9 @@ const TaskList = ({ groupId, workspaceId }) => {
     setDragState({ index: null, task: null, fromGroup: null });
   };
   const handleDeleteTask = useCallback((taskId) => {
-    console.log("handle delete called by taskId:", taskId);
     setConfirmDelete({ show: true, taskId: taskId });
   }, []);
   const confirmDeleteTask = useCallback(() => {
-    console.log("confirmDeleteTask called");
-    console.log("confirmDelete state:", confirmDelete);
-
     if (confirmDelete.taskId) {
       console.log("Calling deleteTaskMutation with:", confirmDelete.taskId);
       deleteTaskMutation.mutate(confirmDelete.taskId);
@@ -518,6 +526,15 @@ const TaskList = ({ groupId, workspaceId }) => {
 
   return (
     <div className="overflow-x-auto">
+      <ConfirmDialog
+        show={confirmDeletePIC.show}
+        onClose={() =>
+          setConfirmDeletePIC({ show: false, taskId: null, userId: null })
+        }
+        onConfirm={confirmDeleteTaskPIC}
+        title="Delete PIC"
+        message="Are you sure want to delete this PIC? this action can't be undo"
+      />
       <div className="w-[50vw] min-w-max">
         <div
           ref={headerRef}
@@ -664,33 +681,53 @@ const TaskList = ({ groupId, workspaceId }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
+<<<<<<< HEAD
                     className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
                       ? "opacity-100 hover:bg-gray-200"
                       : "opacity-0"
                       }`}
+=======
+                    className={`p-0.5 rounded transition-all shrink-0 ${
+                      task.subtask?.length || isHovered
+                        ? "opacity-100 hover:bg-gray-200"
+                        : "opacity-0"
+                    }`}
+>>>>>>> b2456fafb115cc98bfd87c4c5c32fcc230db9ac9
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
+<<<<<<< HEAD
                         className={`w-4 h-4 ${task.subtask?.length
                           ? "text-gray-700"
                           : "text-gray-400"
                           }`}
+=======
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                        }`}
+>>>>>>> b2456fafb115cc98bfd87c4c5c32fcc230db9ac9
                       />
                     )}
                   </button>
 
-                  {editingField?.taskId === task._id && editingField?.field === "nama" ? (
+                  {editingField?.taskId === task._id &&
+                  editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
                       value={editedValue}
                       autoFocus
                       onChange={(e) => setEditedValue(e.target.value)}
-                      onBlur={() => handleFieldEdit(task._id, "nama", editedValue)}
+                      onBlur={() =>
+                        handleFieldEdit(task._id, "nama", editedValue)
+                      }
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") handleFieldEdit(task._id, "nama", editedValue);
+                        if (e.key === "Enter")
+                          handleFieldEdit(task._id, "nama", editedValue);
                         if (e.key === "Escape") setEditingField(null);
                       }}
                     />
@@ -714,17 +751,27 @@ const TaskList = ({ groupId, workspaceId }) => {
                   {task.pic && task.pic.length > 0 && (
                     <div className="flex -space-x-2">
                       {task.pic.slice(0, 3).map((picUser, idx) => (
-                        <div key={idx} className="relative group">
+                        <div
+                          key={idx}
+                          className="relative group hover:z-20 z-10 transition-all cursor-pointer"
+                        >
                           <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
                             {picUser.username
                               ? picUser.username.substring(0, 2).toUpperCase()
                               : "?"}
                           </div>
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
+                            <div className="font-medium">
+                              {picUser.username}
+                            </div>
+                            <div className="text-gray-300">{picUser.email}</div>
+                            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                          </div>
                           <button
                             onClick={() =>
-                              handleRemovePic(task._id, picUser._id)
+                              handleDeletePICTask(task._id, picUser._id)
                             }
-                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100  transition-opacity"
                           >
                             <X size={10} className="text-white" />
                           </button>

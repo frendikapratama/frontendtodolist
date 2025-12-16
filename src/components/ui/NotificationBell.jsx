@@ -87,9 +87,21 @@ export default function NotificationBell() {
         return "📋";
       case "TASK_COMMENT":
         return "💬";
+      case "TASK_REPLY_COMMENT":
+        return "💭";
+      case "TASK_ATTACHMENT_UPLOADED":
+        return "📎";
+      case "TASK_DUE_SOON":
+        return "⏰";
+      case "TASK_OVERDUE":
+        return "⚠️";
       case "MENTION":
         return "🏷️";
-      case "TASK_ATTACHMENT_UPLOADED":
+      case "SUBTASK_COMMENT":
+        return "💬";
+      case "REPLY_SUBTASK_COMMENT":
+        return "💭";
+      case "SUBTASK_ATTACHMENT_UPLOADED":
         return "📎";
       default:
         return "🔔";
@@ -102,6 +114,9 @@ export default function NotificationBell() {
       if (days === 1) return "bg-red-50 border-l-4 border-red-500";
       if (days === 2) return "bg-orange-50 border-l-4 border-orange-500";
       if (days <= 7) return "bg-yellow-50 border-l-4 border-yellow-500";
+    }
+    if (notif.type === "TASK_OVERDUE") {
+      return "bg-red-50 border-l-4 border-red-500";
     }
     return !notif.isRead ? "bg-blue-50" : "";
   };
