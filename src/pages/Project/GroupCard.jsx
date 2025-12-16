@@ -60,7 +60,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, statusFilter, priorityFilter, noteFilter]); // ✅ Benar
+  }, [searchQuery, statusFilter, priorityFilter, noteFilter]);
 
   // Clear all filters
   const clearAllFilters = () => {
@@ -152,17 +152,16 @@ const GroupCard = ({ group, index, workspaceId }) => {
   ];
 
   return (
-    <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       {/* Header */}
       <div
-        className="px-2 py-1 flex items-center justify-between cursor-pointer"
+        className="px-2 py-1 flex items-center justify-between cursor-pointer rounded-t-lg"
         style={{ background: getHeaderColor() }}
       >
         <div className="flex items-center gap-2">
           <ChevronDown
-            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${
-              isCardOpen ? "rotate-0" : "-rotate-90"
-            }`}
+            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${isCardOpen ? "rotate-0" : "-rotate-90"
+              }`}
             onClick={() => setIsCardOpen(!isCardOpen)}
           />
           {isEditing ? (
@@ -185,7 +184,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
           ) : (
             <h3
               className="text-white text-[0.8em] font-semibold text-base cursor-pointer hover:underline"
-              onClick={() => {
+              onClick={() => {  
                 setIsEditing(true);
                 setEditedName(group.nama);
               }}
@@ -215,7 +214,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
 
       {/* Search & Filter Section */}
       {isCardOpen && (
-        <div className="px-4 py-3 bg-white border-b border-gray-200">
+        <div className="px-4 py-3 bg-gray-200 border-b border-gray-200">
           {/* Search Bar */}
           <div className="flex gap-2 mb-3">
             <div className="relative flex-1">
@@ -227,7 +226,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
                 placeholder="Search tasks by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full pl-10 pr-10 py-2 border border-gray-400 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
               />
               {searchQuery && (
                 <button
@@ -242,7 +241,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
             {/* Toggle Filters Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
+              className={`px-4 py-2 rounded-lg border-gray-300  text-sm font-medium flex items-center gap-2 transition-colors ${
                 hasActiveFilters
                   ? "bg-blue-600 text-white hover:bg-blue-700"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -251,7 +250,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
               <Filter className="h-4 w-4" />
               Filters
               {hasActiveFilters && (
-                <span className="bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                <span className="bg-gray-200 text-blue-600rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                   {
                     [
                       searchQuery,
@@ -267,7 +266,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
 
           {/* Filter Options */}
           {showFilters && (
-            <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="grid grid-cols-3 gap-3 p-3 bg-gray-200 rounded-lg border border-gray-400">
               {/* Status Filter */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -276,7 +275,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 text-black text-sm border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">All Status</option>
                   {STATUS_OPTIONS.map((status) => (
@@ -295,7 +294,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
                 <select
                   value={priorityFilter}
                   onChange={(e) => setPriorityFilter(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 text-black text-sm border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">All Priority</option>
                   {PRIORITY_OPTIONS.map((priority) => (
@@ -314,7 +313,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
                 <select
                   value={noteFilter}
                   onChange={(e) => setNoteFilter(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 text-black text-sm border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">All Notes</option>
                   {NOTE_OPTIONS.map((note) => (
@@ -432,11 +431,10 @@ const GroupCard = ({ group, index, workspaceId }) => {
             </div>
             <div className="text-gray-300">
               <button
-                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${
-                  isRecentUpdatesOpen
+                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${isRecentUpdatesOpen
                     ? "bg-blue-700 ring-2 ring-blue-300 text-white"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
-                }`}
+                  }`}
                 onClick={() => toggleRecentUpdates(group._id)}
               >
                 {isRecentUpdatesOpen ? "Hide Updates" : "Recent Updates"}
@@ -449,8 +447,8 @@ const GroupCard = ({ group, index, workspaceId }) => {
       {/* Task List */}
       <div
         className={`
-          transition-all duration-700 overflow-hidden
-          ${isCardOpen ? "h-auto" : "max-h-0"}
+          transition-all duration-700
+          ${isCardOpen ? "h-auto" : "max-h-0 overflow-hidden"}
         `}
         onDragOver={(e) => {
           e.preventDefault();
