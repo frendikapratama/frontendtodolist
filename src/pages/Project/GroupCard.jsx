@@ -95,17 +95,16 @@ const GroupCard = ({ group, index, workspaceId }) => {
   const progressData = progressByGroup.data;
 
   return (
-    <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       {/* Header */}
       <div
-        className="px-2 py-1 flex items-center justify-between cursor-pointer"
+        className="px-2 py-1 flex items-center justify-between cursor-pointer rounded-t-lg"
         style={{ background: getHeaderColor() }}
       >
         <div className="flex items-center gap-2">
           <ChevronDown
-            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${
-              isCardOpen ? "rotate-0" : "-rotate-90"
-            }`}
+            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${isCardOpen ? "rotate-0" : "-rotate-90"
+              }`}
             onClick={() => setIsCardOpen(!isCardOpen)}
           />
           {isEditing ? (
@@ -233,11 +232,10 @@ const GroupCard = ({ group, index, workspaceId }) => {
             </div>
             <div className="text-gray-300">
               <button
-                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${
-                  isRecentUpdatesOpen
+                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${isRecentUpdatesOpen
                     ? "bg-blue-700 ring-2 ring-blue-300 text-white"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
-                }`}
+                  }`}
                 onClick={() => toggleRecentUpdates(group._id)}
               >
                 {isRecentUpdatesOpen ? "Hide Updates" : "Recent Updates"}
@@ -250,8 +248,8 @@ const GroupCard = ({ group, index, workspaceId }) => {
       {/* Task List */}
       <div
         className={`
-          transition-all duration-700 overflow-hidden
-          ${isCardOpen ? "h-auto" : "max-h-0"}
+          transition-all duration-700
+          ${isCardOpen ? "h-auto" : "max-h-0 overflow-hidden"}
         `}
         onDragOver={(e) => {
           e.preventDefault();
