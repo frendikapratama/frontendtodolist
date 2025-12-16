@@ -57,6 +57,26 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     userId: null,
   });
   const [hoveredRow, setHoveredRow] = useState(null);
+  const calculateAutoNote = (status, due_date, finish_date) => {
+    if (status === "Done" && due_date && finish_date) {
+      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
+      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
+      if (finishDate === dueDate) {
+        return "Completed - On Time";
+      } else if (finishDate > dueDate) {
+        return "Completed - Overdue";
+      } else if (finishDate < dueDate) {
+        return "Completed - Early";
+      }
+    }
+    if (status === "To Do") {
+      return "Planning";
+    }
+    if (["In Progress", "Blocked", "Hold"].includes(status)) {
+      return "Uncomplete";
+    }
+    return null;
+  };
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
@@ -297,27 +317,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     },
     [updateTaskMutation]
   );
-
-  const calculateAutoNote = (status, due_date, finish_date) => {
-    if (status === "Done" && due_date && finish_date) {
-      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
-      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
-      if (finishDate === dueDate) {
-        return "Completed - On Time";
-      } else if (finishDate > dueDate) {
-        return "Completed - Overdue";
-      } else if (finishDate < dueDate) {
-        return "Completed - Early";
-      }
-    }
-    if (status === "To Do") {
-      return "Planning";
-    }
-    if (["In Progress", "Blocked", "Hold"].includes(status)) {
-      return "Uncomplete";
-    }
-    return null;
-  };
 
   const handlePopupChange = useCallback(
     (taskId, field, value) => {
