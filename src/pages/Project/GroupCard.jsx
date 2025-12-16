@@ -160,8 +160,9 @@ const GroupCard = ({ group, index, workspaceId }) => {
       >
         <div className="flex items-center gap-2">
           <ChevronDown
-            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${isCardOpen ? "rotate-0" : "-rotate-90"
-              }`}
+            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${
+              isCardOpen ? "rotate-0" : "-rotate-90"
+            }`}
             onClick={() => setIsCardOpen(!isCardOpen)}
           />
           {isEditing ? (
@@ -184,7 +185,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
           ) : (
             <h3
               className="text-white text-[0.8em] font-semibold text-base cursor-pointer hover:underline"
-              onClick={() => {  
+              onClick={() => {
                 setIsEditing(true);
                 setEditedName(group.nama);
               }}
@@ -431,10 +432,11 @@ const GroupCard = ({ group, index, workspaceId }) => {
             </div>
             <div className="text-gray-300">
               <button
-                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${isRecentUpdatesOpen
+                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${
+                  isRecentUpdatesOpen
                     ? "bg-blue-700 ring-2 ring-blue-300 text-white"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
+                }`}
                 onClick={() => toggleRecentUpdates(group._id)}
               >
                 {isRecentUpdatesOpen ? "Hide Updates" : "Recent Updates"}

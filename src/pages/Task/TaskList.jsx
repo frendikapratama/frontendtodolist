@@ -777,7 +777,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     />
                   ) : (
                     <span
-                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-5 flex-1 min-w-0"
+                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-10 flex-1 min-w-0"
                       onClick={() => {
                         setEditingField({ taskId: task._id, field: "nama" });
                         setEditedValue(task.nama);
