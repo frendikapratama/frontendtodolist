@@ -155,8 +155,7 @@ const ProjectCard = ({
   );
 };
 
-const CollaborationTab = ({ workspaceId }) => {
-  console.log("CollaborationTab received workspaceId:", workspaceId);
+const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   const {
     useWorkspaceProjects,
     useCollaborationRequests,
@@ -206,7 +205,7 @@ const CollaborationTab = ({ workspaceId }) => {
   };
 
   const availableWorkspaces = workspacesQuery.data?.filter(
-    (ws) => ws._id !== workspaceId
+    (ws) => ws._id !== workspaceId && ws.kuarterId === currentKuarterId
   );
 
   const ownedOnlyProjects = projectsQuery.data?.owned || [];
@@ -239,7 +238,12 @@ const CollaborationTab = ({ workspaceId }) => {
   const closeModalDelete = () => {
     document.getElementById("ConfirmationModal").close();
   };
+  console.log("CollaborationTab received workspaceId:", workspaceId);
+  console.log("CollaborationTab received currentKuarterId:", currentKuarterId);
 
+  // Debug: Check what workspaces are available
+  console.log("All workspaces:", workspacesQuery.data);
+  console.log("Available workspaces after filter:", availableWorkspaces);
   return (
     <div className="space-y-6 h-screen">
       <dialog id="ConfirmationModal" className="modal">

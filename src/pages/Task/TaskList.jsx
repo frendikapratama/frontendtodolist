@@ -14,13 +14,13 @@ import {
   UserPlus,
   X,
   Trash2,
-  ChevronUp,
+  Search,
 } from "lucide-react";
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 
-const TaskList = ({ groupId, workspaceId }) => {
+const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const {
     taskByGroup,
     addTaskMutation,
@@ -29,7 +29,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     assignPicMutation,
     removePicMutation,
     deleteTaskMutation,
-  } = useTask(groupId);
+  } = useTask(groupId, filters);
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
   const { updateSubTaskMutation } = useSubTask(null, groupId);
   const { data, isLoading, isError } = taskByGroup;
@@ -72,12 +72,16 @@ const TaskList = ({ groupId, workspaceId }) => {
   const headerRef = useRef(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
-    direction: 'asc'
+    direction: "asc",
   });
+
   const handleSort = useCallback((key) => {
-    setSortConfig(prevConfig => ({
+    setSortConfig((prevConfig) => ({
       key,
-      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+      direction:
+        prevConfig.key === key && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
     }));
   }, []);
   const getSortedTasks = useCallback(() => {
@@ -88,29 +92,39 @@ const TaskList = ({ groupId, workspaceId }) => {
       let bValue = b[sortConfig.key];
 
       // Handle different data types
-      if (sortConfig.key === 'nama') {
-        aValue = aValue?.toLowerCase() || '';
-        bValue = bValue?.toLowerCase() || '';
-      } else if (['start_date', 'due_date', 'finish_date', 'meeting_date'].includes(sortConfig.key)) {
+      if (sortConfig.key === "nama") {
+        aValue = aValue?.toLowerCase() || "";
+        bValue = bValue?.toLowerCase() || "";
+      } else if (
+        ["start_date", "due_date", "finish_date", "meeting_date"].includes(
+          sortConfig.key
+        )
+      ) {
         aValue = aValue ? new Date(aValue).getTime() : 0;
         bValue = bValue ? new Date(bValue).getTime() : 0;
-      } else if (sortConfig.key === 'priority') {
-        const priorityOrder = { 'Low': 1, 'Medium': 2, 'High': 3, 'Urgent': 4 };
+      } else if (sortConfig.key === "priority") {
+        const priorityOrder = { Low: 1, Medium: 2, High: 3, Urgent: 4 };
         aValue = priorityOrder[aValue] || 0;
         bValue = priorityOrder[bValue] || 0;
-      } else if (sortConfig.key === 'status') {
-        const statusOrder = { 'To Do': 1, 'In Progress': 2, 'Hold': 3, 'Blocked': 4, 'Done': 5 };
+      } else if (sortConfig.key === "status") {
+        const statusOrder = {
+          "To Do": 1,
+          "In Progress": 2,
+          Hold: 3,
+          Blocked: 4,
+          Done: 5,
+        };
         aValue = statusOrder[aValue] || 0;
         bValue = statusOrder[bValue] || 0;
-      } else if (sortConfig.key === 'pic') {
+      } else if (sortConfig.key === "pic") {
         aValue = a.pic?.length || 0;
         bValue = b.pic?.length || 0;
       }
       if (aValue < bValue) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
+        return sortConfig.direction === "asc" ? -1 : 1;
       }
       if (aValue > bValue) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
+        return sortConfig.direction === "asc" ? 1 : -1;
       }
       return 0;
     });
@@ -119,18 +133,48 @@ const TaskList = ({ groupId, workspaceId }) => {
   const SortIcon = ({ columnKey }) => {
     if (sortConfig.key !== columnKey) {
       return (
-        <svg className="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        <svg
+          className="w-3 h-3 ml-1 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+          />
         </svg>
       );
     }
-    return sortConfig.direction === 'asc' ? (
-      <svg className="w-3 h-3 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+    return sortConfig.direction === "asc" ? (
+      <svg
+        className="w-3 h-3 ml-1 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 15l7-7 7 7"
+        />
       </svg>
     ) : (
-      <svg className="w-3 h-3 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      <svg
+        className="w-3 h-3 ml-1 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 9l-7 7-7-7"
+        />
       </svg>
     );
   };
@@ -208,7 +252,7 @@ const TaskList = ({ groupId, workspaceId }) => {
       },
       {
         threshold: 0,
-        rootMargin: '0px',
+        rootMargin: "0px",
       }
     );
     if (tableEndRef.current) {
@@ -216,9 +260,9 @@ const TaskList = ({ groupId, workspaceId }) => {
     }
     return () => {
       if (tableEndRef.current) {
-        observer.unobserve(tableEndRef.current)
+        observer.unobserve(tableEndRef.current);
       }
-    }
+    };
   }, []);
 
   const handleAddTask = useCallback(() => {
@@ -543,7 +587,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Task Column - Sortable and Sticky */}
           <div
             className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors sticky left-0 bg-[#D2C1B6] z-30`}
-            onClick={() => handleSort('nama')}
+            onClick={() => handleSort("nama")}
           >
             <span className="flex items-center">
               Task
@@ -554,7 +598,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* PIC Column - Sortable by count */}
           <div
             className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('pic')}
+            onClick={() => handleSort("pic")}
           >
             <span className="flex items-center">
               PIC
@@ -565,7 +609,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Status Column - Sortable */}
           <div
             className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('status')}
+            onClick={() => handleSort("status")}
           >
             <span className="flex items-center">
               Status
@@ -576,7 +620,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Priority Column - Sortable */}
           <div
             className={`${columnWidths.priority} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('priority')}
+            onClick={() => handleSort("priority")}
           >
             <span className="flex items-center">
               Priority
@@ -587,7 +631,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Meeting Date Column - Sortable */}
           <div
             className={`${columnWidths.meetingDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('meeting_date')}
+            onClick={() => handleSort("meeting_date")}
           >
             <span className="flex items-center">
               Meeting Date
@@ -598,7 +642,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Start Date Column - Sortable */}
           <div
             className={`${columnWidths.startDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('start_date')}
+            onClick={() => handleSort("start_date")}
           >
             <span className="flex items-center">
               Start Date
@@ -609,7 +653,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Due Date Column - Sortable */}
           <div
             className={`${columnWidths.dueDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('due_date')}
+            onClick={() => handleSort("due_date")}
           >
             <span className="flex items-center">
               Due Date
@@ -620,7 +664,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Finish Date Column - Sortable */}
           <div
             className={`${columnWidths.finishDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('finish_date')}
+            onClick={() => handleSort("finish_date")}
           >
             <span className="flex items-center">
               Finish Date
@@ -631,7 +675,7 @@ const TaskList = ({ groupId, workspaceId }) => {
           {/* Note Column - Sortable */}
           <div
             className={`${columnWidths.note} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-            onClick={() => handleSort('note')}
+            onClick={() => handleSort("note")}
           >
             <span className="flex items-center">
               Note
@@ -644,7 +688,16 @@ const TaskList = ({ groupId, workspaceId }) => {
             Action
           </div>
         </div>
-
+        {/*  "No results" section to use searchQuery instead of debouncedSearch */}
+        {displayTasks?.length === 0 && hasActiveFilters && (
+          <div className="px-6 py-8 text-center text-gray-500">
+            <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+            <p className="text-sm">No tasks found with current filters</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Try adjusting your filter criteria
+            </p>
+          </div>
+        )}
         {displayTasks?.map((task, index) => {
           const isDragging =
             dragState.index === index && dragState.fromGroup === groupId;
@@ -663,16 +716,21 @@ const TaskList = ({ groupId, workspaceId }) => {
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                  } ${isPreview
+                className={`flex items-center hover:bg-none ${
+                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                } ${
+                  isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                  }`}
+                }`}
               >
                 {/* Name - Sticky Column (TASK) */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${isDragging ? "bg-gray-600" : ""
-                    } ${isPreview ? "bg-blue-50" : ""}`}
+                  className={`flex-1 flex items-center ${
+                    columnWidths.task
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                    isDragging ? "bg-gray-600" : ""
+                  } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
@@ -681,25 +739,27 @@ const TaskList = ({ groupId, workspaceId }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
+                    className={`p-0.5 rounded transition-all shrink-0 ${
+                      task.subtask?.length || isHovered
                         ? "opacity-100 hover:bg-gray-200"
                         : "opacity-0"
-                      }`}
+                    }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${task.subtask?.length
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
                             ? "text-gray-700"
                             : "text-gray-400"
-                          }`}
+                        }`}
                       />
                     )}
                   </button>
 
                   {editingField?.taskId === task._id &&
-                    editingField?.field === "nama" ? (
+                  editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
@@ -829,14 +889,15 @@ const TaskList = ({ groupId, workspaceId }) => {
                     ref={(el) =>
                       (buttonRefs.current[`priority-${task._id}`] = el)
                     }
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
-                      ? "text-red-700 bg-red-200"
-                      : task.priority === "High"
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.priority === "Urgent"
+                        ? "text-red-700 bg-red-200"
+                        : task.priority === "High"
                         ? "text-orange-800 bg-orange-200"
                         : task.priority === "Medium"
-                          ? "text-blue-800 bg-blue-200"
-                          : "text-gray-800 bg-gray-200"
-                      }`}
+                        ? "text-blue-800 bg-blue-200"
+                        : "text-gray-800 bg-gray-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "priority" })
                     }
@@ -876,13 +937,13 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })
                       : "Set date & time"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -919,10 +980,10 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -954,10 +1015,10 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -989,10 +1050,10 @@ const TaskList = ({ groupId, workspaceId }) => {
                   >
                     {task.finish_date
                       ? new Date(task.finish_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1018,16 +1079,17 @@ const TaskList = ({ groupId, workspaceId }) => {
                     ref={(el) => {
                       buttonRefs.current[`note-${task._id}`] = el;
                     }}
-                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
-                      ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                      : task.note === "Uncomplete"
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                      task.note === "Planning"
+                        ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                        : task.note === "Uncomplete"
                         ? "text-red-100 bg-red-900 hover:bg-red-400"
                         : task.note === "Completed - On Time"
-                          ? "text-green-700 bg-green-100 hover:bg-green-200"
-                          : task.note === "Completed - Overdue"
-                            ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                            : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                      }`}
+                        ? "text-green-700 bg-green-100 hover:bg-green-200"
+                        : task.note === "Completed - Overdue"
+                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
@@ -1097,7 +1159,6 @@ const TaskList = ({ groupId, workspaceId }) => {
             </div>
           );
         })}
-
         {localTasks?.length === 0 && (
           <div
             className="px-6 py-3 border-b border-gray-100"
@@ -1161,7 +1222,6 @@ const TaskList = ({ groupId, workspaceId }) => {
             )}
           </div>
         )}
-
         {localTasks?.length > 0 &&
           (showAddTask ? (
             <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
