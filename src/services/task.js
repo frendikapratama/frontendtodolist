@@ -1,9 +1,57 @@
 import api from "../api/axios";
 
-export async function getByGroup(groupId) {
-  const res = await api.get(`task/ByGroup?groups=${groupId}`);
+// export async function getByGroup(groupId) {
+//   const res = await api.get(`task/ByGroup?groups=${groupId}`);
+//   return res.data.data;
+// }
+
+// export async function getByGroup(groupId, searchQuery = "") {
+//   const params = new URLSearchParams({ groups: groupId });
+
+//   if (searchQuery && searchQuery.trim() !== "") {
+//     params.append("search", searchQuery.trim());
+//   }
+
+//   const res = await api.get(`/task/ByGroup?${params.toString()}`);
+//   return res.data.data;
+// }
+
+export async function getByGroup(groupId, filters = {}) {
+  const params = new URLSearchParams({ groups: groupId });
+
+  // Add all filters to params
+  if (filters.search && filters.search.trim() !== "") {
+    params.append("search", filters.search.trim());
+  }
+
+  if (filters.status && filters.status !== "all") {
+    params.append("status", filters.status);
+  }
+
+  if (filters.priority && filters.priority !== "all") {
+    params.append("priority", filters.priority);
+  }
+
+  if (filters.note && filters.note !== "all") {
+    params.append("note", filters.note);
+  }
+
+  if (filters.picEmail && filters.picEmail.trim() !== "") {
+    params.append("picEmail", filters.picEmail.trim());
+  }
+
+  if (filters.startDate) {
+    params.append("startDate", filters.startDate);
+  }
+
+  if (filters.endDate) {
+    params.append("endDate", filters.endDate);
+  }
+
+  const res = await api.get(`/task/ByGroup?${params.toString()}`);
   return res.data.data;
 }
+
 export async function getByProjectId(projectId) {
   const res = await api.get(`task/${projectId}`);
   return res.data.data;

@@ -14,13 +14,13 @@ import {
   UserPlus,
   X,
   Trash2,
-  ChevronUp,
+  Search,
 } from "lucide-react";
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 
-const TaskList = ({ groupId, workspaceId }) => {
+const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const {
     taskByGroup,
     addTaskMutation,
@@ -29,7 +29,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     assignPicMutation,
     removePicMutation,
     deleteTaskMutation,
-  } = useTask(groupId);
+  } = useTask(groupId, filters);
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
   const { updateSubTaskMutation } = useSubTask(null, groupId);
   const { data, isLoading, isError } = taskByGroup;
@@ -74,6 +74,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     key: null,
     direction: "asc",
   });
+
   const handleSort = useCallback((key) => {
     setSortConfig((prevConfig) => ({
       key,
@@ -689,7 +690,17 @@ const TaskList = ({ groupId, workspaceId }) => {
             Action
           </div>
         </div>
-
+        ``
+        {/*  "No results" section to use searchQuery instead of debouncedSearch */}
+        {displayTasks?.length === 0 && hasActiveFilters && (
+          <div className="px-6 py-8 text-center text-gray-500">
+            <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+            <p className="text-sm">No tasks found with current filters</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Try adjusting your filter criteria
+            </p>
+          </div>
+        )}
         {displayTasks?.map((task, index) => {
           const isDragging =
             dragState.index === index && dragState.fromGroup === groupId;
@@ -1148,7 +1159,6 @@ const TaskList = ({ groupId, workspaceId }) => {
             </div>
           );
         })}
-
         {localTasks?.length === 0 && (
           <div
             className="px-6 py-3 border-b border-gray-100"
@@ -1212,7 +1222,6 @@ const TaskList = ({ groupId, workspaceId }) => {
             )}
           </div>
         )}
-
         {localTasks?.length > 0 &&
           (showAddTask ? (
             <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
