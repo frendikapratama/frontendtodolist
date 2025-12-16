@@ -34,6 +34,11 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     show: false,
     subTaskId: null,
   });
+  const [confirmDeletePIC, setConfirmDeletePIC] = useState({
+    show: false,
+    subtaskId: null,
+    userId: null,
+  });
 
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
@@ -75,14 +80,6 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     [assignPicMutation]
   );
 
-  const handleRemovePic = useCallback(
-    (subtaskId, userId) => {
-      if (window.confirm("Hapus PIC dari subtask ini?")) {
-        removePicMutation.mutate({ subtaskId, userId });
-      }
-    },
-    [removePicMutation]
-  );
   const handlePopupChange = useCallback(
     (subtaskId, field, value) => {
       const task = localSubtasks.find((t) => t._id === subtaskId);
@@ -366,9 +363,37 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     note: "w-50",
     action: "w-40",
   };
+  const handleDeletePIC = useCallback((subtaskId, userId) => {
+    setConfirmDeletePIC({ show: true, subtaskId: subtaskId, userId: userId });
+  }, []);
+
+  const confirmDeleteTaskPIC = useCallback(() => {
+    if (confirmDeletePIC.subtaskId && confirmDeletePIC.userId) {
+      removePicMutation.mutate({
+        subtaskId: confirmDeletePIC.subtaskId,
+        userId: confirmDeletePIC.userId,
+      });
+      setConfirmDelete({ show: false, subtaskId: null, userId: null });
+    } else {
+      console.log("no subTaskId or userId found in confirmaationdelete");
+    }
+  }, [
+    confirmDeletePIC.subTaskId,
+    setConfirmDeletePIC.userId,
+    removePicMutation,
+  ]);
 
   return (
     <div className="ml-12 mt-1 mb-2">
+      <ConfirmDialog
+        show={confirmDeletePIC.show}
+        onClose={() =>
+          setConfirmDeletePIC({ show: false, subTaskId: null, userId: null })
+        }
+        onConfirm={confirmDeleteTaskPIC}
+        title="Delete PIC"
+        message="Are you sure want to delete this PIC? this action can't be undo"
+      />
       {localSubtasks.map((s, index) => (
         <div
           key={s._id}
@@ -437,14 +462,22 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               {s.pic && s.pic.length > 0 && (
                 <div className="flex -space-x-2">
                   {s.pic.slice(0, 3).map((picUser, idx) => (
-                    <div key={idx} className="relative group">
+                    <div
+                      key={idx}
+                      className="relative group hover:z-20 z-10 transition-all cursor-pointer"
+                    >
                       <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
                         {picUser.username
                           ? picUser.username.substring(0, 2).toUpperCase()
                           : "?"}
                       </div>
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
+                        <div className="font-medium">{picUser.username}</div>
+                        <div className="text-gray-300">{picUser.email}</div>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                      </div>
                       <button
-                        onClick={() => handleRemovePic(s._id, picUser._id)}
+                        onClick={() => handleDeletePIC(s._id, picUser._id)}
                         className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X size={10} className="text-white" />
