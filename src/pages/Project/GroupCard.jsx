@@ -18,8 +18,6 @@ const GroupCard = ({ group, index, workspaceId }) => {
     selectedGroupId,
   } = useRecentUpdates();
 
-  console.log("GroupCard - workspaceId:", workspaceId);
-
   const [isDragOver, setIsDragOver] = useState(false);
   const [isCardOpen, setIsCardOpen] = useState(true);
 
