@@ -717,9 +717,13 @@ const TaskList = ({ groupId, workspaceId }) => {
                     : ""
                 }`}
               >
-                {/* Name */}
+                {/* Name - Sticky Column (TASK) */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}
+                  className={`flex-1 flex items-center ${
+                    columnWidths.task
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                    isDragging ? "bg-gray-600" : ""
+                  } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
