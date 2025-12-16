@@ -582,13 +582,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       <div className="w-[50vw] min-w-max">
         <div
           ref={headerRef}
-          className={`flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-10 transition-all duration-200 ${
-            isHeaderSticky ? "sticky top-0 shadow-md" : ""
-          }`}
+          className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 sticky top-0 z-20 shadow-md"
         >
-          {/* Task Column - Sortable */}
+          {/* Task Column - Sortable and Sticky */}
           <div
-            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors sticky left-0 bg-[#D2C1B6] z-30`}
             onClick={() => handleSort("nama")}
           >
             <span className="flex items-center">
@@ -719,7 +717,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                a
                 className={`flex items-center hover:bg-none ${
                   isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
                 } ${
@@ -728,9 +725,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     : ""
                 }`}
               >
-                {/* Name */}
+                {/* Name - Sticky Column (TASK) */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}
+                  className={`flex-1 flex items-center ${
+                    columnWidths.task
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                    isDragging ? "bg-gray-600" : ""
+                  } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
