@@ -21,6 +21,13 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 
 const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
+  // Tambahkan state untuk popup PIC
+  const [picPopup, setPicPopup] = useState({ show: false, taskId: null });
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const getPhotoUrl = (photoPath) => {
+    if (!photoPath) return null;
+    return `${API_BASE_URL}/uploads/users/${photoPath}`;
+  };
   const {
     taskByGroup,
     addTaskMutation,
@@ -179,9 +186,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     );
   };
   const displayTasks = getSortedTasks();
-
-  // Tambahkan state untuk popup PIC
-  const [picPopup, setPicPopup] = useState({ show: false, taskId: null });
 
   // Ganti fungsi handleAssignPic
   const handleAssignPic = useCallback(
@@ -506,6 +510,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           {members.map((member) => {
             const user = member.user || member;
             if (!user?.email) return null;
+            const photoUrl = user.photo ? getPhotoUrl(user.photo) : null;
 
             return (
               <button
@@ -513,11 +518,27 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 onClick={() => onSelect(user.email)}
                 className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
               >
-                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs">
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt={user.username}
+                    className="w-6 h-6 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
+                ) : null}
+                <div
+                  className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs"
+                  style={{ display: photoUrl ? "none" : "flex" }}
+                >
                   {user.username?.substring(0, 2).toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{user.username}</div>
+                  <div className="font-medium truncate text-black">
+                    {user.username}
+                  </div>
                   <div className="text-gray-500 truncate">{user.email}</div>
                 </div>
               </button>
