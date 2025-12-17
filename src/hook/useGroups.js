@@ -7,7 +7,7 @@ export const useGroup = () => {
   const addGroupMutation = useMutation({
     mutationFn: ({ projectId, data }) => addGroupToProject(projectId, data),
     onSuccess: () => {
-      toast.success("berhasil membuat group");
+      toast.success("Group added successfully");
       queryClient.invalidateQueries({ queryKey: ["project"] });
     },
     onError: (error) => {
@@ -16,7 +16,7 @@ export const useGroup = () => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah project");
+        toast.error("Failed to add project");
       }
     },
   });
@@ -24,7 +24,7 @@ export const useGroup = () => {
   const updateGroupMutation = useMutation({
     mutationFn: ({ groupId, data }) => updategroup(groupId, data),
     onSuccess: () => {
-      toast.success("Group berhasil diupdate");
+      toast.success("Group updated successfully");
       queryClient.invalidateQueries({ queryKey: ["project"] });
     },
     onError: (error) => {
@@ -32,7 +32,7 @@ export const useGroup = () => {
       if (Array.isArray(errors)) {
         errors.forEach((msg) => toast.error(msg));
       } else {
-        toast.error("Gagal mengupdate Group");
+        toast.error("Failed to update group");
       }
     },
   });
@@ -40,7 +40,7 @@ export const useGroup = () => {
   const deleteMutation = useMutation({
     mutationFn: (groupId) => deleteGroup(groupId),
     onSuccess: (groupId) => {
-      toast.success("delete group successfully");
+      toast.success("Delete group successfully");
       queryClient.invalidateQueries({ queryKey: ["project"] });
       queryClient.invalidateQueries({ queryKey: ["project"], groupId });
     },
@@ -50,7 +50,7 @@ export const useGroup = () => {
           toast.error(msg);
         });
       } else {
-        toast.error("Failed delete group ");
+        toast.error("Failed to delete group ");
       }
     },
   });

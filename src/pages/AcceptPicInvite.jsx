@@ -140,8 +140,8 @@ const AcceptPicInvite = () => {
         const itemType = inviteType === "subTask" ? "subTask" : "task";
         toast.success(
           isRegistered
-            ? `Undangan berhasil diterima! Anda sekarang menjadi PIC untuk ${itemType} ini.`
-            : `Registrasi berhasil! Anda sekarang menjadi PIC untuk ${itemType} ini.`
+            ? `Invitation has been accepted! Now you are the PIC for this ${itemType}.`
+            : `Registration successfully! Now you are the PIC for this ${itemType}.`
         );
 
         setTimeout(() => {
@@ -151,7 +151,7 @@ const AcceptPicInvite = () => {
     } catch (error) {
       console.error("Submit error:", error); // Tambahkan logging
       setError(
-        error.response?.data?.message || "Terjadi kesalahan saat mendaftar"
+        error.response?.data?.message || "Something went wrong during registration"
       );
     } finally {
       setLoading(false);
@@ -164,17 +164,16 @@ const AcceptPicInvite = () => {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
           <div className="text-red-500 text-6xl mb-4">❌</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Link Tidak Valid
+            Invalid Link
           </h2>
           <p className="text-gray-600 mb-6">
-            Link undangan tidak valid. Pastikan Anda mengakses link yang benar
-            dari email.
+            This link is invalid or has expired. Please check the email for the latest link.
           </p>
           <button
             onClick={() => navigate("/")}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
           >
-            Kembali ke Halaman Utama
+            Back
           </button>
         </div>
       </div>
@@ -187,14 +186,14 @@ const AcceptPicInvite = () => {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Undangan Tidak Valid
+            The invitation is invalid
           </h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => navigate("/")}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
           >
-            Kembali ke Halaman Utama
+            Back
           </button>
         </div>
       </div>
@@ -209,10 +208,10 @@ const AcceptPicInvite = () => {
         <div className="bg-blue-500 text-white p-6 text-center">
           <div className="text-4xl mb-2">🎯</div>
           <h1 className="text-2xl font-bold">
-            Terima Undangan PIC {pageTitle}
+            Accept the PIC Invitation {pageTitle}
           </h1>
           <p className="text-blue-100 mt-2">
-            Daftar akun untuk menjadi Person In Charge
+            Registration as (Person In Charge)
           </p>
         </div>
 
@@ -264,15 +263,15 @@ const AcceptPicInvite = () => {
           {isRegistered ? (
             <div className="text-center">
               <p className="text-gray-700 mb-4">
-                Klik tombol di bawah untuk menerima undangan dan menjadi PIC
-                {inviteType === "subTask" ? " subTask" : " task"} ini.
+                Click the button below to accept the invitation and be a PIC for this 
+                {inviteType === "subTask" ? " subTask" : " task"} project.
               </p>
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full bg-blue-500 text-white py-3 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 font-medium"
               >
-                {loading ? "Memproses..." : "Terima Undangan"}
+                {loading ? "Processing..." : "Accept invitation"}
               </button>
             </div>
           ) : (
@@ -289,7 +288,7 @@ const AcceptPicInvite = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-900"
                 />
                 <p className="text-xs text-gray-900 mt-1">
-                  Email ini digunakan untuk undangan
+                  This email will be used for the invitation
                 </p>
               </div>
 
@@ -304,7 +303,7 @@ const AcceptPicInvite = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Masukkan username"
+                  placeholder="Enter username"
                 />
               </div>
 
@@ -321,7 +320,7 @@ const AcceptPicInvite = () => {
                     required
                     minLength="6"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                    placeholder="Minimal 6 karakter"
+                    placeholder="Required 6 Character"
                   />{" "}
                   <button
                     type="button"
@@ -371,7 +370,7 @@ const AcceptPicInvite = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Konfirmasi Password *
+                  Confirm Password *
                 </label>
                 <div className="relative">
                   <input
@@ -381,7 +380,7 @@ const AcceptPicInvite = () => {
                     onChange={handleChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                    placeholder="Ulangi password"
+                    placeholder="Retype the password"
                   />{" "}
                   <button
                     type="button"
@@ -440,13 +439,13 @@ const AcceptPicInvite = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Contoh: 081234567890"
+                  placeholder="Example: 081234567890"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Posisi *
+                  Position *
                 </label>
                 <input
                   type="text"
@@ -455,13 +454,13 @@ const AcceptPicInvite = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Contoh: Software Engineer"
+                  placeholder="Example: Software Engineer"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Departemen
+                  Department
                 </label>
                 {/* <input
                   type="text"
@@ -488,7 +487,7 @@ const AcceptPicInvite = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Divisi
+                  Division
                 </label>
                 {/* <input
                   type="text"
@@ -537,13 +536,13 @@ const AcceptPicInvite = () => {
                 disabled={loading}
                 className="w-full bg-blue-500 text-white py-3 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 font-medium"
               >
-                {loading ? "Mendaftarkan..." : "Daftar & Terima Undangan"}
+                {loading ? "Registering..." : "Register and accept the invitation"}
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
                 Dengan mendaftar, Anda menyetujui untuk menjadi PIC{" "}
-                {inviteType === "subTask" ? "subTask" : "task"} ini dan
-                bergabung ke workspace terkait.
+                By registering, you agree to be the Person in Charge (PIC) for this {" "}
+                {inviteType === "subTask" ? "subTask" : "task"} and join the related division.
               </p>
             </>
           )}

@@ -14,14 +14,14 @@ export const useCollaboration = () => {
   const sendRequestMutation = useMutation({
     mutationFn: (data) => sendCollaborationRequest(data),
     onSuccess: () => {
-      toast.success("Request kolaborasi berhasil dikirim");
+      toast.success("Request Collaboration has been sent");
       queryClient.invalidateQueries({ queryKey: ["collaboration-requests"] });
     },
     onError: (error) => {
       const message = error.response?.data?.message || "Gagal mengirim request";
 
       if (message.toLowerCase().includes("already") || message.toLowerCase().includes("sent")) {
-        toast("Request has been send before!", {
+        toast("Request has been sent before!", {
           icon: "⚠️",
           style: { background: "#facc15", color: "#000" },
         });
@@ -34,7 +34,7 @@ export const useCollaboration = () => {
   const approveMutation = useMutation({
     mutationFn: (requestId) => approveCollaboration(requestId),
     onSuccess: () => {
-      toast.success("Kolaborasi disetujui");
+      toast.success("Collaboration Approved");
       queryClient.invalidateQueries({ queryKey: ["collaboration-requests"] });
       queryClient.invalidateQueries({ queryKey: ["workspace-projects"] });
     },
@@ -46,7 +46,7 @@ export const useCollaboration = () => {
   const rejectMutation = useMutation({
     mutationFn: (requestId) => rejectCollaboration(requestId),
     onSuccess: () => {
-      toast.success("Kolaborasi ditolak");
+      toast.success("Kolaborasi Rejected");
       queryClient.invalidateQueries({ queryKey: ["collaboration-requests"] });
     },
     onError: (error) => {

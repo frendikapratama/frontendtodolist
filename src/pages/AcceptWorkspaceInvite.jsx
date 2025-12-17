@@ -117,8 +117,8 @@ const AcceptWorkspaceInvite = () => {
       if (response.data.success) {
         toast.success(
           isRegistered
-            ? "Undangan berhasil diterima! Anda sekarang menjadi anggota workspace ini."
-            : "Registrasi berhasil! Anda sekarang menjadi anggota workspace ini."
+            ? "Invitation accepted! you are the part of this division."
+            : "Registration completed! your are the part of this division."
         );
 
         setTimeout(() => {
@@ -128,7 +128,7 @@ const AcceptWorkspaceInvite = () => {
     } catch (error) {
       console.error("Submit error:", error);
       setError(
-        error.response?.data?.message || "Terjadi kesalahan saat mendaftar"
+        error.response?.data?.message || "Something went wrong during the registration"
       );
     } finally {
       setLoading(false);
@@ -141,17 +141,16 @@ const AcceptWorkspaceInvite = () => {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
           <div className="text-red-500 text-6xl mb-4">❌</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Link Tidak Valid
+            Invalid Link
           </h2>
           <p className="text-gray-600 mb-6">
-            Link undangan tidak valid. Pastikan Anda mengakses link yang benar
-            dari email.
+            This link is invalid or has expired. Please check the email for the latest link.
           </p>
           <button
             onClick={() => navigate("/")}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
           >
-            Kembali ke Halaman Utama
+            Back
           </button>
         </div>
       </div>
@@ -164,14 +163,14 @@ const AcceptWorkspaceInvite = () => {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Undangan Tidak Valid
+            This invitation is invalid
           </h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => navigate("/")}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
           >
-            Kembali ke Halaman Utama
+            back
           </button>
         </div>
       </div>
@@ -193,11 +192,11 @@ const AcceptWorkspaceInvite = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-500 text-white p-6 text-center">
           <div className="text-4xl mb-2">🏢</div>
-          <h1 className="text-2xl font-bold">Terima Undangan Workspace</h1>
+          <h1 className="text-2xl font-bold">Accepting the invitation to the division</h1>
           <p className="text-blue-100 mt-2">
             {isRegistered
-              ? "Terima undangan untuk bergabung"
-              : "Daftar akun untuk bergabung"}
+              ? "Accept the Invitation"
+              : "Register to accept the invitation"}
           </p>
         </div>
 
@@ -240,15 +239,14 @@ const AcceptWorkspaceInvite = () => {
           {isRegistered ? (
             <div className="text-center">
               <p className="text-gray-700 mb-4">
-                Klik tombol di bawah untuk menerima undangan dan bergabung ke
-                workspace ini.
+                Click the button bellow to accept the invitation and joining the division.
               </p>
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full bg-blue-500 text-white py-3 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 font-medium"
               >
-                {loading ? "Memproses..." : "Terima Undangan"}
+                {loading ? "Processing..." : "Accept the invitation"}
               </button>
             </div>
           ) : (
@@ -265,7 +263,7 @@ const AcceptWorkspaceInvite = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-900"
                 />
                 <p className="text-xs text-gray-900 mt-1">
-                  Email ini digunakan untuk undangan
+                  This email will be used for invitation
                 </p>
               </div>
               <div>
@@ -279,7 +277,7 @@ const AcceptWorkspaceInvite = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Masukkan username"
+                  placeholder="Enter username"
                 />
               </div>
 
@@ -296,7 +294,7 @@ const AcceptWorkspaceInvite = () => {
                     required
                     minLength="6"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 pr-10"
-                    placeholder="Minimal 6 karakter"
+                    placeholder="Required 6 Character"
                   />
                   <button
                     type="button"
@@ -345,7 +343,7 @@ const AcceptWorkspaceInvite = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Konfirmasi Password *
+                  Confirm Password *
                 </label>
                 <div className="relative">
                   <input
@@ -355,7 +353,7 @@ const AcceptWorkspaceInvite = () => {
                     onChange={handleChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 pr-10"
-                    placeholder="Ulangi password"
+                    placeholder="Retype the password"
                   />
                   <button
                     type="button"
@@ -413,12 +411,12 @@ const AcceptWorkspaceInvite = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Contoh: 081234567890"
+                  placeholder="Example: 081234567890"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Posisi *
+                  Position *
                 </label>
                 <input
                   type="text"
@@ -427,12 +425,12 @@ const AcceptWorkspaceInvite = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Contoh: Software Engineer"
+                  placeholder="Example: Software engineer"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Departemen
+                  Department
                 </label>
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
@@ -450,7 +448,7 @@ const AcceptWorkspaceInvite = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Divisi
+                  Division
                 </label>
                 <select
                   name="divisi"
@@ -492,8 +490,7 @@ const AcceptWorkspaceInvite = () => {
                 {loading ? "Mendaftarkan..." : "Daftar & Terima Undangan"}
               </button>
               <p className="text-xs text-gray-500 text-center mt-4">
-                Dengan mendaftar, Anda menyetujui untuk bergabung ke workspace
-                ini.
+                By registering, You are agree to join the division.
               </p>
             </>
           )}

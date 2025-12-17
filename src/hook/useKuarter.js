@@ -44,7 +44,7 @@ export const useKuarter = () => {
   const createMutation = useMutation({
     mutationFn: (data) => createKuarter(data),
     onSuccess: () => {
-      toast.success("berhasil membuat kuarter");
+      toast.success("Quarter created successfully");
       queryClient.invalidateQueries({ queryKey: ["kuarter"] });
       resetForm();
     },
@@ -54,7 +54,7 @@ export const useKuarter = () => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah kuarter");
+        toast.error("Failed to create quarter");
       }
     },
   });
@@ -62,7 +62,7 @@ export const useKuarter = () => {
   const updatedKuarterMutation = useMutation({
     mutationFn: ({ id, data }) => updateKuarter(id, data),
     onSuccess: (_, variables) => {
-      toast.success("berhasil update");
+      toast.success("Quarter updated successfully");
       queryClient.invalidateQueries({ queryKey: ["kuarter", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["kuarter"] });
     },
@@ -72,7 +72,7 @@ export const useKuarter = () => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal edit Kuarter");
+        toast.error("Failed to update quarter");
       }
     },
   });
@@ -88,7 +88,7 @@ export const useKuarter = () => {
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteKuarter(id),
     onSuccess: (id) => {
-      toast.success("berhasil menghapus kuarter");
+      toast.success("Quarter delete successfully");
       queryClient.invalidateQueries({ queryKey: ["kuarter"] });
       queryClient.invalidateQueries({ queryKey: ["kuarter", id] });
     },
@@ -98,7 +98,7 @@ export const useKuarter = () => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal hapus Kuarter");
+        toast.error("Failed to delete quarter");
       }
     },
   });

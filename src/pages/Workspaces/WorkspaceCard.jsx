@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import ProgressBar from "../../components/ui/ProgressBar";
 import { useWorkspaceStats } from "../../hook/useProgress";
 import { useMember } from "../../hook/useMember";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 const WorkspaceCard = ({
   workspace,
@@ -19,6 +20,10 @@ const WorkspaceCard = ({
   const [selectedMember, setSelectedMember] = useState(null);
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    workspacesId: null
+  })
 
   const members = membersWorkspaceQuery.data?.members || [];
   const maxVisible = 5;
@@ -47,6 +52,17 @@ const WorkspaceCard = ({
     viewer: "bg-gray-100 text-gray-600 border-gray-200",
   };
 
+  const handleDelete = useCallback((workspacesId) => {
+    setConfirmDelete({ show: true, workspacesId: workspacesId });
+  }, [])
+
+  const confirmDeleteWorkspace = useCallback(() => {
+    if (confirmDelete.workspacesId) {
+      deleteMutation.mutate(confirmDelete.workspacesId);
+      setConfirmDelete({ show: false, workspacesId: null });
+    }
+  }, [confirmDelete.workspacesId, deleteMutation]);
+
   const handleAvatarClick = (member, e) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
@@ -73,7 +89,7 @@ const WorkspaceCard = ({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-    const MemberAvatar = ({ member, index, size = "md", className = "" }) => {
+  const MemberAvatar = ({ member, index, size = "md", className = "" }) => {
     const [imageError, setImageError] = useState(false);
     const photoUrl = member.user?.photo ? getPhotoUrl(member.user.photo) : null;
     const shouldShowImage = photoUrl && !imageError;
@@ -330,17 +346,9 @@ const WorkspaceCard = ({
             <div className="card-actions justify-end flex flex-row items-center mt-2">
               <button
                 className="btn btn-sm w-14 btn-warning text-orange-900"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(workspace._id, workspace.nama);
-                }}
-                disabled={deleteMutation.isPending}
+                onClick={() => handleDelete(workspace._id, workspace.nama)}
               >
-                {deleteMutation.isPending ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  "Delete"
-                )}
+                Delete
               </button>
               <button
                 className="btn btn-primary btn-sm w-14"
@@ -372,6 +380,13 @@ const WorkspaceCard = ({
       {/* Render popovers di luar card */}
       <SingleMemberPopover />
       <AllMembersPopover />
+      <ConfirmDialog
+        show={confirmDelete.show}
+        onClose={() => setConfirmDelete({ show: false, workspacesId: null })}
+        onConfirm={confirmDeleteWorkspace}
+        title="Delete Division"
+        message="Are you sure want to delete this Division? this action can't be undo"
+      />
     </>
   );
 };

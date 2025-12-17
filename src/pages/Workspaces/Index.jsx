@@ -23,7 +23,7 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
 
   const openCreateModal = () => {
     if (!kuarterId) {
-      toast.error("Pilih kuarter terlebih dahulu");
+      toast.error("Choose the quarter");
       return;
     }
     document.getElementById("createModal").showModal();

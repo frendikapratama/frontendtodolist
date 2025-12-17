@@ -17,7 +17,7 @@ export const useSubTask = (taskId, groupId) => {
   const addSubTaskMutation = useMutation({
     mutationFn: ({ taskId, data }) => addSubTask(taskId, data),
     onSuccess: () => {
-      toast.success("Subtask berhasil ditambahkan");
+      toast.success("Subtask added succesfully");
       queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
       queryClient.refetchQueries({ queryKey: ["subtask", taskId] });
@@ -28,7 +28,7 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah subtask");
+        toast.error("Failed to add subtask");
       }
     },
   });
@@ -36,7 +36,7 @@ export const useSubTask = (taskId, groupId) => {
   const updateSubTaskMutation = useMutation({
     mutationFn: ({ subtaskId, data }) => updateSubTask(subtaskId, data),
     onSuccess: () => {
-      toast.success("Subtask berhasil diupdate");
+      toast.success("Subtask updated successfully");
       queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
@@ -46,7 +46,7 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal mengupdate subtask");
+        toast.error("Failed to update subtask");
       }
     },
   });
@@ -54,7 +54,7 @@ export const useSubTask = (taskId, groupId) => {
   const updatePositionSubTaskMutation = useMutation({
     mutationFn: ({ taskId, data }) => positionSubTask(taskId, data),
     onSuccess: () => {
-      toast.success("Posisi berhasil diubah");
+      toast.success("Position changed");
       queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
@@ -64,7 +64,7 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal mengubah posisi subtask");
+        toast.error("Failed to change position");
       }
     },
   });
@@ -73,7 +73,7 @@ export const useSubTask = (taskId, groupId) => {
     mutationFn: ({ subtaskId, picEmail }) =>
       assignPicSubtask(subtaskId, picEmail),
     onSuccess: () => {
-      toast.success("PIC berhasil ditambahkan");
+      toast.success("PIC added successfully");
       queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
@@ -83,7 +83,7 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambahkan PIC");
+        toast.error("Failed to add PIC");
       }
     },
   });
@@ -113,7 +113,7 @@ export const useSubTask = (taskId, groupId) => {
   const removePicMutation = useMutation({
     mutationFn: ({ subtaskId, userId }) => removePicSubtask(subtaskId, userId),
     onSuccess: () => {
-      toast.success("PIC berhasil dihapus");
+      toast.success("PIC removed successfully");
       queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
@@ -123,7 +123,7 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menghapus PIC");
+        toast.error("Failed to remove PIC");
       }
     },
   });

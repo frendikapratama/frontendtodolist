@@ -7,7 +7,7 @@ export const WorkspaceForm = ({ onClose, kuarterId = null }) => {
     e.preventDefault();
 
     if (!kuarterId) {
-      toast.error("Kuarter ID tidak ditemukan");
+      toast.error("Quarter ID's not found");
       return;
     }
     createMutation.mutate(

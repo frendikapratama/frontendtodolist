@@ -195,7 +195,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmedEmail)) {
-        toast.error("Format email tidak valid");
+        toast.error("Invalid email format");
         return;
       }
 
