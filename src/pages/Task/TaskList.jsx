@@ -812,39 +812,62 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   )}
                 </div>
                 {/* PIC */}
-
                 <div
                   className={`${columnWidths.pic} flex items-center justify-center gap-1 relative`}
                 >
                   {task.pic && task.pic.length > 0 && (
                     <div className="flex -space-x-2">
-                      {task.pic.slice(0, 3).map((picUser, idx) => (
-                        <div
-                          key={idx}
-                          className="relative group hover:z-20 z-10 transition-all cursor-pointer"
-                        >
-                          <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
-                            {picUser.username
-                              ? picUser.username.substring(0, 2).toUpperCase()
-                              : "?"}
-                          </div>
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
-                            <div className="font-medium">
-                              {picUser.username}
-                            </div>
-                            <div className="text-gray-300">{picUser.email}</div>
-                            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
-                          </div>
-                          <button
-                            onClick={() =>
-                              handleDeletePICTask(task._id, picUser._id)
-                            }
-                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100  transition-opacity"
+                      {task.pic.slice(0, 3).map((picUser, idx) => {
+                        const photoUrl = picUser.photo
+                          ? getPhotoUrl(picUser.photo)
+                          : null;
+
+                        return (
+                          <div
+                            key={idx}
+                            className="relative group hover:z-20 z-10 transition-all cursor-pointer"
                           >
-                            <X size={10} className="text-white" />
-                          </button>
-                        </div>
-                      ))}
+                            {/* Gunakan foto jika ada */}
+                            {photoUrl ? (
+                              <img
+                                src={photoUrl}
+                                alt={picUser.username}
+                                className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
+                                {picUser.username
+                                  ?.substring(0, 2)
+                                  .toUpperCase() || "?"}
+                              </div>
+                            )}
+
+                            {/* Tooltip untuk user info */}
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
+                              <div className="font-medium">
+                                {picUser.username}
+                              </div>
+                              <div className="text-gray-300">
+                                {picUser.email}
+                              </div>
+                              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                            </div>
+
+                            <button
+                              onClick={() =>
+                                handleDeletePICTask(task._id, picUser._id)
+                              }
+                              className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={10} className="text-white" />
+                            </button>
+                          </div>
+                        );
+                      })}
+
                       {task.pic.length > 3 && (
                         <div className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
                           +{task.pic.length - 3}
@@ -853,6 +876,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     </div>
                   )}
 
+                  {/* Tombol tambah PIC */}
                   <button
                     ref={(el) => (buttonRefs.current[`pic-${task._id}`] = el)}
                     onClick={() =>

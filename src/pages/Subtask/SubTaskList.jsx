@@ -11,6 +11,11 @@ import { createPortal } from "react-dom";
 
 // const SubtaskList = ({ taskId, groupId, workspaceId, onSubtaskStatusChange }) => {
 const SubtaskList = ({ taskId, groupId, workspaceId }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const getPhotoUrl = (photoPath) => {
+    if (!photoPath) return null;
+    return `${API_BASE_URL}/uploads/users/${photoPath}`;
+  };
   const calculateAutoNote = (status, due_date, finish_date) => {
     if (status === "Done" && due_date && finish_date) {
       const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
@@ -314,6 +319,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           {members.map((member) => {
             const user = member.user || member;
             if (!user?.email) return null;
+            const photoUrl = user.photo ? getPhotoUrl(user.photo) : null;
 
             return (
               <button
@@ -321,11 +327,27 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
                 onClick={() => onSelect(user.email)}
                 className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
               >
-                <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs">
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt={user.username}
+                    className="w-6 h-6 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
+                ) : null}
+                <div
+                  className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs"
+                  style={{ display: photoUrl ? "none" : "flex" }}
+                >
                   {user.username?.substring(0, 2).toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{user.username}</div>
+                  <div className="font-medium truncate text-black">
+                    {user.username}
+                  </div>
                   <div className="text-gray-500 truncate">{user.email}</div>
                 </div>
               </button>
@@ -462,29 +484,48 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             <div className="flex items-center gap-1 relative">
               {s.pic && s.pic.length > 0 && (
                 <div className="flex -space-x-2">
-                  {s.pic.slice(0, 3).map((picUser, idx) => (
-                    <div
-                      key={idx}
-                      className="relative group hover:z-20 z-10 transition-all cursor-pointer"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
-                        {picUser.username
-                          ? picUser.username.substring(0, 2).toUpperCase()
-                          : "?"}
-                      </div>
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
-                        <div className="font-medium">{picUser.username}</div>
-                        <div className="text-gray-300">{picUser.email}</div>
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
-                      </div>
-                      <button
-                        onClick={() => handleDeletePIC(s._id, picUser._id)}
-                        className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  {s.pic.slice(0, 3).map((picUser, idx) => {
+                    const photoUrl = picUser.photo
+                      ? getPhotoUrl(picUser.photo)
+                      : null;
+                    return (
+                      <div
+                        key={idx}
+                        className="relative group hover:z-20 z-10 transition-all cursor-pointer"
                       >
-                        <X size={10} className="text-white" />
-                      </button>
-                    </div>
-                  ))}
+                        {/* Gunakan foto jika ada */}
+                        {photoUrl ? (
+                          <img
+                            src={photoUrl}
+                            alt={picUser.username}
+                            className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
+                            {picUser.username?.substring(0, 2).toUpperCase() ||
+                              "?"}
+                          </div>
+                        )}
+
+                        {/* Tooltip untuk user info */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
+                          <div className="font-medium">{picUser.username}</div>
+                          <div className="text-gray-300">{picUser.email}</div>
+                          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                        </div>
+
+                        <button
+                          onClick={() => handleDeletePIC(s._id, picUser._id)}
+                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={10} className="text-white" />
+                        </button>
+                      </div>
+                    );
+                  })}
                   {s.pic.length > 3 && (
                     <div className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
                       +{s.pic.length - 3}
