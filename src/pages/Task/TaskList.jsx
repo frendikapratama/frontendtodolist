@@ -588,7 +588,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         >
           {/* Task Column - Sortable */}
           <div
-            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] sticky left-0  bg-[#D2C1B6]  transition-colors`}
             onClick={() => handleSort("nama")}
           >
             <span className="flex items-center">
@@ -690,7 +690,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             Action
           </div>
         </div>
-        ``
         {/*  "No results" section to use searchQuery instead of debouncedSearch */}
         {displayTasks?.length === 0 && hasActiveFilters && (
           <div className="px-6 py-8 text-center text-gray-500">
@@ -730,7 +729,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
               >
                 {/* Name */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}
+                  className={`flex-1 flex items-center ${
+                    columnWidths.task
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                    isDragging ? "bg-gray-600" : ""
+                  } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
@@ -777,7 +780,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     />
                   ) : (
                     <span
-                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-5 flex-1 min-w-0"
+                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-10 flex-1 min-w-0"
                       onClick={() => {
                         setEditingField({ taskId: task._id, field: "nama" });
                         setEditedValue(task.nama);
