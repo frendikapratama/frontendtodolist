@@ -7,8 +7,10 @@ import {
   CheckCircle2,
   Circle,
   Pause,
+  OctagonMinus,
   AlertCircle,
   FlagTriangleRight,
+  PauseCircle,
 } from "lucide-react";
 import { useAuth } from "../../hook/useContext";
 import { useMyWork } from "../../hook/useTask";
@@ -253,7 +255,8 @@ const MyWorkspaces = () => {
       done: <CheckCircle2 className="w-4 h-4 text-green-500" />,
       todo: <Circle className="w-4 h-4 text-gray-400" />,
       inProgress: <Clock className="w-4 h-4 text-blue-500" />,
-      holdBlocked: <Pause className="w-4 h-4 text-red-500" />,
+      hold: <PauseCircle className="w-4 h-4 text-orange-500" />,
+      blocked: <OctagonMinus className="w-4 h-4 text-red-500" />,
     };
     return icons[status];
   };
@@ -263,7 +266,8 @@ const MyWorkspaces = () => {
       done: "Done",
       todo: "To Do",
       inProgress: "In Progress",
-      holdBlocked: "Hold / Blocked",
+      hold: "Hold",
+      blocked: "Blocked",
     };
     return labels[status];
   };
