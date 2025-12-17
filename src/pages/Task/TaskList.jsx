@@ -14,13 +14,13 @@ import {
   UserPlus,
   X,
   Trash2,
-  ChevronUp,
+  Search,
 } from "lucide-react";
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 
-const TaskList = ({ groupId, workspaceId }) => {
+const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const {
     taskByGroup,
     addTaskMutation,
@@ -29,7 +29,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     assignPicMutation,
     removePicMutation,
     deleteTaskMutation,
-  } = useTask(groupId);
+  } = useTask(groupId, filters);
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
   const { updateSubTaskMutation } = useSubTask(null, groupId);
   const { data, isLoading, isError } = taskByGroup;
@@ -56,35 +56,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     taskId: null,
     userId: null,
   });
-
-  // Photo URL helper
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-  const getPhotoUrl = (photoPath) => {
-    if (!photoPath) return null;
-    return `${API_BASE_URL}/uploads/users/${photoPath}`;
-  };
-
   const [hoveredRow, setHoveredRow] = useState(null);
-  const calculateAutoNote = (status, due_date, finish_date) => {
-    if (status === "Done" && due_date && finish_date) {
-      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
-      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
-      if (finishDate === dueDate) {
-        return "Completed - On Time";
-      } else if (finishDate > dueDate) {
-        return "Completed - Overdue";
-      } else if (finishDate < dueDate) {
-        return "Completed - Early";
-      }
-    }
-    if (status === "To Do") {
-      return "Planning";
-    }
-    if (["In Progress", "Blocked", "Hold"].includes(status)) {
-      return "Uncomplete";
-    }
-    return null;
-  };
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
@@ -100,12 +72,16 @@ const TaskList = ({ groupId, workspaceId }) => {
   const headerRef = useRef(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
-    direction: 'asc'
+    direction: "asc",
   });
+
   const handleSort = useCallback((key) => {
-    setSortConfig(prevConfig => ({
+    setSortConfig((prevConfig) => ({
       key,
-      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+      direction:
+        prevConfig.key === key && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
     }));
   }, []);
   const getSortedTasks = useCallback(() => {
@@ -116,29 +92,39 @@ const TaskList = ({ groupId, workspaceId }) => {
       let bValue = b[sortConfig.key];
 
       // Handle different data types
-      if (sortConfig.key === 'nama') {
-        aValue = aValue?.toLowerCase() || '';
-        bValue = bValue?.toLowerCase() || '';
-      } else if (['start_date', 'due_date', 'finish_date', 'meeting_date'].includes(sortConfig.key)) {
+      if (sortConfig.key === "nama") {
+        aValue = aValue?.toLowerCase() || "";
+        bValue = bValue?.toLowerCase() || "";
+      } else if (
+        ["start_date", "due_date", "finish_date", "meeting_date"].includes(
+          sortConfig.key
+        )
+      ) {
         aValue = aValue ? new Date(aValue).getTime() : 0;
         bValue = bValue ? new Date(bValue).getTime() : 0;
-      } else if (sortConfig.key === 'priority') {
-        const priorityOrder = { 'Low': 1, 'Medium': 2, 'High': 3, 'Urgent': 4 };
+      } else if (sortConfig.key === "priority") {
+        const priorityOrder = { Low: 1, Medium: 2, High: 3, Urgent: 4 };
         aValue = priorityOrder[aValue] || 0;
         bValue = priorityOrder[bValue] || 0;
-      } else if (sortConfig.key === 'status') {
-        const statusOrder = { 'To Do': 1, 'In Progress': 2, 'Hold': 3, 'Blocked': 4, 'Done': 5 };
+      } else if (sortConfig.key === "status") {
+        const statusOrder = {
+          "To Do": 1,
+          "In Progress": 2,
+          Hold: 3,
+          Blocked: 4,
+          Done: 5,
+        };
         aValue = statusOrder[aValue] || 0;
         bValue = statusOrder[bValue] || 0;
-      } else if (sortConfig.key === 'pic') {
+      } else if (sortConfig.key === "pic") {
         aValue = a.pic?.length || 0;
         bValue = b.pic?.length || 0;
       }
       if (aValue < bValue) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
+        return sortConfig.direction === "asc" ? -1 : 1;
       }
       if (aValue > bValue) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
+        return sortConfig.direction === "asc" ? 1 : -1;
       }
       return 0;
     });
@@ -147,18 +133,48 @@ const TaskList = ({ groupId, workspaceId }) => {
   const SortIcon = ({ columnKey }) => {
     if (sortConfig.key !== columnKey) {
       return (
-        <svg className="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        <svg
+          className="w-3 h-3 ml-1 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+          />
         </svg>
       );
     }
-    return sortConfig.direction === 'asc' ? (
-      <svg className="w-3 h-3 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+    return sortConfig.direction === "asc" ? (
+      <svg
+        className="w-3 h-3 ml-1 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 15l7-7 7 7"
+        />
       </svg>
     ) : (
-      <svg className="w-3 h-3 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      <svg
+        className="w-3 h-3 ml-1 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 9l-7 7-7-7"
+        />
       </svg>
     );
   };
@@ -236,7 +252,7 @@ const TaskList = ({ groupId, workspaceId }) => {
       },
       {
         threshold: 0,
-        rootMargin: '0px',
+        rootMargin: "0px",
       }
     );
     if (tableEndRef.current) {
@@ -244,9 +260,9 @@ const TaskList = ({ groupId, workspaceId }) => {
     }
     return () => {
       if (tableEndRef.current) {
-        observer.unobserve(tableEndRef.current)
+        observer.unobserve(tableEndRef.current);
       }
-    }
+    };
   }, []);
 
   const handleAddTask = useCallback(() => {
@@ -281,6 +297,27 @@ const TaskList = ({ groupId, workspaceId }) => {
     },
     [updateTaskMutation]
   );
+
+  const calculateAutoNote = (status, due_date, finish_date) => {
+    if (status === "Done" && due_date && finish_date) {
+      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
+      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
+      if (finishDate === dueDate) {
+        return "Completed - On Time";
+      } else if (finishDate > dueDate) {
+        return "Completed - Overdue";
+      } else if (finishDate < dueDate) {
+        return "Completed - Early";
+      }
+    }
+    if (status === "To Do") {
+      return "Planning";
+    }
+    if (["In Progress", "Blocked", "Hold"].includes(status)) {
+      return "Uncomplete";
+    }
+    return null;
+  };
 
   const handlePopupChange = useCallback(
     (taskId, field, value) => {
@@ -469,7 +506,6 @@ const TaskList = ({ groupId, workspaceId }) => {
           {members.map((member) => {
             const user = member.user || member;
             if (!user?.email) return null;
-            const photoUrl = user.photo ? getPhotoUrl(user.photo) : null;
 
             return (
               <button
@@ -477,25 +513,11 @@ const TaskList = ({ groupId, workspaceId }) => {
                 onClick={() => onSelect(user.email)}
                 className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
               >
-                {photoUrl ? (
-                  <img
-                    src={photoUrl}
-                    alt={user.username}
-                    className="w-6 h-6 rounded-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div
-                  className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs"
-                  style={{ display: photoUrl ? 'none' : 'flex' }}
-                >
+                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs">
                   {user.username?.substring(0, 2).toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate text-black">{user.username}</div>
+                  <div className="font-medium truncate">{user.username}</div>
                   <div className="text-gray-500 truncate">{user.email}</div>
                 </div>
               </button>
@@ -518,7 +540,7 @@ const TaskList = ({ groupId, workspaceId }) => {
             }
             if (e.key === "Escape") onClose();
           }}
-          className="w-full px-2 py-1.5 text-xs border text-black border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="email@example.com"
           autoFocus
         />
@@ -547,7 +569,7 @@ const TaskList = ({ groupId, workspaceId }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="overflow-x-auto">
       <ConfirmDialog
         show={confirmDeletePIC.show}
         onClose={() =>
@@ -557,364 +579,364 @@ const TaskList = ({ groupId, workspaceId }) => {
         title="Delete PIC"
         message="Are you sure want to delete this PIC? this action can't be undo"
       />
-      <div className="overflow-x-auto">
-        <div className="w-[50vw] min-w-max">
+      <div className="w-[50vw] min-w-max">
+        <div
+          ref={headerRef}
+          className={`flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-10 transition-all duration-200 ${
+            isHeaderSticky ? "sticky top-0 shadow-md" : ""
+          }`}
+        >
+          {/* Task Column - Sortable */}
           <div
-            ref={headerRef}
-            className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 sticky top-0 z-50 shadow-md"
+            className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("nama")}
           >
-            {/* Task Column - Sortable and Sticky */}
-            <div
-              className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors sticky left-0 bg-[#D2C1B6] z-50`}
-              onClick={() => handleSort('nama')}
-            >
-              <span className="flex items-center">
-                Task
-                <SortIcon columnKey="nama" />
-              </span>
-            </div>
-
-            {/* PIC Column - Sortable by count */}
-            <div
-              className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('pic')}
-            >
-              <span className="flex items-center">
-                PIC
-                <SortIcon columnKey="pic" />
-              </span>
-            </div>
-
-            {/* Status Column - Sortable */}
-            <div
-              className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('status')}
-            >
-              <span className="flex items-center">
-                Status
-                <SortIcon columnKey="status" />
-              </span>
-            </div>
-
-            {/* Priority Column - Sortable */}
-            <div
-              className={`${columnWidths.priority} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('priority')}
-            >
-              <span className="flex items-center">
-                Priority
-                <SortIcon columnKey="priority" />
-              </span>
-            </div>
-
-            {/* Meeting Date Column - Sortable */}
-            <div
-              className={`${columnWidths.meetingDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('meeting_date')}
-            >
-              <span className="flex items-center">
-                Meeting Date
-                <SortIcon columnKey="meeting_date" />
-              </span>
-            </div>
-
-            {/* Start Date Column - Sortable */}
-            <div
-              className={`${columnWidths.startDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('start_date')}
-            >
-              <span className="flex items-center">
-                Start Date
-                <SortIcon columnKey="start_date" />
-              </span>
-            </div>
-
-            {/* Due Date Column - Sortable */}
-            <div
-              className={`${columnWidths.dueDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('due_date')}
-            >
-              <span className="flex items-center">
-                Due Date
-                <SortIcon columnKey="due_date" />
-              </span>
-            </div>
-
-            {/* Finish Date Column - Sortable */}
-            <div
-              className={`${columnWidths.finishDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('finish_date')}
-            >
-              <span className="flex items-center">
-                Finish Date
-                <SortIcon columnKey="finish_date" />
-              </span>
-            </div>
-
-            {/* Note Column - Sortable */}
-            <div
-              className={`${columnWidths.note} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort('note')}
-            >
-              <span className="flex items-center">
-                Note
-                <SortIcon columnKey="note" />
-              </span>
-            </div>
-            <div
-              className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
-            >
-              Action
-            </div>
+            <span className="flex items-center">
+              Task
+              <SortIcon columnKey="nama" />
+            </span>
           </div>
 
-          {displayTasks?.map((task, index) => {
-            const isDragging =
-              dragState.index === index && dragState.fromGroup === groupId;
-            const isPreview = task._isPreview;
-            const isHovered = hoveredRow === task._id;
+          {/* PIC Column - Sortable by count */}
+          <div
+            className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("pic")}
+          >
+            <span className="flex items-center">
+              PIC
+              <SortIcon columnKey="pic" />
+            </span>
+          </div>
 
-            return (
+          {/* Status Column - Sortable */}
+          <div
+            className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("status")}
+          >
+            <span className="flex items-center">
+              Status
+              <SortIcon columnKey="status" />
+            </span>
+          </div>
+
+          {/* Priority Column - Sortable */}
+          <div
+            className={`${columnWidths.priority} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("priority")}
+          >
+            <span className="flex items-center">
+              Priority
+              <SortIcon columnKey="priority" />
+            </span>
+          </div>
+
+          {/* Meeting Date Column - Sortable */}
+          <div
+            className={`${columnWidths.meetingDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("meeting_date")}
+          >
+            <span className="flex items-center">
+              Meeting Date
+              <SortIcon columnKey="meeting_date" />
+            </span>
+          </div>
+
+          {/* Start Date Column - Sortable */}
+          <div
+            className={`${columnWidths.startDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("start_date")}
+          >
+            <span className="flex items-center">
+              Start Date
+              <SortIcon columnKey="start_date" />
+            </span>
+          </div>
+
+          {/* Due Date Column - Sortable */}
+          <div
+            className={`${columnWidths.dueDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("due_date")}
+          >
+            <span className="flex items-center">
+              Due Date
+              <SortIcon columnKey="due_date" />
+            </span>
+          </div>
+
+          {/* Finish Date Column - Sortable */}
+          <div
+            className={`${columnWidths.finishDate} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("finish_date")}
+          >
+            <span className="flex items-center">
+              Finish Date
+              <SortIcon columnKey="finish_date" />
+            </span>
+          </div>
+
+          {/* Note Column - Sortable */}
+          <div
+            className={`${columnWidths.note} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("note")}
+          >
+            <span className="flex items-center">
+              Note
+              <SortIcon columnKey="note" />
+            </span>
+          </div>
+          <div
+            className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
+          >
+            Action
+          </div>
+        </div>
+        ``
+        {/*  "No results" section to use searchQuery instead of debouncedSearch */}
+        {displayTasks?.length === 0 && hasActiveFilters && (
+          <div className="px-6 py-8 text-center text-gray-500">
+            <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+            <p className="text-sm">No tasks found with current filters</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Try adjusting your filter criteria
+            </p>
+          </div>
+        )}
+        {displayTasks?.map((task, index) => {
+          const isDragging =
+            dragState.index === index && dragState.fromGroup === groupId;
+          const isPreview = task._isPreview;
+          const isHovered = hoveredRow === task._id;
+
+          return (
+            <div
+              key={task._id}
+              onMouseEnter={() => setHoveredRow(task._id)}
+              onMouseLeave={() => setHoveredRow(null)}
+            >
               <div
-                key={task._id}
-                onMouseEnter={() => setHoveredRow(task._id)}
-                onMouseLeave={() => setHoveredRow(null)}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                a
+                className={`flex items-center hover:bg-none ${
+                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                } ${
+                  isPreview
+                    ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
+                    : ""
+                }`}
               >
+                {/* Name */}
                 <div
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDrop={(e) => handleDrop(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                    } ${isPreview
-                      ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
-                      : ""
-                    }`}
+                  className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}
                 >
-                  {/* Name - Sticky Column */}
-                  <div
-                    className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-40 ${isDragging ? "bg-gray-600" : ""
-                      } ${isPreview ? "bg-blue-50" : ""}`}
+                  <button
+                    onClick={() =>
+                      setOpenSubtasks((prev) => ({
+                        ...prev,
+                        [task._id]: !prev[task._id],
+                      }))
+                    }
+                    className={`p-0.5 rounded transition-all shrink-0 ${
+                      task.subtask?.length || isHovered
+                        ? "opacity-100 hover:bg-gray-200"
+                        : "opacity-0"
+                    }`}
                   >
-                    <button
-                      onClick={() =>
-                        setOpenSubtasks((prev) => ({
-                          ...prev,
-                          [task._id]: !prev[task._id],
-                        }))
-                      }
-                      className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
-                          ? "opacity-100 hover:bg-gray-200"
-                          : "opacity-0"
-                        }`}
-                    >
-                      {openSubtasks[task._id] ? (
-                        <ChevronDown className="w-4 h-4 text-gray-700" />
-                      ) : (
-                        <ChevronRight
-                          className={`w-4 h-4 ${task.subtask?.length
-                              ? "text-gray-700"
-                              : "text-gray-400"
-                            }`}
-                        />
-                      )}
-                    </button>
-
-                    {editingField?.taskId === task._id &&
-                      editingField?.field === "nama" ? (
-                      <input
-                        type="text"
-                        className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
-                        value={editedValue}
-                        autoFocus
-                        onChange={(e) => setEditedValue(e.target.value)}
-                        onBlur={() =>
-                          handleFieldEdit(task._id, "nama", editedValue)
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter")
-                            handleFieldEdit(task._id, "nama", editedValue);
-                          if (e.key === "Escape") setEditingField(null);
-                        }}
-                      />
+                    {openSubtasks[task._id] ? (
+                      <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
-                      <span
-                        className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-10 flex-1 min-w-0"
-                        onClick={() => {
-                          setEditingField({ taskId: task._id, field: "nama" });
-                          setEditedValue(task.nama);
-                        }}
-                      >
-                        {task.nama}
-                      </span>
+                      <ChevronRight
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                        }`}
+                      />
                     )}
-                  </div>
-                  {/* PIC */}
-                  <div
-                    className={`${columnWidths.pic} flex items-center justify-center gap-1 relative`}
-                  >
-                    {task.pic && task.pic.length > 0 && (
-                      <div className="flex -space-x-2">
-                        {task.pic.slice(0, 3).map((picUser, idx) => {
-                          const photoUrl = picUser.photo ? getPhotoUrl(picUser.photo) : null;
-                          return (
-                            <div
-                              key={idx}
-                              className="relative group hover:z-90 z-10 transition-all cursor-pointer"
-                            >
-                              {photoUrl ? (
-                                <img
-                                  src={photoUrl}
-                                  alt={picUser.username}
-                                  className="w-7 h-7 rounded-full border-2 border-white object-cover"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'flex';
-                                  }}
-                                />
-                              ) : null}
-                              <div
-                                className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white"
-                                style={{ display: photoUrl ? 'none' : 'flex' }}
-                              >
-                                {picUser.username
-                                  ? picUser.username.substring(0, 2).toUpperCase()
-                                  : "?"}
-                              </div>
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
-                                <div className="font-medium">
-                                  {picUser.username}
-                                </div>
-                                <div className="text-gray-300">{picUser.email}</div>
-                                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
-                              </div>
-                              <button
-                                onClick={() =>
-                                  handleDeletePICTask(task._id, picUser._id)
-                                }
-                                className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100  transition-opacity"
-                              >
-                                <X size={10} className="text-white" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                        {task.pic.length > 3 && (
-                          <div className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
-                            +{task.pic.length - 3}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  </button>
 
-                    <button
-                      ref={(el) => (buttonRefs.current[`pic-${task._id}`] = el)}
-                      onClick={() =>
-                        setPicPopup({ show: true, taskId: task._id })
+                  {editingField?.taskId === task._id &&
+                  editingField?.field === "nama" ? (
+                    <input
+                      type="text"
+                      className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
+                      value={editedValue}
+                      autoFocus
+                      onChange={(e) => setEditedValue(e.target.value)}
+                      onBlur={() =>
+                        handleFieldEdit(task._id, "nama", editedValue)
                       }
-                      className="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                      title="Assign PIC"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter")
+                          handleFieldEdit(task._id, "nama", editedValue);
+                        if (e.key === "Escape") setEditingField(null);
+                      }}
+                    />
+                  ) : (
+                    <span
+                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-5 flex-1 min-w-0"
+                      onClick={() => {
+                        setEditingField({ taskId: task._id, field: "nama" });
+                        setEditedValue(task.nama);
+                      }}
                     >
-                      <UserPlus size={14} />
-                    </button>
+                      {task.nama}
+                    </span>
+                  )}
+                </div>
+                {/* PIC */}
 
-                    {picPopup.show && picPopup.taskId === task._id && (
-                      <PicPopup
-                        members={membersWorkspaceQuery.data?.members || []}
-                        onSelect={(email) => handleAssignPic(task._id, email)}
-                        onClose={() => setPicPopup({ show: false, taskId: null })}
+                <div
+                  className={`${columnWidths.pic} flex items-center justify-center gap-1 relative`}
+                >
+                  {task.pic && task.pic.length > 0 && (
+                    <div className="flex -space-x-2">
+                      {task.pic.slice(0, 3).map((picUser, idx) => (
+                        <div
+                          key={idx}
+                          className="relative group hover:z-20 z-10 transition-all cursor-pointer"
+                        >
+                          <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
+                            {picUser.username
+                              ? picUser.username.substring(0, 2).toUpperCase()
+                              : "?"}
+                          </div>
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
+                            <div className="font-medium">
+                              {picUser.username}
+                            </div>
+                            <div className="text-gray-300">{picUser.email}</div>
+                            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                          </div>
+                          <button
+                            onClick={() =>
+                              handleDeletePICTask(task._id, picUser._id)
+                            }
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100  transition-opacity"
+                          >
+                            <X size={10} className="text-white" />
+                          </button>
+                        </div>
+                      ))}
+                      {task.pic.length > 3 && (
+                        <div className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
+                          +{task.pic.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <button
+                    ref={(el) => (buttonRefs.current[`pic-${task._id}`] = el)}
+                    onClick={() =>
+                      setPicPopup({ show: true, taskId: task._id })
+                    }
+                    className="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    title="Assign PIC"
+                  >
+                    <UserPlus size={14} />
+                  </button>
+
+                  {picPopup.show && picPopup.taskId === task._id && (
+                    <PicPopup
+                      members={membersWorkspaceQuery.data?.members || []}
+                      onSelect={(email) => handleAssignPic(task._id, email)}
+                      onClose={() => setPicPopup({ show: false, taskId: null })}
+                      buttonRef={{
+                        current: buttonRefs.current[`pic-${task._id}`],
+                      }}
+                    />
+                  )}
+                </div>
+                {/* Status */}
+                <div
+                  className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`status-${task._id}`] = el)
+                    }
+                    className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "status" })
+                    }
+                  >
+                    {task.status}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "status" && (
+                      <PopupSelect
+                        value={task.status}
+                        options={STATUS_OPTIONS}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "status", value)
+                        }
+                        onClose={() => setActivePopup(null)}
                         buttonRef={{
-                          current: buttonRefs.current[`pic-${task._id}`],
+                          current: buttonRefs.current[`status-${task._id}`],
                         }}
                       />
                     )}
-                  </div>
-                  {/* Status */}
-                  <div
-                    className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                  >
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`status-${task._id}`] = el)
-                      }
-                      className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
-                      onClick={() =>
-                        setActivePopup({ taskId: task._id, field: "status" })
-                      }
-                    >
-                      {task.status}
-                    </span>
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "status" && (
-                        <PopupSelect
-                          value={task.status}
-                          options={STATUS_OPTIONS}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "status", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`status-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                  {/* Priority */}
-                  <div
-                    className={`${columnWidths.priority} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                  >
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`priority-${task._id}`] = el)
-                      }
-                      className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
+                </div>
+                {/* Priority */}
+                <div
+                  className={`${columnWidths.priority} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`priority-${task._id}`] = el)
+                    }
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.priority === "Urgent"
                         ? "text-red-700 bg-red-200"
                         : task.priority === "High"
-                          ? "text-orange-800 bg-orange-200"
-                          : task.priority === "Medium"
-                            ? "text-blue-800 bg-blue-200"
-                            : "text-gray-800 bg-gray-200"
-                        }`}
-                      onClick={() =>
-                        setActivePopup({ taskId: task._id, field: "priority" })
-                      }
-                    >
-                      {task.priority}
-                    </span>
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "priority" && (
-                        <PopupSelect
-                          value={task.priority}
-                          options={PRIORITY_OPTIONS}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "priority", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`priority-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                  {/* Meeting Date */}
-                  <div
-                    className={`${columnWidths.meetingDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                        ? "text-orange-800 bg-orange-200"
+                        : task.priority === "Medium"
+                        ? "text-blue-800 bg-blue-200"
+                        : "text-gray-800 bg-gray-200"
+                    }`}
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "priority" })
+                    }
                   >
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`meeting_date-${task._id}`] = el)
-                      }
-                      className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-                      onClick={() =>
-                        setActivePopup({
-                          taskId: task._id,
-                          field: "meeting_date",
-                        })
-                      }
-                    >
-                      {task.meeting_date
-                        ? new Date(task.meeting_date).toLocaleString("id-ID", {
+                    {task.priority}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "priority" && (
+                      <PopupSelect
+                        value={task.priority}
+                        options={PRIORITY_OPTIONS}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "priority", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`priority-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* Meeting Date */}
+                <div
+                  className={`${columnWidths.meetingDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`meeting_date-${task._id}`] = el)
+                    }
+                    className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    onClick={() =>
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "meeting_date",
+                      })
+                    }
+                  >
+                    {task.meeting_date
+                      ? new Date(task.meeting_date).toLocaleString("id-ID", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
@@ -922,294 +944,254 @@ const TaskList = ({ groupId, workspaceId }) => {
                           minute: "2-digit",
                           hour12: false,
                         })
-                        : "Set date & time"}
-                    </span>
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "meeting_date" && (
-                        <DatePickerPopup
-                          value={task.meeting_date}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "meeting_date", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current:
-                              buttonRefs.current[`meeting_date-${task._id}`],
-                          }}
-                          showTimeSelect={true}
-                        />
-                      )}
-                  </div>
-                  {/* Start Date */}
-                  <div
-                    className={`${columnWidths.startDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                  >
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`start_date-${task._id}`] = el)
-                      }
-                      className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-                      onClick={() =>
-                        setActivePopup({
-                          taskId: task._id,
-                          field: "start_date",
-                        })
-                      }
-                    >
-                      {task.start_date
-                        ? new Date(task.start_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                        : "Set date"}
-                    </span>
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "start_date" && (
-                        <DatePickerPopup
-                          value={task.start_date}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "start_date", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`start_date-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                  {/* Due Date */}
-                  <div
-                    className={`${columnWidths.dueDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                  >
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`due_date-${task._id}`] = el)
-                      }
-                      className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-                      onClick={() =>
-                        setActivePopup({ taskId: task._id, field: "due_date" })
-                      }
-                    >
-                      {task.due_date
-                        ? new Date(task.due_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                        : "Set date"}
-                    </span>
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "due_date" && (
-                        <DatePickerPopup
-                          value={task.due_date}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "due_date", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`due_date-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                  {/* Finish Date */}
-                  <div
-                    className={`${columnWidths.finishDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                  >
-                    <span
-                      ref={(el) =>
-                        (buttonRefs.current[`finish_date-${task._id}`] = el)
-                      }
-                      className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-                      onClick={() =>
-                        setActivePopup({ taskId: task._id, field: "finish_date" })
-                      }
-                    >
-                      {task.finish_date
-                        ? new Date(task.finish_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                        : "Set date"}
-                    </span>
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "finish_date" && (
-                        <DatePickerPopup
-                          value={task.finish_date}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "finish_date", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current:
-                              buttonRefs.current[`finish_date-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                  {/* Keterangan */}
-                  <div
-                    className={`${columnWidths.note} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                  >
-                    <span
-                      ref={(el) => {
-                        buttonRefs.current[`note-${task._id}`] = el;
-                      }}
-                      className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
-                        ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                        : task.note === "Uncomplete"
-                          ? "text-red-100 bg-red-900 hover:bg-red-400"
-                          : task.note === "Completed - On Time"
-                            ? "text-green-700 bg-green-100 hover:bg-green-200"
-                            : task.note === "Completed - Overdue"
-                              ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                              : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                        }`}
-                      onClick={() =>
-                        setActivePopup({ taskId: task._id, field: "note" })
-                      }
-                    >
-                      {task.note}
-                    </span>
-                    {activePopup?.taskId === task._id &&
-                      activePopup?.field === "note" && (
-                        <PopupSelect
-                          value={task.note}
-                          options={NOTE_OPTIONS}
-                          onChange={(value) =>
-                            handlePopupChange(task._id, "note", value)
-                          }
-                          onClose={() => setActivePopup(null)}
-                          buttonRef={{
-                            current: buttonRefs.current[`note-${task._id}`],
-                          }}
-                        />
-                      )}
-                  </div>
-                  {/* Action Button */}
-                  <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
-                    <div className="w-40 px-6 py-3.5 gap-2 border-b border-gray-100 items-center flex justify-center">
-                      <button
-                        className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
-                        onClick={() => setOpenDialog({ open: true, task: task })}
-                      >
-                        Detail
-                      </button>
-                      <div className="bg-gray-100 rounded-lg p-1 pl-2 pr-2 font-medium hover:bg-gray-200">
-                        <Trash2
-                          className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
-                          onClick={() => handleDeleteTask(task._id)}
-                        />
-                      </div>
-                    </div>
-                    {openDialog.open && (
-                      <DialogDetail
-                        draggable
-                        show={openDialog.open}
-                        onClose={() => setOpenDialog({ open: false, task: null })}
-                        taskId={openDialog.task?._id}
-                        taskData={openDialog.task}
+                      : "Set date & time"}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "meeting_date" && (
+                      <DatePickerPopup
+                        value={task.meeting_date}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "meeting_date", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current:
+                            buttonRefs.current[`meeting_date-${task._id}`],
+                        }}
+                        showTimeSelect={true}
                       />
                     )}
-                  </div>
                 </div>
-                <ConfirmDialog
-                  show={confirmDelete.show}
-                  onClose={() => setConfirmDelete({ show: false, taskId: null })}
-                  onConfirm={confirmDeleteTask}
-                  title="Delete task"
-                  message="Are you sure want to delete this task? this action can't be undo"
-                />
-
-                {openSubtasks[task._id] && (
-                  <div className="border-b border-gray-100">
-                    <SubtaskList
-                      taskId={task._id}
-                      subtasks={task.subtask || []}
-                      groupId={groupId}
-                      workspaceId={workspaceId}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {localTasks?.length === 0 && (
-            <div
-              className="px-6 py-3 border-b border-gray-100"
-              onDragOver={(e) => {
-                e.preventDefault();
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
-                const draggedTaskId = e.dataTransfer.getData("taskId");
-                const isSameGroup = sourceGroupId === groupId;
-
-                if (!isSameGroup) {
-                  const dropEvent = new CustomEvent("taskDrop", {
-                    detail: {
-                      taskId: draggedTaskId,
-                      sourceGroupId,
-                      targetGroupId: groupId,
-                      targetIndex: 0,
-                    },
-                  });
-                  document.dispatchEvent(dropEvent);
-                }
-              }}
-            >
-              {showAddTask ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-5" />
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300"
-                    disabled
-                  />
-                  <input
-                    type="text"
-                    placeholder="Nama task"
-                    className="flex-1 px-3 py-1.5 text-[0.8em] border text-black border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-text"
-                    value={taskName}
-                    onChange={(e) => setTaskName(e.target.value)}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleAddTask();
-                      if (e.key === "Escape") {
-                        setTaskName("");
-                        setShowAddTask(false);
-                      }
-                    }}
-                    onBlur={() =>
-                      taskName.trim() ? handleAddTask() : setShowAddTask(false)
-                    }
-                  />
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowAddTask(true)}
-                  className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
+                {/* Start Date */}
+                <div
+                  className={`${columnWidths.startDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
                 >
-                  <Plus className="w-4 h-4" />
-                  Add task
-                </button>
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`start_date-${task._id}`] = el)
+                    }
+                    className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    onClick={() =>
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "start_date",
+                      })
+                    }
+                  >
+                    {task.start_date
+                      ? new Date(task.start_date).toLocaleString("id-ID", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "Set date"}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "start_date" && (
+                      <DatePickerPopup
+                        value={task.start_date}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "start_date", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`start_date-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* Due Date */}
+                <div
+                  className={`${columnWidths.dueDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`due_date-${task._id}`] = el)
+                    }
+                    className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "due_date" })
+                    }
+                  >
+                    {task.due_date
+                      ? new Date(task.due_date).toLocaleString("id-ID", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "Set date"}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "due_date" && (
+                      <DatePickerPopup
+                        value={task.due_date}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "due_date", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`due_date-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* Finish Date */}
+                <div
+                  className={`${columnWidths.finishDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`finish_date-${task._id}`] = el)
+                    }
+                    className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "finish_date" })
+                    }
+                  >
+                    {task.finish_date
+                      ? new Date(task.finish_date).toLocaleString("id-ID", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "Set date"}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "finish_date" && (
+                      <DatePickerPopup
+                        value={task.finish_date}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "finish_date", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current:
+                            buttonRefs.current[`finish_date-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* Keterangan */}
+                <div
+                  className={`${columnWidths.note} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) => {
+                      buttonRefs.current[`note-${task._id}`] = el;
+                    }}
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                      task.note === "Planning"
+                        ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                        : task.note === "Uncomplete"
+                        ? "text-red-100 bg-red-900 hover:bg-red-400"
+                        : task.note === "Completed - On Time"
+                        ? "text-green-700 bg-green-100 hover:bg-green-200"
+                        : task.note === "Completed - Overdue"
+                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                    }`}
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "note" })
+                    }
+                  >
+                    {task.note}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "note" && (
+                      <PopupSelect
+                        value={task.note}
+                        options={NOTE_OPTIONS}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "note", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`note-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* Action Button */}
+                <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
+                  <div className="w-40 px-6 py-3.5 gap-2 border-b border-gray-100 items-center flex justify-center">
+                    <button
+                      className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
+                      onClick={() => setOpenDialog({ open: true, task: task })}
+                    >
+                      Detail
+                    </button>
+                    <div className="bg-gray-100 rounded-lg p-1 pl-2 pr-2 font-medium hover:bg-gray-200">
+                      <Trash2
+                        className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
+                        onClick={() => handleDeleteTask(task._id)}
+                      />
+                    </div>
+                  </div>
+                  {openDialog.open && (
+                    <DialogDetail
+                      draggable
+                      show={openDialog.open}
+                      onClose={() => setOpenDialog({ open: false, task: null })}
+                      taskId={openDialog.task?._id}
+                      taskData={openDialog.task}
+                    />
+                  )}
+                </div>
+              </div>
+              <ConfirmDialog
+                show={confirmDelete.show}
+                onClose={() => setConfirmDelete({ show: false, taskId: null })}
+                onConfirm={confirmDeleteTask}
+                title="Delete task"
+                message="Are you sure want to delete this task? this action can't be undo"
+              />
+
+              {openSubtasks[task._id] && (
+                <div className="border-b border-gray-100">
+                  <SubtaskList
+                    taskId={task._id}
+                    subtasks={task.subtask || []}
+                    groupId={groupId}
+                    workspaceId={workspaceId}
+                  />
+                </div>
               )}
             </div>
-          )}
+          );
+        })}
+        {localTasks?.length === 0 && (
+          <div
+            className="px-6 py-3 border-b border-gray-100"
+            onDragOver={(e) => {
+              e.preventDefault();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+              const draggedTaskId = e.dataTransfer.getData("taskId");
+              const isSameGroup = sourceGroupId === groupId;
 
-          {localTasks?.length > 0 &&
-            (showAddTask ? (
-              <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
+              if (!isSameGroup) {
+                const dropEvent = new CustomEvent("taskDrop", {
+                  detail: {
+                    taskId: draggedTaskId,
+                    sourceGroupId,
+                    targetGroupId: groupId,
+                    targetIndex: 0,
+                  },
+                });
+                document.dispatchEvent(dropEvent);
+              }
+            }}
+          >
+            {showAddTask ? (
+              <div className="flex items-center gap-3">
                 <div className="w-5" />
-                {/* <input
-                type="checkbox"
-                className="w-4 h-4 rounded border-gray-300"
-                disabled
-              /> */}
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300"
+                  disabled
+                />
                 <input
                   type="text"
                   placeholder="Nama task"
@@ -1230,43 +1212,81 @@ const TaskList = ({ groupId, workspaceId }) => {
                 />
               </div>
             ) : (
-              <div
-                className="px-6 py-3 border-b border-gray-100"
-                onDragOver={(e) => {
-                  e.preventDefault();
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
-                  const draggedTaskId = e.dataTransfer.getData("taskId");
-                  const isSameGroup = sourceGroupId === groupId;
-
-                  if (!isSameGroup) {
-                    const dropEvent = new CustomEvent("taskDrop", {
-                      detail: {
-                        taskId: draggedTaskId,
-                        sourceGroupId,
-                        targetGroupId: groupId,
-                        targetIndex: localTasks?.length || 0,
-                      },
-                    });
-                    document.dispatchEvent(dropEvent);
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
+              >
+                <Plus className="w-4 h-4" />
+                Add task
+              </button>
+            )}
+          </div>
+        )}
+        {localTasks?.length > 0 &&
+          (showAddTask ? (
+            <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
+              <div className="w-5" />
+              {/* <input
+                type="checkbox"
+                className="w-4 h-4 rounded border-gray-300"
+                disabled
+              /> */}
+              <input
+                type="text"
+                placeholder="Nama task"
+                className="flex-1 px-3 py-1.5 text-[0.8em] border text-black border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-text"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddTask();
+                  if (e.key === "Escape") {
+                    setTaskName("");
+                    setShowAddTask(false);
                   }
                 }}
+                onBlur={() =>
+                  taskName.trim() ? handleAddTask() : setShowAddTask(false)
+                }
+              />
+            </div>
+          ) : (
+            <div
+              className="px-6 py-3 border-b border-gray-100"
+              onDragOver={(e) => {
+                e.preventDefault();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
+                const draggedTaskId = e.dataTransfer.getData("taskId");
+                const isSameGroup = sourceGroupId === groupId;
+
+                if (!isSameGroup) {
+                  const dropEvent = new CustomEvent("taskDrop", {
+                    detail: {
+                      taskId: draggedTaskId,
+                      sourceGroupId,
+                      targetGroupId: groupId,
+                      targetIndex: localTasks?.length || 0,
+                    },
+                  });
+                  document.dispatchEvent(dropEvent);
+                }
+              }}
+            >
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
               >
-                <button
-                  onClick={() => setShowAddTask(true)}
-                  className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add task
-                </button>
-              </div>
-            ))}
-          <div ref={tableEndRef} className="h-1" />
-        </div>
+                <Plus className="w-4 h-4" />
+                Add task
+              </button>
+            </div>
+          ))}
+        <div ref={tableEndRef} className="h-1" />
       </div>
-      </div>
-      );
+    </div>
+  );
 };
-      export default TaskList;
+export default TaskList;
