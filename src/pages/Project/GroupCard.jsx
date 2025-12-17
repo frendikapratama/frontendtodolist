@@ -134,7 +134,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
       in_progress: "bg-blue-100 text-blue-700",
       to_do: "bg-gray-100 text-gray-700",
       Hold: "bg-yellow-100 text-yellow-700",
-      reject: "bg-red-100 text-red-700",
+      blocked: "bg-red-100 text-red-700",
     };
     return colors[status] || "bg-gray-100 text-gray-700";
   };
@@ -419,13 +419,13 @@ const GroupCard = ({ group, index, workspaceId }) => {
                   Hold: {progressData.Hold}
                 </span>
               )}
-              {progressData.reject > 0 && (
+              {progressData.blocked > 0 && (
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                    "reject"
+                    "blocked"
                   )}`}
                 >
-                  Reject: {progressData.reject}
+                  Blocked: {progressData.blocked}
                 </span>
               )}
             </div>

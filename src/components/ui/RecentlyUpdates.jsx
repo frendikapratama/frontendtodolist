@@ -224,7 +224,7 @@ const RecentlyUpdates = () => {
                                                     </p>
                                                 </div>
                                                 {/* Task Name */}
-                                                <p className="text-sm font-medium text-gray-800 mb-2">
+                                                <p className="text-sm font-medium text-gray-800 mb-2 wrap-break-word line-clamp-10">
                                                     "{log.task?.nama || 'Unknown Task'}"
                                                 </p>
                                                 {/* Changes */}

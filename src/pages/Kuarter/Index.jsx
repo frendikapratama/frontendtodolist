@@ -12,7 +12,7 @@ const Kuarter = () => {
   const [editedName, setEditedName] = useState("");
   const [toDelete, setToDelete] = useState(null);
   const [activeIndex, setActiveIndex] = useState({});
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   // Warna untuk setiap status
   const STATUS_COLORS = {

@@ -25,6 +25,14 @@ const WorkspaceCard = ({
   const visibleMembers = members.slice(0, maxVisible);
   const remainingCount = members.length - maxVisible;
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const getPhotoUrl = (photoPath) => {
+    if (!photoPath) return null;
+    const fullUrl = `${API_BASE_URL}/uploads/users/${photoPath}`;
+    console.log("Photo URL generated:", fullUrl);
+    return fullUrl;
+  };
+
   const colors = [
     "bg-gradient-to-br from-violet-500 to-purple-600",
     "bg-gradient-to-br from-blue-500 to-cyan-500",
@@ -65,7 +73,47 @@ const WorkspaceCard = ({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Popover component untuk single member
+    const MemberAvatar = ({ member, index, size = "md", className = "" }) => {
+    const [imageError, setImageError] = useState(false);
+    const photoUrl = member.user?.photo ? getPhotoUrl(member.user.photo) : null;
+    const shouldShowImage = photoUrl && !imageError;
+    const sizeClasses = {
+      sm: "w-8 h-8 text-sm",
+      md: "w-9 h-9 text-sm",
+      lg: "w-11 h-11 text-lg",
+    };
+    const fallbackImage = "https://placehold.co/400";
+    return (
+      <div
+        className={`
+          ${sizeClasses[size]} rounded-full overflow-hidden
+          ${!shouldShowImage ? colors[index % colors.length] : ""}
+          flex items-center justify-center text-white font-semibold
+          ${className}
+        `}
+      >
+        {shouldShowImage ? (
+          <img
+            src={photoUrl}
+            alt={member.user.username}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              console.log("Image failed to load:", photoUrl);
+              setImageError(true);
+              // Coba gunakan fallback image
+              if (e.target.src !== fallbackImage) {
+                e.target.src = fallbackImage;
+              }
+            }}
+            onLoad={() => console.log("Image loaded successfully:", photoUrl)}
+          />
+        ) : (
+          <span>{member.user?.username?.charAt(0).toUpperCase() || "?"}</span>
+        )}
+      </div>
+    );
+  };
+
   const SingleMemberPopover = () =>
     selectedMember &&
     !selectedMember.showAll &&
@@ -86,19 +134,12 @@ const WorkspaceCard = ({
         />
 
         <div className="relative flex items-center gap-3">
-          <div
-            className={`
-            w-11 h-11 rounded-full ${
-              colors[
-                visibleMembers.findIndex((m) => m._id === selectedMember._id) %
-                  colors.length
-              ]
-            }
-            flex items-center justify-center text-white font-bold text-lg
-          `}
-          >
-            {selectedMember.user.username.charAt(0).toUpperCase()}
-          </div>
+          <MemberAvatar
+            member={selectedMember}
+            index={visibleMembers.findIndex((m) => m._id === selectedMember._id)}
+            size="lg"
+            className="ring-2 ring-gray-100"
+          />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900 truncate">
               {selectedMember.user.username}
@@ -111,9 +152,8 @@ const WorkspaceCard = ({
 
         <div className="mt-3 pt-3 border-t border-gray-100">
           <span
-            className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
-              roleColors[selectedMember.role] || roleColors.viewer
-            }`}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border ${roleColors[selectedMember.role] || roleColors.viewer
+              }`}
           >
             {selectedMember.role?.charAt(0).toUpperCase() +
               selectedMember.role?.slice(1)}
@@ -155,14 +195,12 @@ const WorkspaceCard = ({
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 
                   transition-colors duration-150"
                 >
-                  <div
-                    className={`
-                  w-8 h-8 rounded-full ${colors[index % colors.length]}
-                  flex items-center justify-center text-white font-semibold text-sm
-                `}
-                  >
-                    {member.user.username.charAt(0).toUpperCase()}
-                  </div>
+                  <MemberAvatar
+                    member={member}
+                    index={index}
+                    size="sm"
+                    className="ring-2 ring-white"
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 text-sm truncate">
                       {member.user.username}
@@ -172,9 +210,8 @@ const WorkspaceCard = ({
                     </p>
                   </div>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
-                      roleColors[member.role] || roleColors.viewer
-                    }`}
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium border ${roleColors[member.role] || roleColors.viewer
+                      }`}
                   >
                     {member.role}
                   </span>
@@ -189,9 +226,8 @@ const WorkspaceCard = ({
   return (
     <>
       <div
-        className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
-          isSelected ? "ring-2 ring-blue-500" : ""
-        }`}
+        className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${isSelected ? "ring-2 ring-blue-500" : ""
+          }`}
         onClick={() => onCardClick(workspace)}
       >
         <div className="card-body">
@@ -239,22 +275,18 @@ const WorkspaceCard = ({
                             <button
                               onClick={(e) => handleAvatarClick(member, e)}
                               className={`
-                              w-9 h-9 rounded-full ${
-                                colors[index % colors.length]
-                              }
-                              flex items-center justify-center text-white font-semibold text-sm
-                              ring-2 ring-white shadow-md
                               transform transition-all duration-300 ease-out
                               hover:scale-110 hover:-translate-y-1 
+                              ring-2 ring-white shadow-md
                               hover:ring-2 hover:ring-blue-400
-                              ${
-                                selectedMember?._id === member._id
+                              rounded-full
+                              ${selectedMember?._id === member._id
                                   ? "scale-110 -translate-y-1 ring-2 ring-blue-400"
                                   : ""
-                              }
+                                }
                             `}
                             >
-                              {member.user.username.charAt(0).toUpperCase()}
+                              <MemberAvatar member={member} index={index} size="md" />
                             </button>
 
                             {/* Hover tooltip */}
