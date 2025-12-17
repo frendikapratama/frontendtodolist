@@ -65,6 +65,26 @@ const TaskList = ({ groupId, workspaceId }) => {
   };
 
   const [hoveredRow, setHoveredRow] = useState(null);
+  const calculateAutoNote = (status, due_date, finish_date) => {
+    if (status === "Done" && due_date && finish_date) {
+      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
+      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
+      if (finishDate === dueDate) {
+        return "Completed - On Time";
+      } else if (finishDate > dueDate) {
+        return "Completed - Overdue";
+      } else if (finishDate < dueDate) {
+        return "Completed - Early";
+      }
+    }
+    if (status === "To Do") {
+      return "Planning";
+    }
+    if (["In Progress", "Blocked", "Hold"].includes(status)) {
+      return "Uncomplete";
+    }
+    return null;
+  };
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
@@ -261,27 +281,6 @@ const TaskList = ({ groupId, workspaceId }) => {
     },
     [updateTaskMutation]
   );
-
-  const calculateAutoNote = (status, due_date, finish_date) => {
-    if (status === "Done" && due_date && finish_date) {
-      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
-      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
-      if (finishDate === dueDate) {
-        return "Completed - On Time";
-      } else if (finishDate > dueDate) {
-        return "Completed - Overdue";
-      } else if (finishDate < dueDate) {
-        return "Completed - Early";
-      }
-    }
-    if (status === "To Do") {
-      return "Planning";
-    }
-    if (["In Progress", "Blocked", "Hold"].includes(status)) {
-      return "Uncomplete";
-    }
-    return null;
-  };
 
   const handlePopupChange = useCallback(
     (taskId, field, value) => {
@@ -741,7 +740,7 @@ const TaskList = ({ groupId, workspaceId }) => {
                       />
                     ) : (
                       <span
-                        className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-5 flex-1 min-w-0"
+                        className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-10 flex-1 min-w-0"
                         onClick={() => {
                           setEditingField({ taskId: task._id, field: "nama" });
                           setEditedValue(task.nama);

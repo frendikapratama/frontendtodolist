@@ -11,6 +11,27 @@ import { createPortal } from "react-dom";
 
 // const SubtaskList = ({ taskId, groupId, workspaceId, onSubtaskStatusChange }) => {
 const SubtaskList = ({ taskId, groupId, workspaceId }) => {
+  const calculateAutoNote = (status, due_date, finish_date) => {
+    if (status === "Done" && due_date && finish_date) {
+      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
+      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
+      if (finishDate === dueDate) {
+        return "Completed - On Time";
+      } else if (finishDate > dueDate) {
+        return "Completed - Overdue";
+      } else if (finishDate < dueDate) {
+        return "Completed - Early";
+      }
+    }
+    if (status === "To Do") {
+      return "Planning";
+    }
+    if (["In Progress", "Blocked", "Hold"].includes(status)) {
+      return "Uncomplete";
+    }
+    return null;
+  };
+
   const {
     subtaskByTask,
     addSubTaskMutation,
@@ -206,6 +227,37 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     );
   };
 
+  const columnWidths = {
+    task: "w-80",
+    pic: "w-32",
+    status: "w-40",
+    priority: "w-32",
+    meetingDate: "w-40",
+    startDate: "w-40",
+    dueDate: "w-40",
+    finishDate: "w-40",
+    note: "w-50",
+    action: "w-40",
+  };
+  const handleDeletePIC = useCallback((subtaskId, userId) => {
+    setConfirmDeletePIC({ show: true, subtaskId: subtaskId, userId: userId });
+  }, []);
+
+  const confirmDeleteTaskPIC = useCallback(() => {
+    if (confirmDeletePIC.subtaskId && confirmDeletePIC.userId) {
+      removePicMutation.mutate({
+        subtaskId: confirmDeletePIC.subtaskId,
+        userId: confirmDeletePIC.userId,
+      });
+      setConfirmDelete({ show: false, subtaskId: null, userId: null });
+    } else {
+      console.log("no subTaskId or userId found in confirmaationdelete");
+    }
+  }, [
+    confirmDeletePIC.subTaskId,
+    setConfirmDeletePIC.userId,
+    removePicMutation,
+  ]);
   const handleAddKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -215,26 +267,6 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
       setSubtaskName("");
       setShowForm(false);
     }
-  };
-  const calculateAutoNote = (status, due_date, finish_date) => {
-    if (status === "Done" && due_date && finish_date) {
-      const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
-      const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
-      if (finishDate === dueDate) {
-        return "Completed - On Time";
-      } else if (finishDate > dueDate) {
-        return "Completed - Overdue";
-      } else if (finishDate < dueDate) {
-        return "Completed - Early";
-      }
-    }
-    if (status === "To Do") {
-      return "Planning";
-    }
-    if (["In Progress", "Blocked", "Hold"].includes(status)) {
-      return "Uncomplete";
-    }
-    return null;
   };
 
   const PicPopup = ({ members, onSelect, onClose, buttonRef }) => {
@@ -351,40 +383,9 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
       </div>
     );
   }
-  const columnWidths = {
-    task: "w-80",
-    pic: "w-32",
-    status: "w-40",
-    priority: "w-32",
-    meetingDate: "w-40",
-    startDate: "w-40",
-    dueDate: "w-40",
-    finishDate: "w-40",
-    note: "w-50",
-    action: "w-40",
-  };
-  const handleDeletePIC = useCallback((subtaskId, userId) => {
-    setConfirmDeletePIC({ show: true, subtaskId: subtaskId, userId: userId });
-  }, []);
-
-  const confirmDeleteTaskPIC = useCallback(() => {
-    if (confirmDeletePIC.subtaskId && confirmDeletePIC.userId) {
-      removePicMutation.mutate({
-        subtaskId: confirmDeletePIC.subtaskId,
-        userId: confirmDeletePIC.userId,
-      });
-      setConfirmDelete({ show: false, subtaskId: null, userId: null });
-    } else {
-      console.log("no subTaskId or userId found in confirmaationdelete");
-    }
-  }, [
-    confirmDeletePIC.subTaskId,
-    setConfirmDeletePIC.userId,
-    removePicMutation,
-  ]);
 
   return (
-    <div className="ml-12 mt-1 mb-2">
+    <div className=" mt-1 mb-2">
       <ConfirmDialog
         show={confirmDeletePIC.show}
         onClose={() =>
@@ -408,9 +409,9 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
         >
           {/* Name Column */}
           <div
-            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing`}
+            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5  cursor-grab active:cursor-grabbing sticky left-0 bg-[#F0E4D3] z-20 `}
           >
-            <div className="cursor-grab active:cursor-grabbing">
+            <div className="pl-3 cursor-grab active:cursor-grabbing ">
               <svg
                 className="w-4 h-4 text-gray-400"
                 fill="none"
@@ -817,7 +818,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
       ) : (
         <button
           onClick={() => setShowForm(true)}
-          className="ml-4 mt-1 flex text-[0.8em] items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"
+          className="sticky left-0 bg-[#F0E4D3] pl-4 mt-1 flex text-[0.8em] items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"
         >
           <Plus className="w-3.5 h-3.5" />
           Add subtask
