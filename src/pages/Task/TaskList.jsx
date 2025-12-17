@@ -454,7 +454,7 @@ const TaskList = ({ groupId, workspaceId }) => {
     return createPortal(
       <div
         ref={popupRef}
-        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-90 w-64"
+        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-20 w-64"
         style={{
           top: shouldShowAbove
             ? `${(position?.top || 0) - popupHeight}px`
@@ -561,11 +561,11 @@ const TaskList = ({ groupId, workspaceId }) => {
         <div className="w-[50vw] min-w-max">
           <div
             ref={headerRef}
-            className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 sticky top-0 z-50 shadow-md"
+            className="flex bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 sticky top-0 z-20 shadow-md"
           >
             {/* Task Column - Sortable and Sticky */}
             <div
-              className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors sticky left-0 bg-[#D2C1B6] z-50`}
+              className={`${columnWidths.task} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors sticky left-0 bg-[#D2C1B6] z-20`}
               onClick={() => handleSort('nama')}
             >
               <span className="flex items-center">
@@ -694,7 +694,7 @@ const TaskList = ({ groupId, workspaceId }) => {
                 >
                   {/* Name - Sticky Column */}
                   <div
-                    className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-40 ${isDragging ? "bg-gray-600" : ""
+                    className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${isDragging ? "bg-gray-600" : ""
                       } ${isPreview ? "bg-blue-50" : ""}`}
                   >
                     <button
@@ -761,7 +761,7 @@ const TaskList = ({ groupId, workspaceId }) => {
                           return (
                             <div
                               key={idx}
-                              className="relative group hover:z-90 z-10 transition-all cursor-pointer"
+                              className="relative group hover:z-20 z-10 transition-all cursor-pointer"
                             >
                               {photoUrl ? (
                                 <img
@@ -813,7 +813,7 @@ const TaskList = ({ groupId, workspaceId }) => {
                       onClick={() =>
                         setPicPopup({ show: true, taskId: task._id })
                       }
-                      className="w-7 h-7 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                      className="w-7 h-7 rounded-full border-2 border-dashed text-gray-500 border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
                       title="Assign PIC"
                     >
                       <UserPlus size={14} />
