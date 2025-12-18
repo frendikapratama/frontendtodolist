@@ -76,7 +76,8 @@ const WorkspaceDetailPage = () => {
           toast.success("Member's Invited!");
         },
         onError: (error) => {
-          toast.error(`Failed to invite member: ${error.message}`);
+          const message = error.response?.data?.message || "Failed to invite member"
+          toast.error(message)
         },
       }
     );

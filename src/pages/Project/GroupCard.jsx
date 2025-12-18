@@ -145,7 +145,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
     "To Do",
     "In Progress",
     "Done",
-    "Done-In The review",
+    "Done-In review",
     "Blocked",
     "Hold",
   ];

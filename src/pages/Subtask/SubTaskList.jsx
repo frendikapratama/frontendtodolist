@@ -583,7 +583,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
           >
             {/* Cek jika status adalah "Done-In The review" */}
-            {s.status === "Done-In The review" ? (
+            {s.status === "Done-In review" ? (
               <div className="flex items-center space-x-2">
                 {/* Tampilkan status text dengan ukuran lebih kecil */}
                 <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-yellow-100 text-yellow-700 whitespace-nowrap">
