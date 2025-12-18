@@ -509,7 +509,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
                   {s.pic.slice(0, 3).map((picUser, idx) => {
                     const photoUrl = picUser.photo
                       ? getPhotoUrl(picUser.photo)
-                      : null;
+                      : null; 
                     return (
                       <div
                         key={idx}

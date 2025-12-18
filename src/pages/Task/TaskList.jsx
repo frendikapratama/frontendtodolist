@@ -615,7 +615,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   };
 
   return (
-      <div className="overflow-auto">
+    <div className="overflow-auto max-h-[90vh]">
         <ConfirmDialog
           show={confirmDeletePIC.show}
           onClose={() =>
@@ -625,14 +625,14 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           title="Delete PIC"
           message="Are you sure want to delete this PIC? this action can't be undo"
         />
-        <div className="w-[50vw] min-w-max max-h-[90vh]">
+        <div className="w-[50vw] min-w-max">
           <div
             ref={headerRef}
             className={`flex sticky top-0 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-30 transition-all duration-200 `}
           >
             {/* Task Column - Sortable */}
             <div
-            className={`${columnWidths.task}  sticky left-0 top-0 z-50 px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] bg-[#D2C1B6]  transition-colors`}
+            className={`${columnWidths.task} sticky left-0 z-50 px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] bg-[#D2C1B6]  transition-colors`}
               onClick={() => handleSort("nama")}
             >
               <span className="flex items-center">
