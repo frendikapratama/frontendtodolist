@@ -224,7 +224,7 @@ const MyWorkspaces = () => {
           statusKey = "blocked";
           break;
         default:
-          statusKey = "todo";
+          statusKey = "inProgress";
       }
       if (!statusGroups[statusKey]) {
         statusGroups[statusKey] = [];
