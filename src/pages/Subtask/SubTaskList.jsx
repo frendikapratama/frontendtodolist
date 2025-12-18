@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { useSubTask } from "../../hook/useSubTask";
 import { Plus, UserPlus, X, Trash2 } from "lucide-react";
 import PopupSelect from "../Task/PopupSelect";
@@ -8,9 +8,11 @@ import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useMember } from "../../hook/useMember";
 import { createPortal } from "react-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 // const SubtaskList = ({ taskId, groupId, workspaceId, onSubtaskStatusChange }) => {
 const SubtaskList = ({ taskId, groupId, workspaceId }) => {
+  const { user: currentUser } = useContext(AuthContext);
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const getPhotoUrl = (photoPath) => {
     if (!photoPath) return null;
@@ -67,7 +69,13 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
   });
 
   const buttonRefs = useRef({});
-  const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
+  const STATUS_OPTIONS = [
+    "To Do",
+    "In Progress",
+    "Done-In The review",
+    "Blocked",
+    "Hold",
+  ];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
   const NOTE_OPTIONS = [
     "Completed - On Time",
@@ -405,7 +413,21 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
       </div>
     );
   }
+  const isAuthorized = () => {
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
 
+    // Cari membership current user dalam workspace members
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id
+    );
+
+    if (!userMembership) return false;
+
+    const allowedRoles = ["admin", "project_manager"];
+    return allowedRoles.includes(userMembership.role);
+  };
   return (
     <div className=" mt-1 mb-2">
       <ConfirmDialog
@@ -558,31 +580,67 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
 
           {/* Status Column */}
           <div
-            className={`${columnWidths.status} px-6 py-3 flex items-center justify-center shrink-0`}
+            className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
           >
-            <span
-              ref={(el) => (buttonRefs.current[`status-${s._id}`] = el)}
-              className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
-              onClick={() =>
-                setActivePopup({ subtaskId: s._id, field: "status" })
-              }
-            >
-              {s.status}
-            </span>
-            {activePopup?.subtaskId === s._id &&
-              activePopup?.field === "status" && (
-                <PopupSelect
-                  value={s.status}
-                  options={STATUS_OPTIONS}
-                  onChange={(value) =>
-                    handlePopupChange(s._id, "status", value)
+            {/* Cek jika status adalah "Done-In The review" */}
+            {s.status === "Done-In The review" ? (
+              <div className="flex items-center space-x-2">
+                {/* Tampilkan status text dengan ukuran lebih kecil */}
+                <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-yellow-100 text-yellow-700 whitespace-nowrap">
+                  {s.status}
+                </span>
+
+                {/* Tombol hanya muncul jika user authorized */}
+                {isAuthorized() && (
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => handlePopupChange(s._id, "status", "Done")}
+                      className="w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors border border-green-300 text-xs"
+                      title="Approve and set status to Done"
+                    >
+                      ✓
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        handlePopupChange(s._id, "status", "In Progress")
+                      }
+                      className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors border border-red-300 text-xs"
+                      title="Reject and set status to In Progress"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Tampilkan status biasa untuk status lainnya */
+              <>
+                <span
+                  ref={(el) => (buttonRefs.current[`status-${s._id}`] = el)}
+                  className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
+                  onClick={() =>
+                    setActivePopup({ subtaskId: s._id, field: "status" })
                   }
-                  onClose={() => setActivePopup(null)}
-                  buttonRef={{
-                    current: buttonRefs.current[`status-${s._id}`],
-                  }}
-                />
-              )}
+                >
+                  {s.status}
+                </span>
+                {activePopup?.subtaskId === s._id &&
+                  activePopup?.field === "status" && (
+                    <PopupSelect
+                      value={s.status}
+                      options={STATUS_OPTIONS}
+                      onChange={(value) =>
+                        handlePopupChange(s._id, "status", value)
+                      }
+                      onClose={() => setActivePopup(null)}
+                      buttonRef={{
+                        current: buttonRefs.current[`status-${s._id}`],
+                      }}
+                    />
+                  )}
+              </>
+            )}
           </div>
 
           {/* Priority Column */}

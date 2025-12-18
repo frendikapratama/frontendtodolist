@@ -141,7 +141,14 @@ const GroupCard = ({ group, index, workspaceId }) => {
 
   const progressData = progressByGroup.data;
 
-  const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
+  const STATUS_OPTIONS = [
+    "To Do",
+    "In Progress",
+    "Done",
+    "Done-In The review",
+    "Blocked",
+    "Hold",
+  ];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
   const NOTE_OPTIONS = [
     "Completed - On Time",

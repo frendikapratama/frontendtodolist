@@ -19,8 +19,11 @@ import {
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
+import { AuthContext } from "../../context/AuthContext";
+import { useContext } from "react";
 
 const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
+  const { user: currentUser } = useContext(AuthContext);
   // Tambahkan state untuk popup PIC
   const [picPopup, setPicPopup] = useState({ show: false, taskId: null });
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -65,7 +68,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   });
   const [hoveredRow, setHoveredRow] = useState(null);
   const buttonRefs = useRef({});
-  const STATUS_OPTIONS = ["To Do", "In Progress", "Done", "Blocked", "Hold"];
+  const STATUS_OPTIONS = [
+    "To Do",
+    "In Progress",
+    "Done-In The review",
+    "Blocked",
+    "Hold",
+  ];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
   const NOTE_OPTIONS = [
     "Completed - On Time",
@@ -589,6 +598,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     );
   };
 
+  const isAuthorized = () => {
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
+
+    // Cari membership current user dalam workspace members
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id
+    );
+
+    if (!userMembership) return false;
+
+    const allowedRoles = ["admin", "project_manager"];
+    return allowedRoles.includes(userMembership.role);
+  };
+
   return (
     <div className="overflow-x-auto">
       <ConfirmDialog
@@ -903,31 +928,73 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 <div
                   className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
                 >
-                  <span
-                    ref={(el) =>
-                      (buttonRefs.current[`status-${task._id}`] = el)
-                    }
-                    className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
-                    onClick={() =>
-                      setActivePopup({ taskId: task._id, field: "status" })
-                    }
-                  >
-                    {task.status}
-                  </span>
-                  {activePopup?.taskId === task._id &&
-                    activePopup?.field === "status" && (
-                      <PopupSelect
-                        value={task.status}
-                        options={STATUS_OPTIONS}
-                        onChange={(value) =>
-                          handlePopupChange(task._id, "status", value)
+                  {/* Cek jika status adalah "Done-In The review" */}
+                  {task.status === "Done-In The review" ? (
+                    <div className="flex items-center space-x-2">
+                      {/* Tampilkan status text dengan ukuran lebih kecil */}
+                      <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-yellow-100 text-yellow-700 whitespace-nowrap">
+                        {task.status}
+                      </span>
+
+                      {/* Tombol hanya muncul jika user authorized */}
+                      {isAuthorized() && (
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={() =>
+                              handlePopupChange(task._id, "status", "Done")
+                            }
+                            className="w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors border border-green-300 text-xs"
+                            title="Approve and set status to Done"
+                          >
+                            ✓
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              handlePopupChange(
+                                task._id,
+                                "status",
+                                "In Progress"
+                              )
+                            }
+                            className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors border border-red-300 text-xs"
+                            title="Reject and set status to In Progress"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Tampilkan status biasa untuk status lainnya */
+                    <>
+                      <span
+                        ref={(el) =>
+                          (buttonRefs.current[`status-${task._id}`] = el)
                         }
-                        onClose={() => setActivePopup(null)}
-                        buttonRef={{
-                          current: buttonRefs.current[`status-${task._id}`],
-                        }}
-                      />
-                    )}
+                        className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
+                        onClick={() =>
+                          setActivePopup({ taskId: task._id, field: "status" })
+                        }
+                      >
+                        {task.status}
+                      </span>
+                      {activePopup?.taskId === task._id &&
+                        activePopup?.field === "status" && (
+                          <PopupSelect
+                            value={task.status}
+                            options={STATUS_OPTIONS}
+                            onChange={(value) =>
+                              handlePopupChange(task._id, "status", value)
+                            }
+                            onClose={() => setActivePopup(null)}
+                            buttonRef={{
+                              current: buttonRefs.current[`status-${task._id}`],
+                            }}
+                          />
+                        )}
+                    </>
+                  )}
                 </div>
                 {/* Priority */}
                 <div
