@@ -921,7 +921,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       }}
                     />
                   )}
-                </div>
+                </div>  
                 {/* Status */}
                 <div
                   className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}

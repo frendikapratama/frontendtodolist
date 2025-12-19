@@ -151,7 +151,7 @@ export default function NotificationBell() {
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="flex justify-between items-center">
               <h3 className="font-semibold text-lg text-gray-800">
-                Notifikasi
+                Notification
               </h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
@@ -161,7 +161,7 @@ export default function NotificationBell() {
                     title="Tandai semua dibaca"
                   >
                     <CheckCheck className="w-4 h-4" />
-                    Tandai semua
+                    Mark as read
                   </button>
                 )}
                 <button
@@ -179,10 +179,10 @@ export default function NotificationBell() {
               <div className="flex flex-col items-center justify-center p-8 text-center">
                 <Bell className="w-12 h-12 text-gray-300 mb-3" />
                 <p className="text-gray-500 font-medium">
-                  Tidak ada notifikasi
+                  There is no notification.
                 </p>
                 <p className="text-sm text-gray-400 mt-1">
-                  Notifikasi akan muncul di sini
+                  Notification will be here.
                 </p>
               </div>
             ) : (
@@ -246,7 +246,7 @@ export default function NotificationBell() {
                             onClick={(e) => handleNavigateToProject(notif, e)}
                             className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline cursor-pointer"
                           >
-                            Lihat Project →
+                            See Project →
                           </button>
                         )}
                       </div>
