@@ -3,12 +3,14 @@ import Sidebar from "./SideBar";
 import TopBar from "./ui/TopBar";
 import RecentlyUpdates from "../components/ui/RecentlyUpdates";
 import { useRecentUpdates } from "../context/RecentlyContext";
+import Snowfall from "react-snowfall"
 
 const Layout = () => {
   const { isOpen } = useRecentUpdates();
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <Snowfall color="#ffff" />
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden bg-linear-to-tl from-[#1A3D64] to-[#1D546C]">
         {/* <TopBar /> */}

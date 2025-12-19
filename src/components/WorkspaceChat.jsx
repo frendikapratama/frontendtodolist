@@ -1,7 +1,10 @@
+// WorkspaceChat.jsx
+
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import api from "../api/axios";
 import { API_URL, SOCKET_URL } from "../api/axios";
+
 const chatApi = {
   async getWorkspaceMessages(workspaceId, page = 1, limit = 50) {
     const res = await api.get(
@@ -21,6 +24,11 @@ const chatApi = {
     });
     return res.data.data;
   },
+
+  async deleteMessage(messageId) {
+    const res = await api.delete(`/chat/${messageId}`);
+    return res.data;
+  },
 };
 
 const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
@@ -33,14 +41,15 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [totalMembers, setTotalMembers] = useState(0);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Guard: pastikan token dan currentUser tersedia
     if (!token || !currentUser) {
-      // console.warn("Token or currentUser not available yet");
       return;
     }
 
@@ -52,13 +61,11 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     });
 
     newSocket.on("connect", () => {
-      // console.log("Connected to socket server");
       setIsConnected(true);
       newSocket.emit("join:workspace", workspaceId);
     });
 
     newSocket.on("disconnect", () => {
-      // console.log("Disconnected from socket server");
       setIsConnected(false);
     });
 
@@ -77,7 +84,6 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     });
 
     newSocket.on("user:joined", (data) => {
-      // console.log(`${data.username} joined`);
       setOnlineUsers((prev) => {
         if (!prev.find((u) => u.userId === data.userId)) {
           return [...prev, { userId: data.userId, username: data.username }];
@@ -87,7 +93,6 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     });
 
     newSocket.on("user:left", (data) => {
-      // console.log(`${data.username} left`);
       setOnlineUsers((prev) => prev.filter((u) => u.userId !== data.userId));
     });
 
@@ -116,8 +121,14 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
       );
     });
 
-    newSocket.on("chat:deleted", ({ messageId }) => {
-      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    newSocket.on("chat:deleted", ({ messageId, deletedBy }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, isDeleted: true, deletedBy }
+            : msg
+        )
+      );
     });
 
     newSocket.on("chat:read", ({ messageId, userId, readAt }) => {
@@ -140,7 +151,6 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     });
 
     newSocket.on("error", (error) => {
-      // console.error("Socket error:", error);
       alert(error.message);
     });
 
@@ -161,7 +171,6 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         const data = await chatApi.getWorkspaceMessages(workspaceId);
         setMessages(data);
       } catch (error) {
-        // console.error("Error loading messages:", error);
         alert("Failed to load messages");
       } finally {
         setIsLoading(false);
@@ -174,6 +183,13 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Close context menu when clicking anywhere
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
 
   const handleTyping = () => {
     if (!socket) return;
@@ -207,7 +223,6 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         type = uploadData.fileType;
       }
 
-      // Kirim via socket, biarkan server yang emit kembali
       socket.emit("chat:send", {
         workspaceId,
         message: newMessage || fileName,
@@ -216,14 +231,12 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         fileName,
       });
 
-      // Clear form
       setNewMessage("");
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     } catch (error) {
-      // console.error("Error sending message:", error);
       alert("Failed to send message");
     }
   };
@@ -244,6 +257,49 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  // Handle right click on message
+  const handleContextMenu = (e, msg) => {
+    e.preventDefault();
+
+    // Hanya bisa unsend pesan sendiri dan belum di-delete
+    if (msg.sender._id !== currentUser._id || msg.isDeleted) return;
+
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+    });
+    setSelectedMessage(msg);
+  };
+
+  const handleUnsendMessage = async () => {
+    if (!selectedMessage) return;
+
+    try {
+      const response = await chatApi.deleteMessage(selectedMessage._id);
+
+      if (response.success) {
+        socket.emit("chat:delete", {
+          workspaceId,
+          messageId: selectedMessage._id,
+          deletedBy: currentUser.username,
+        });
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === selectedMessage._id
+              ? { ...msg, isDeleted: true, deletedBy: currentUser.username }
+              : msg
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error unsending message:", error);
+      alert("Failed to unsend message");
+    }
+
+    setContextMenu(null);
+    setSelectedMessage(null);
   };
 
   const typingUsers = Object.values(isTyping).filter(Boolean);
@@ -295,122 +351,199 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
             <div
               key={msg._id}
               style={{
-                ...styles.message,
-                alignSelf:
-                  msg.sender._id === currentUser._id
-                    ? "flex-end"
-                    : "flex-start",
-                backgroundColor:
-                  msg.sender._id === currentUser._id ? "#6366F1" : "#EEF2FF",
-                color: msg.sender._id === currentUser._id ? "white" : "#1F2937",
-                animation: "fadeIn 0.5s ease-in-out",
+                display: "flex",
+                flexDirection:
+                  msg.sender._id === currentUser._id ? "row-reverse" : "row",
+                alignItems: "flex-start",
+                marginBottom: "12px",
+                gap: "8px",
               }}
+              onContextMenu={(e) => handleContextMenu(e, msg)}
             >
-              {msg.sender._id !== currentUser._id && (
-                <div style={{ ...styles.senderName, color: "#4F46E5" }}>
-                  {msg.sender.username}
-                </div>
-              )}
+              {/* Avatar */}
+              <img
+                src={
+                  msg.sender.photo
+                    ? `${API_URL}${msg.sender.photo.startsWith("/")
+                      ? msg.sender.photo
+                      : "/uploads/users/" + msg.sender.photo
+                    }`
+                    : `https://ui-avatars.com/api/?name=${msg.sender.username}&background=random`
+                }
+                alt={msg.sender.username}
+                style={styles.avatar}
+                onError={(e) => {
+                  e.target.src = `https://ui-avatars.com/api/?name=${msg.sender.username}&background=random`;
+                }}
+              />
 
-              {msg.type === "image" && msg.fileUrl && (
-                <img
-                  src={`${API_URL}${msg.fileUrl}`}
-                  alt={msg.fileName}
-                  style={styles.image}
-                />
-              )}
+              {/* Bubble pesan */}
+              <div
+                style={{
+                  ...styles.message,
+                  backgroundColor: msg.isDeleted
+                    ? "#F3F4F6"
+                    : msg.sender._id === currentUser._id
+                      ? "#6366F1"
+                      : "#EEF2FF",
+                  color: msg.isDeleted
+                    ? "#9CA3AF"
+                    : msg.sender._id === currentUser._id
+                      ? "white"
+                      : "#1F2937",
+                  fontStyle: msg.isDeleted ? "italic" : "normal",
+                  animation: "fadeIn 0.5s ease-in-out",
+                }}
+              >
+                {msg.sender._id !== currentUser._id && !msg.isDeleted && (
+                  <div style={{ ...styles.senderName, color: "#4F46E5" }}>
+                    {msg.sender.username}
+                  </div>
+                )}
 
-              {msg.type === "file" && msg.fileUrl && (
-                <a
-                  href={`${API_URL}${msg.fileUrl}`}
-                  download
-                  style={styles.fileLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  📎 {msg.fileName}
-                </a>
-              )}
-
-              <div>{msg.message}</div>
+                {msg.isDeleted ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <span>🚫</span>
+                    <span>{msg.deletedBy || msg.sender.username} unsent this message</span>
+                  </div>
+                ) : (
+                  <>
+                    {msg.type === "image" && msg.fileUrl && (
+                      <img
+                        src={`${API_URL}${msg.fileUrl}`}
+                        alt={msg.fileName}
+                        style={styles.image}
+                      />
+                    )}
+                    {msg.type === "file" && msg.fileUrl && (
+                    <a
+                      href = {`${API_URL}${msg.fileUrl}`}
+                    download
+                    style={styles.fileLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                      >
+                    📎 {msg.fileName}
+                  </a>
+                    )}
+                <div>{msg.message}</div>
+              </>
+                )}
 
               <div style={styles.timestamp}>
                 {new Date(msg.createdAt).toLocaleTimeString()}
                 {msg.isEdited && " (edited)"}
               </div>
             </div>
-          ))
+            </div>
+      ))
         )}
-        <div ref={messagesEndRef} />
-      </div>
+      <div ref={messagesEndRef} />
+    </div>
 
-      {typingUsers.length > 0 && (
-        <div style={styles.typingIndicator}>
-          {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
-          typing...
+      {/* Context Menu */ }
+  {
+    contextMenu && selectedMessage && (
+      <div
+        style={{
+          ...styles.contextMenu,
+          top: `${contextMenu.y}px`,
+          left: `${contextMenu.x}px`,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={styles.contextMenuItem}
+          onClick={handleUnsendMessage}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#FEE2E2";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "transparent";
+          }}
+        >
+          🚫 Unsend
         </div>
-      )}
+      </div>
+    )
+  }
 
-      <form onSubmit={handleSendMessage} style={styles.inputContainer}>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileSelect}
-          style={{ display: "none" }}
-          accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
-        />
+  {
+    typingUsers.length > 0 && (
+      <div style={styles.typingIndicator}>
+        {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
+        typing...
+      </div>
+    )
+  }
 
+  <form onSubmit={handleSendMessage} style={styles.inputContainer}>
+    <input
+      type="file"
+      ref={fileInputRef}
+      onChange={handleFileSelect}
+      style={{ display: "none" }}
+      accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
+    />
+
+    <button
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      style={styles.attachButton}
+      title="Attach file"
+    >
+      📎
+    </button>
+
+    {selectedFile && (
+      <div style={styles.selectedFileContainer}>
+        <span style={styles.selectedFile}>{selectedFile.name}</span>
         <button
           type="button"
-          onClick={() => fileInputRef.current?.click()}
-          style={styles.attachButton}
-          title="Attach file"
+          onClick={handleRemoveFile}
+          style={styles.removeFileButton}
         >
-          📎
+          ✕
         </button>
+      </div>
+    )}
 
-        {selectedFile && (
-          <div style={styles.selectedFileContainer}>
-            <span style={styles.selectedFile}>{selectedFile.name}</span>
-            <button
-              type="button"
-              onClick={handleRemoveFile}
-              style={styles.removeFileButton}
-            >
-              ✕
-            </button>
-          </div>
-        )}
+    <input
+      type="text"
+      value={newMessage}
+      onChange={(e) => {
+        setNewMessage(e.target.value);
+        handleTyping();
+      }}
+      placeholder="Type a message..."
+      style={styles.input}
+      disabled={!isConnected}
+    />
 
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => {
-            setNewMessage(e.target.value);
-            handleTyping();
-          }}
-          placeholder="Type a message..."
-          style={styles.input}
-          disabled={!isConnected}
-        />
-
-        <button
-          type="submit"
-          style={{
-            ...styles.sendButton,
-            opacity: isConnected ? 1 : 0.5,
-            cursor: isConnected ? "pointer" : "not-allowed",
-          }}
-          disabled={!isConnected}
-        >
-          Send
-        </button>
-      </form>
-    </div>
+    <button
+      type="submit"
+      style={{
+        ...styles.sendButton,
+        opacity: isConnected ? 1 : 0.5,
+        cursor: isConnected ? "pointer" : "not-allowed",
+      }}
+      disabled={!isConnected}
+    >
+      Send
+    </button>
+  </form>
+    </div >
   );
 };
 
 const styles = {
+  avatar: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    objectFit: "cover",
+    flexShrink: 0,
+  },
   container: {
     display: "flex",
     flexDirection: "column",
@@ -586,6 +719,27 @@ const styles = {
     fontWeight: "600",
     transition: "transform 0.2s ease, box-shadow 0.2s ease",
     boxShadow: "0 2px 4px rgba(99, 102, 241, 0.2)",
+  },
+  contextMenu: {
+    position: "fixed",
+    backgroundColor: "white",
+    border: "1px solid #E5E7EB",
+    borderRadius: "8px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+    zIndex: 1000,
+    minWidth: "180px",
+    overflow: "hidden",
+  },
+  contextMenuItem: {
+    padding: "12px 16px",
+    cursor: "pointer",
+    fontSize: "14px",
+    color: "#EF4444",
+    fontWeight: "500",
+    transition: "background-color 0.2s",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
 };
 
