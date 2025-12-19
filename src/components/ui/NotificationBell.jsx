@@ -63,16 +63,18 @@ export default function NotificationBell() {
     const now = new Date();
     const notifDate = new Date(date);
     const diffInSeconds = Math.floor((now - notifDate) / 1000);
-
-    if (diffInSeconds < 60) return "Baru saja";
-    if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
-    if (diffInSeconds < 604800)
-      return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
-
-    return notifDate.toLocaleDateString("id-ID", {
+    if (diffInSeconds < 60) return "just now";
+    const minutes = Math.floor(diffInSeconds / 60);
+    if (minutes < 60)
+      return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    const hours = Math.floor(diffInSeconds / 3600);
+    if (hours < 24)
+      return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    const days = Math.floor(diffInSeconds / 86400);
+    if (days === 1) return "yesterday";
+    if (days < 7)
+      return `${days} day${days > 1 ? "s" : ""} ago`;
+    return notifDate.toLocaleDateString("en-US", {
       day: "numeric",
       month: "short",
       year: "numeric",
