@@ -428,6 +428,22 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     const allowedRoles = ["admin", "project_manager"];
     return allowedRoles.includes(userMembership.role);
   };
+
+  const isMember = () => {
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
+
+    // Cari membership current user dalam workspace members
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id
+    );
+
+    if (!userMembership) return false;
+
+    const allowedRoles = ["admin", "project_manager", "member"];
+    return allowedRoles.includes(userMembership.role);
+  };
   return (
     <div className=" mt-1 mb-2">
       <ConfirmDialog
@@ -869,7 +885,13 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           >
             <button
               className="bg-gray-100 rounded-xl p-1 text-black font-medium text-[0.7em] w-18 hover:bg-gray-200"
-              onClick={() => setOpenDialog({ open: true, subtask: s })}
+              onClick={() => {
+                if (isMember()) {
+                  setOpenDialog({ open: true, subtask: s });
+                } else {
+                  toast.error("Only members can view subtask details");
+                }
+              }}
             >
               Detail
             </button>

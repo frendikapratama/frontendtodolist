@@ -614,6 +614,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     return allowedRoles.includes(userMembership.role);
   };
 
+  const isMember = () => {
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
+
+    // Cari membership current user dalam workspace members
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id
+    );
+
+    if (!userMembership) return false;
+
+    const allowedRoles = ["admin", "project_manager", "member"];
+    return allowedRoles.includes(userMembership.role);
+  };
+
   return (
     <div className="overflow-auto max-h-[90vh]">
       <ConfirmDialog
@@ -921,7 +937,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       }}
                     />
                   )}
-                </div>  
+                </div>
                 {/* Status */}
                 <div
                   className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
@@ -1229,7 +1245,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   <div className="w-40 px-6 py-3.5 gap-2 border-b border-gray-100 items-center flex justify-center">
                     <button
                       className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
-                      onClick={() => setOpenDialog({ open: true, task: task })}
+                      onClick={() => {
+                        if (isMember()) {
+                          setOpenDialog({ open: true, task: task });
+                        } else {
+                          toast.error("Only members can view task details");
+                        }
+                      }}
                     >
                       Detail
                     </button>
