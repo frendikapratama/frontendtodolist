@@ -9,7 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const login = async (newToken) => {
-    sessionStorage.setItem("token", newToken);
+    // sessionStorage.setItem("token", newToken);
+    localStorage.setItem("token", newToken);
     setToken(newToken);
     try {
       const res = await api.get("users/me");
@@ -21,14 +22,41 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    sessionStorage.removeItem("token");
+    // sessionStorage.removeItem("token");
+    localStorage.removeItem("token");
     setToken(null);
     setUser(null);
   };
+  const updateProfile = async (updateData) => {
+    try {
+      const res = await api.put("users/me", updateData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setUser(res.data.data);
+      return { success: true, data: res.data.data };
+    } catch (err) {
+      console.error("Update error details:", {
+        message: err.response?.data?.message,
+        errors: err.response?.data?.errors,
+        data: err.response?.data,
+        status: err.response?.status,
+      });
+
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Update failed",
+      };
+    }
+  };
 
   useEffect(() => {
-    const savedToken = sessionStorage.getItem("token");
-
+    // const savedToken = sessionStorage.getItem("token");
+    const savedToken = localStorage.getItem("token");
     if (savedToken) {
       setToken(savedToken);
       api
@@ -43,7 +71,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, login, logout, user, setUser, loading }}
+      value={{ token, login, logout, user, setUser, loading, updateProfile }}
     >
       {children}
     </AuthContext.Provider>

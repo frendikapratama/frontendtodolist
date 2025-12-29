@@ -1,29 +1,90 @@
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { ChevronDown, Search, X, Filter, Calendar } from "lucide-react";
 import { useTask } from "../../hook/useTask";
 import TaskList from "../Task/TaskList";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useGroup } from "../../hook/useGroups";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import { useProgress } from "../../hook/useProgress";
+import { useRecentUpdates } from "../../context/RecentlyContext";
 
-const GroupCard = ({ group, index }) => {
-  const { taskByGroup, updateTaskMutation } = useTask(group._id);
-  const { updateGroupMutation } = useGroup();
+const GroupCard = ({ group, index, workspaceId }) => {
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [noteFilter, setNoteFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Debounced filters
+  const [debouncedFilters, setDebouncedFilters] = useState({});
+
+  // Combine all filters
+  const filters = {
+    search: searchQuery,
+    status: statusFilter,
+    priority: priorityFilter,
+    note: noteFilter,
+  };
+
+  const { taskByGroup, updateTaskMutation } = useTask(
+    group._id,
+    debouncedFilters
+  );
+  const { updateGroupMutation, deleteMutation } = useGroup();
+  const { progressByGroup } = useProgress(group._id);
+  const {
+    toggleRecentUpdates,
+    isOpen: isRecentOpen,
+    selectedGroupId,
+  } = useRecentUpdates();
+
   const [isDragOver, setIsDragOver] = useState(false);
-
+  const [isCardOpen, setIsCardOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(group.nama);
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    taskId: null,
+  });
+
+  const isRecentUpdatesOpen = isRecentOpen && selectedGroupId === group._id;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters({
+        search: searchQuery,
+        status: statusFilter,
+        priority: priorityFilter,
+        note: noteFilter,
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, statusFilter, priorityFilter, noteFilter]);
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setPriorityFilter("all");
+    setNoteFilter("all");
+  };
+
+  // Check if any filter is active
+  const hasActiveFilters =
+    searchQuery ||
+    statusFilter !== "all" ||
+    priorityFilter !== "all" ||
+    noteFilter !== "all";
 
   const handleNameEdit = (e) => {
     e.preventDefault();
     const newName = editedName.trim();
-
     if (!newName || newName === group.nama) {
       setIsEditing(false);
       setEditedName(group.nama);
       return;
     }
-
     updateGroupMutation.mutate({
       groupId: group._id,
       data: { nama: newName },
@@ -35,18 +96,13 @@ const GroupCard = ({ group, index }) => {
     const handleTaskDrop = (event) => {
       const { taskId, sourceGroupId, targetGroupId, targetIndex } =
         event.detail;
-
       if (targetGroupId === group._id && sourceGroupId !== group._id) {
         updateTaskMutation.mutate({
           taskId,
-          data: {
-            groupId: group._id,
-            position: targetIndex,
-          },
+          data: { groupId: group._id, position: targetIndex },
         });
       }
     };
-
     document.addEventListener("taskDrop", handleTaskDrop);
     return () => document.removeEventListener("taskDrop", handleTaskDrop);
   }, [group._id, updateTaskMutation]);
@@ -61,34 +117,81 @@ const GroupCard = ({ group, index }) => {
     return colors[index % 3];
   };
 
+  const handleDelete = useCallback((groupId) => {
+    setConfirmDelete({ show: true, groupId: groupId });
+  }, []);
+
+  const confirmDeleteGroup = useCallback(() => {
+    if (confirmDelete.groupId) {
+      deleteMutation.mutate(confirmDelete.groupId);
+      setConfirmDelete({ show: false, groupId: null });
+    }
+  }, [confirmDelete.groupId, deleteMutation]);
+
+  const getStatusColor = (status) => {
+    const colors = {
+      done: "bg-green-100 text-green-700",
+      in_progress: "bg-blue-100 text-blue-700",
+      to_do: "bg-gray-100 text-gray-700",
+      Hold: "bg-yellow-100 text-yellow-700",
+      blocked: "bg-red-100 text-red-700",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700";
+  };
+
+  const progressData = progressByGroup.data;
+
+  const STATUS_OPTIONS = [
+    "To Do",
+    "In Progress",
+    "Done",
+    "Done-In review",
+    "Blocked",
+    "Hold",
+  ];
+  const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
+  const NOTE_OPTIONS = [
+    "Completed - On Time",
+    "Completed - Overdue",
+    "Completed - Early",
+    "Uncomplete",
+    "Planning",
+  ];
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-[#F0E4D3] rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      {/* Header */}
       <div
-        className="px-6 py-3.5 flex items-center justify-between cursor-pointer"
+        className="px-2 py-1 flex items-center justify-between cursor-pointer rounded-t-lg"
         style={{ background: getHeaderColor() }}
       >
-        <div className="flex items-center gap-3">
-          <ChevronDown className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2">
+          <ChevronDown
+            className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${
+              isCardOpen ? "rotate-0" : "-rotate-90"
+            }`}
+            onClick={() => setIsCardOpen(!isCardOpen)}
+          />
           {isEditing ? (
-            <form onSubmit={handleNameEdit} className="m-0">
-              <input
-                type="text"
-                className=" text-white placeholder-white placeholder-opacity-75 border-0 rounded px-2 py-1 focus:ring-2 focus:ring-white focus:ring-opacity-50 text-base font-semibold w-[200px]"
-                value={editedName}
-                autoFocus
-                onChange={(e) => setEditedName(e.target.value)}
-                onBlur={handleNameEdit}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    setIsEditing(false);
-                    setEditedName(group.nama);
-                  }
-                }}
-              />
-            </form>
+            <input
+              type="text"
+              className="text-white placeholder-white placeholder-opacity-75 border-0 rounded px-2 py-1 focus:ring-2 focus:ring-white focus:ring-opacity-50 text-base font-semibold w-[200px]"
+              style={{ background: "rgba(255, 255, 255, 0.2)" }}
+              value={editedName}
+              autoFocus
+              onChange={(e) => setEditedName(e.target.value)}
+              onBlur={handleNameEdit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleNameEdit(e);
+                else if (e.key === "Escape") {
+                  setIsEditing(false);
+                  setEditedName(group.nama);
+                }
+              }}
+            />
           ) : (
             <h3
-              className="text-white font-semibold text-base cursor-pointer hover:underline"
+              className="text-white text-[0.8em] font-semibold text-base cursor-pointer hover:underline"
               onClick={() => {
                 setIsEditing(true);
                 setEditedName(group.nama);
@@ -97,17 +200,265 @@ const GroupCard = ({ group, index }) => {
               {group.nama}
             </h3>
           )}
-          <span className="text-xs text-white bg-opacity-20 px-2.5 py-1 rounded-full font-medium">
+          <span className="text-xs text-white text-[0.7em] bg-opacity-20 px-2.5 py-1 rounded-full font-medium">
             {taskByGroup.data?.length || 0} items
           </span>
         </div>
-        <button className="p-1.5 hover:bg-white hover:bg-opacity-20 rounded">
-          <MoreHorizontal className="w-5 h-5 text-white" />
+        <button
+          className="btn btn-sm p-1 w-12 h-6 text-white hover:bg-orange-700 bg-red-800 text-[0.7em] border-none"
+          onClick={() => handleDelete(group._id, group.nama)}
+        >
+          Delete
         </button>
       </div>
 
+      <ConfirmDialog
+        show={confirmDelete.show}
+        onClose={() => setConfirmDelete({ show: false, groupId: null })}
+        onConfirm={confirmDeleteGroup}
+        title="Delete Group"
+        message="Are you sure want to delete this Group Task? this action can't be undo"
+      />
+
+      {/* Search & Filter Section */}
+      {isCardOpen && (
+        <div className="px-4 py-3 bg-gray-200 border-b border-gray-200">
+          {/* Search Bar */}
+          <div className="flex gap-2 mb-3">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search tasks by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-10 pr-10 py-2 border border-gray-400 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
+            </div>
+
+            {/* Toggle Filters Button */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`px-4 py-2 rounded-lg border-gray-300  text-sm font-medium flex items-center gap-2 transition-colors ${
+                hasActiveFilters
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              {hasActiveFilters && (
+                <span className="bg-gray-200 text-blue-600rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                  {
+                    [
+                      searchQuery,
+                      statusFilter !== "all",
+                      priorityFilter !== "all",
+                      noteFilter !== "all",
+                    ].filter(Boolean).length
+                  }
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Filter Options */}
+          {showFilters && (
+            <div className="grid grid-cols-3 gap-3 p-3 bg-gray-200 rounded-lg border border-gray-400">
+              {/* Status Filter */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-3 py-2 text-black text-sm border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Status</option>
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Priority Filter */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Priority
+                </label>
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="w-full px-3 py-2 text-black text-sm border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Priority</option>
+                  {PRIORITY_OPTIONS.map((priority) => (
+                    <option key={priority} value={priority}>
+                      {priority}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Note Filter */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Note
+                </label>
+                <select
+                  value={noteFilter}
+                  onChange={(e) => setNoteFilter(e.target.value)}
+                  className="w-full px-3 py-2 text-black text-sm border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Notes</option>
+                  {NOTE_OPTIONS.map((note) => (
+                    <option key={note} value={note}>
+                      {note}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Clear Filters Button */}
+              {hasActiveFilters && (
+                <div className="col-span-3 flex justify-end">
+                  <button
+                    onClick={clearAllFilters}
+                    className="px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Clear All Filters
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Results Counter */}
+          {hasActiveFilters && (
+            <div className="mt-2 text-xs text-gray-600 flex items-center gap-2">
+              <span className="font-medium">
+                {taskByGroup.data?.length || 0}
+              </span>
+              <span>task(s) found</span>
+              {taskByGroup.isLoading && (
+                <span className="text-blue-600">Loading...</span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Progress Section */}
+      {progressByGroup.isLoading ? (
+        <div className="px-4 py-3 bg-white border-b border-gray-200">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+            <div className="h-2.5 bg-gray-200 rounded w-full"></div>
+          </div>
+        </div>
+      ) : progressData ? (
+        <div className="px-4 py-3 bg-gray-200 border-b border-gray-200">
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[0.8em] font-medium text-gray-700">
+                Progress Task
+              </span>
+              <span className="text-sm font-semibold text-gray-900">
+                {progressData.progress}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-teal-700 h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${progressData.progress}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="flex justify-between">
+            <div className="flex flex-wrap gap-2 items-center">
+              {progressData.done > 0 && (
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "done"
+                  )}`}
+                >
+                  Done: {progressData.done}
+                </span>
+              )}
+              {progressData.in_progress > 0 && (
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "in_progress"
+                  )}`}
+                >
+                  In Progress: {progressData.in_progress}
+                </span>
+              )}
+              {progressData.to_do > 0 && (
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "to_do"
+                  )}`}
+                >
+                  To Do: {progressData.to_do}
+                </span>
+              )}
+              {progressData.Hold > 0 && (
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "Hold"
+                  )}`}
+                >
+                  Hold: {progressData.Hold}
+                </span>
+              )}
+              {progressData.blocked > 0 && (
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                    "blocked"
+                  )}`}
+                >
+                  Blocked: {progressData.blocked}
+                </span>
+              )}
+            </div>
+            <div className="text-gray-300">
+              <button
+                className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${
+                  isRecentUpdatesOpen
+                    ? "bg-blue-700 ring-2 ring-blue-300 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+                onClick={() => toggleRecentUpdates(group._id)}
+              >
+                {isRecentUpdatesOpen ? "Hide Updates" : "Recent Updates"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Task List */}
       <div
-        className={isDragOver ? "bg-blue-50" : ""}
+        className={`
+          transition-all duration-700
+          ${isCardOpen ? "h-auto" : "max-h-0 overflow-hidden"}
+        `}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragOver(true);
@@ -115,9 +466,15 @@ const GroupCard = ({ group, index }) => {
         onDragLeave={() => setIsDragOver(false)}
         onDrop={handleDrop}
       >
-        <TaskList groupId={group._id} />
+        <TaskList
+          groupId={group._id}
+          workspaceId={workspaceId}
+          hasActiveFilters={hasActiveFilters}
+          filters={debouncedFilters}
+        />
       </div>
     </div>
   );
 };
+
 export default GroupCard;

@@ -1,13 +1,27 @@
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useQuery,
+  QueryErrorResetBoundary,
+} from "@tanstack/react-query";
 import { useState } from "react";
-import { getKuarter, createKuarter, getKuarterById } from "../services/kuarter";
+import {
+  getKuarter,
+  createKuarter,
+  getKuarterById,
+  updateKuarter,
+  deleteKuarter,
+} from "../services/kuarter";
 import toast from "react-hot-toast";
 
 export const useKuarter = () => {
   const queryClient = useQueryClient();
+
   const initialFormData = {
     nama: "",
+    departemen: ""
   };
+
   const [formData, setFormData] = useState(initialFormData);
 
   const resetForm = () => {
@@ -15,7 +29,11 @@ export const useKuarter = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   const kuarterQuery = useQuery({
@@ -26,7 +44,7 @@ export const useKuarter = () => {
   const createMutation = useMutation({
     mutationFn: (data) => createKuarter(data),
     onSuccess: () => {
-      toast.success("berhasil membuat kuarter");
+      toast.success("Quarter created successfully");
       queryClient.invalidateQueries({ queryKey: ["kuarter"] });
       resetForm();
     },
@@ -36,7 +54,25 @@ export const useKuarter = () => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah kuarter");
+        toast.error("Failed to create quarter");
+      }
+    },
+  });
+
+  const updatedKuarterMutation = useMutation({
+    mutationFn: ({ id, data }) => updateKuarter(id, data),
+    onSuccess: (_, variables) => {
+      toast.success("Quarter updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["kuarter", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["kuarter"] });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed to update quarter");
       }
     },
   });
@@ -49,6 +85,24 @@ export const useKuarter = () => {
     });
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteKuarter(id),
+    onSuccess: (id) => {
+      toast.success("Quarter delete successfully");
+      queryClient.invalidateQueries({ queryKey: ["kuarter"] });
+      queryClient.invalidateQueries({ queryKey: ["kuarter", id] });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed to delete quarter");
+      }
+    },
+  });
+
   return {
     formData,
     setFormData,
@@ -57,5 +111,7 @@ export const useKuarter = () => {
     handleChange,
     KuarterDetail,
     resetForm,
+    updatedKuarterMutation,
+    deleteMutation,
   };
 };

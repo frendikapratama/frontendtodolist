@@ -1,8 +1,20 @@
 export const menuItems = [
   {
-    id: "All Kuarter",
-    label: "Kuarter",
-    path: "/Kuarter",
+    id: "My Workspaces",
+    label: "My Workspaces",
+    path: "/mywork",
+    icon: "bookopen",
+  },
+  {
+    id: "Dashboard",
+    label: "Dashboard",
+    path: "/dashboard",
     icon: "dashboard",
+  },
+  {
+    id: "All Kuarter",
+    label: "Quarter",
+    path: "/Kuarter",
+    icon: "folderkanban",
   },
 ];

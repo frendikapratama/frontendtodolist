@@ -2,8 +2,9 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
-import logo from "../assets/LogoPlanify.png"
+import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -20,17 +21,18 @@ export default function Login() {
       await login(res.data.token);
       navigate("/kuarter");
     } catch (err) {
-      setError(err.response?.data?.message || "Login gagal");
+      // setError(err.response?.data?.message || "Login gagal");
+      toast.error(err.response?.data?.message || "Login Failed")
     }
   };
   const handleKey = (e) => {
     if (e.key === "Enter") {
       handleSubmit(e);
     }
-  }
-  const handleForgotPassword = async (e) =>{
-    navigate("/forgot-password")
-  }
+  };
+  const handleForgotPassword = async (e) => {
+    navigate("/forgot-password");
+  };
 
   return (
     <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64]-200 to-[#1D546C] p-4">
@@ -54,7 +56,9 @@ export default function Login() {
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <div className="space-y-5">
               <div>
-                <label className="block text-lg mb-1 text-slate-700 font-semibold">Email</label>
+                <label className="block text-lg mb-1 text-slate-700 font-semibold">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={email}
@@ -89,7 +93,7 @@ export default function Login() {
                 className="w-full items-center justify-center flex text-white rounded-lg my-4 sm:my-5 hover:text-blue-700 active:text-blue-800 transition-colors text-sm sm:text-base font-medium"
                 onClick={handleForgotPassword}
               >
-              Forget Password? 
+                Forget Password?
               </p>
             </div>
           </div>

@@ -9,3 +9,14 @@ export async function updategroup(groupId, data) {
   const res = await api.put(`group/${groupId}`, data);
   return res.data.data;
 }
+
+export async function deleteGroup(groupId) {
+  const res = await api.delete(`group/${groupId}`);
+  return res.data.data;
+}
+
+export async function getGroupsByKuarter(kuarterId) {
+  if (!kuarterId) return [];
+  const res = await api.get(`group/kuarter/${kuarterId}`);
+  return res.data.data || [];
+}

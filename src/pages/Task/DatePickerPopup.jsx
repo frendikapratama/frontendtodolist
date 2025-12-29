@@ -2,7 +2,13 @@ import { useRef, useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const DatePickerPopup = ({ value, onChange, onClose, buttonRef }) => {
+const DatePickerPopup = ({
+  value,
+  onChange,
+  onClose,
+  buttonRef,
+  showTimeSelect = false,
+}) => {
   const popupRef = useRef(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [selectedDate, setSelectedDate] = useState(
@@ -18,26 +24,21 @@ const DatePickerPopup = ({ value, onChange, onClose, buttonRef }) => {
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      // Default position: below the button with small gap
       let top = buttonRect.bottom + 4;
       let left = buttonRect.left;
 
-      // Jika popup terlalu ke bawah, posisikan di atas
       if (top + popupRect.height > viewportHeight - 10) {
         top = buttonRect.top - popupRect.height - 4;
       }
 
-      // Jika popup terlalu ke kanan, sesuaikan posisi horizontal
       if (left + popupRect.width > viewportWidth - 10) {
         left = viewportWidth - popupRect.width - 10;
       }
 
-      // Pastikan tidak keluar dari viewport kiri
       if (left < 10) {
         left = 10;
       }
 
-      // Pastikan tidak keluar dari viewport atas/bawah
       if (top < 10) {
         top = 10;
       } else if (top + popupRect.height > viewportHeight - 10) {
@@ -61,7 +62,6 @@ const DatePickerPopup = ({ value, onChange, onClose, buttonRef }) => {
       }
     };
 
-    // Delay sedikit untuk menghindari immediate close saat pertama klik
     const timer = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside);
     }, 100);
@@ -74,14 +74,28 @@ const DatePickerPopup = ({ value, onChange, onClose, buttonRef }) => {
 
   const handleDateChange = (date) => {
     if (date) {
-      const formattedDate = date.toISOString().split("T")[0];
-      onChange(formattedDate);
       setSelectedDate(date);
+      // Jika showTimeSelect false, langsung close dan save
+      if (!showTimeSelect) {
+        // Format tanpa timezone conversion: YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const formattedDate = `${year}-${month}-${day}`;
+        onChange(formattedDate);
+        onClose();
+      }
     }
-    onClose();
   };
 
-  // Sembunyikan sementara sampai posisi dihitung
+  const handleTimeConfirm = () => {
+    if (selectedDate) {
+      // Kirim dalam format ISO lengkap dengan waktu
+      onChange(selectedDate.toISOString());
+      onClose();
+    }
+  };
+
   if (!isPositioned) {
     return (
       <div className="fixed opacity-0" ref={popupRef}>
@@ -89,6 +103,10 @@ const DatePickerPopup = ({ value, onChange, onClose, buttonRef }) => {
           selected={selectedDate}
           onChange={handleDateChange}
           inline
+          showTimeSelect={showTimeSelect}
+          timeFormat="HH:mm"
+          timeIntervals={15}
+          dateFormat={showTimeSelect ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy"}
           calendarClassName="shadow-lg border border-gray-200 rounded-lg"
         />
       </div>
@@ -98,7 +116,7 @@ const DatePickerPopup = ({ value, onChange, onClose, buttonRef }) => {
   return (
     <div
       ref={popupRef}
-      className="fixed z-50 bg-white"
+      className="fixed z-50 bg-white rounded-lg "
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -109,8 +127,53 @@ const DatePickerPopup = ({ value, onChange, onClose, buttonRef }) => {
         selected={selectedDate}
         onChange={handleDateChange}
         inline
+        showTimeSelect={showTimeSelect}
+        timeFormat="HH:mm"
+        timeIntervals={15}
+        dateFormat={showTimeSelect ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy"}
         calendarClassName="shadow-lg border border-gray-200 rounded-lg"
       />
+
+      {/* GANTI bagian ini */}
+      {showTimeSelect ? (
+        <div className="px-4 pb-3 flex gap-2 justify-between border-t border-gray-200 pt-2">
+          <button
+            onClick={() => {
+              onChange(null);
+              onClose();
+            }}
+            className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded"
+          >
+            Clear date
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleTimeConfirm}
+              className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="px-4 pb-3 border-t border-gray-200 pt-2">
+          <button
+            onClick={() => {
+              onChange(null);
+              onClose();
+            }}
+            className="w-full px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+          >
+            Clear date
+          </button>
+        </div>
+      )}
     </div>
   );
 };

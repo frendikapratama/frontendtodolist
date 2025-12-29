@@ -1,7 +1,7 @@
 import api from "../api/axios";
 
-export async function getKuarter(data) {
-  const res = await api.get("kuarter", data);
+export async function getKuarter(params = {}) {
+  const res = await api.get("kuarter", { params });
   return res.data.data;
 }
 

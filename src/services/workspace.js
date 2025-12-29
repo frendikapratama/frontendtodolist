@@ -14,3 +14,16 @@ export async function getWorkspaceById(id) {
   const res = await api.get(`workspaces/${id}`);
   return res.data.data;
 }
+export async function updateWorkspace(id, data) {
+  const res = await api.put(`workspaces/${id}`, data);
+  return res.data.data;
+}
+
+export async function deleteWorkspace(id) {
+  const res = await api.delete(`workspaces/${id}`);
+  return res.data.data;
+}
+export async function getProgressBarWorkspace(id) {
+  const res = await api.get(`workspaces/${id}`);
+  return res.data.data;
+}

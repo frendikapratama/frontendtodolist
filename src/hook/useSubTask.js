@@ -1,9 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addSubTask,
   updateSubTask,
   positionSubTask,
+  getSubtaskByTask,
+  assignPicSubtask,
+  removePicSubtask,
+  deleteSubTask,
 } from "../services/subtask";
+
 import toast from "react-hot-toast";
 
 export const useSubTask = (taskId, groupId) => {
@@ -12,8 +17,10 @@ export const useSubTask = (taskId, groupId) => {
   const addSubTaskMutation = useMutation({
     mutationFn: ({ taskId, data }) => addSubTask(taskId, data),
     onSuccess: () => {
-      toast.success("succes");
+      toast.success("Subtask added succesfully");
+      queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+      queryClient.refetchQueries({ queryKey: ["subtask", taskId] });
     },
     onError: (error) => {
       if (error.response?.data?.error) {
@@ -21,7 +28,7 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah sub task");
+        toast.error("Failed to add subtask");
       }
     },
   });
@@ -29,7 +36,8 @@ export const useSubTask = (taskId, groupId) => {
   const updateSubTaskMutation = useMutation({
     mutationFn: ({ subtaskId, data }) => updateSubTask(subtaskId, data),
     onSuccess: () => {
-      toast.success("updated");
+      toast.success("Subtask updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
@@ -38,7 +46,7 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah sub task");
+        toast.error("Failed to update subtask");
       }
     },
   });
@@ -46,8 +54,9 @@ export const useSubTask = (taskId, groupId) => {
   const updatePositionSubTaskMutation = useMutation({
     mutationFn: ({ taskId, data }) => positionSubTask(taskId, data),
     onSuccess: () => {
-      toast.success("posisi succes");
-      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+      toast.success("Position changed");
+      queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
       if (error.response?.data?.error) {
@@ -55,14 +64,84 @@ export const useSubTask = (taskId, groupId) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal posisi task ");
+        toast.error("Failed to change position");
       }
     },
+  });
+
+  const assignPicMutation = useMutation({
+    mutationFn: ({ subtaskId, picEmail }) =>
+      assignPicSubtask(subtaskId, picEmail),
+    onSuccess: () => {
+      toast.success("PIC added successfully");
+      queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed to add PIC");
+      }
+    },
+  });
+  const deleteSubTaskMutation = useMutation({
+    mutationFn: (subtaskId) => {
+      console.log("mutationFn called with taskId:", subtaskId);
+      return deleteSubTask(subtaskId);
+    },
+    onSuccess: (data) => {
+      console.log("Delete success, response:", data);
+      toast.success("Successfuly delete sub task");
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
+    },
+    onError: (error) => {
+      console.log("Delete error:", error);
+      console.log("Error response:", error.response?.data);
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
+      } else {
+        toast.error("Failed to delete task");
+      }
+    },
+  });
+
+  const removePicMutation = useMutation({
+    mutationFn: ({ subtaskId, userId }) => removePicSubtask(subtaskId, userId),
+    onSuccess: () => {
+      toast.success("PIC removed successfully");
+      queryClient.invalidateQueries({ queryKey: ["subtask", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed to remove PIC");
+      }
+    },
+  });
+
+  const subtaskByTask = useQuery({
+    queryKey: ["subtask", taskId],
+    queryFn: () => getSubtaskByTask(taskId),
+    enabled: !!taskId,
+    staleTime: 0,
   });
 
   return {
     addSubTaskMutation,
     updateSubTaskMutation,
     updatePositionSubTaskMutation,
+    assignPicMutation,
+    removePicMutation,
+    subtaskByTask,
+    deleteSubTaskMutation,
   };
 };

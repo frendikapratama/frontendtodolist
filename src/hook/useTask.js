@@ -6,22 +6,38 @@ import {
   updateTaskPositions,
   assignPic,
   removePic,
+  deleteTask,
+  getByProjectId,
+  fetchMyWork,
+  fetchMyWorkAgendaMeeting,
 } from "../services/task";
 import toast from "react-hot-toast";
 
-export const useTask = (groupId) => {
+export const useTask = (groupId, filters = {} /*searchQuery = */) => {
   const queryClient = useQueryClient();
 
+  // const taskByGroup = useQuery({
+  //   queryKey: ["task", groupId],
+  //   queryFn: () => getByGroup(groupId),
+  //   enabled: !!groupId,
+  // });
+
+  // const taskByGroup = useQuery({
+  //   queryKey: ["task", groupId, searchQuery],
+  //   queryFn: () => getByGroup(groupId, searchQuery),
+  //   enabled: !!groupId,
+  // });
+
   const taskByGroup = useQuery({
-    queryKey: ["task", groupId],
-    queryFn: () => getByGroup(groupId),
+    queryKey: ["task", groupId, filters], // Include all filters in queryKey
+    queryFn: () => getByGroup(groupId, filters),
     enabled: !!groupId,
   });
 
   const addTaskMutation = useMutation({
     mutationFn: (taskData) => addTask(groupId, taskData),
     onSuccess: () => {
-      toast.success("Task berhasil ditambahkan");
+      toast.success("Successfully added Task");
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
@@ -29,7 +45,7 @@ export const useTask = (groupId) => {
       if (Array.isArray(errors)) {
         errors.forEach((msg) => toast.error(msg));
       } else {
-        toast.error("Gagal menambahkan task");
+        toast.error("Failed to added task");
       }
     },
   });
@@ -37,7 +53,7 @@ export const useTask = (groupId) => {
   const updateTaskMutation = useMutation({
     mutationFn: ({ taskId, data }) => updateTask(taskId, data),
     onSuccess: () => {
-      toast.success("Task berhasil diupdate");
+      toast.success("Successfully updated Task");
       queryClient.invalidateQueries({ queryKey: ["task"] });
     },
     onError: (error) => {
@@ -45,18 +61,40 @@ export const useTask = (groupId) => {
       if (Array.isArray(errors)) {
         errors.forEach((msg) => toast.error(msg));
       } else {
-        toast.error("Gagal mengupdate task");
+        toast.error("Failed to update task");
+      }
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: (taskId) => {
+      console.log("mutationFn called with taskId:", taskId);
+      return deleteTask(taskId);
+    },
+    onSuccess: (data) => {
+      console.log("Delete success, response:", data);
+      toast.success("Successfully delete task");
+      queryClient.invalidateQueries({ queryKey: ["task", groupId] });
+    },
+    onError: (error) => {
+      console.log("Delete error:", error);
+      console.log("Error response:", error.response?.data);
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
+      } else {
+        toast.error("Failed to delete task");
       }
     },
   });
 
   const updateTaskPositionsMutation = useMutation({
-    mutationFn: (taskIds) => updateTaskPositions(taskIds),
+    mutationFn: (taskIds) => updateTaskPositions(groupId, taskIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task"] });
     },
     onError: () => {
-      toast.error("Gagal mengupdate posisi task");
+      toast.error("Failed to update position task");
     },
   });
 
@@ -64,27 +102,28 @@ export const useTask = (groupId) => {
     mutationFn: ({ taskId, picEmail }) => assignPic(taskId, picEmail),
     onSuccess: (data) => {
       if (data.invited) {
-        toast.success("Undangan PIC berhasil dikirim");
+        toast.success("Successfully invite PIC");
       } else {
-        toast.success("PIC berhasil di-assign");
+        toast.success("Assign PIC success");
       }
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || "Gagal assign PIC");
+      toast.error(error.response?.data?.message || "Failed to assign PIC");
     },
   });
 
   const removePicMutation = useMutation({
     mutationFn: ({ taskId, userId }) => removePic(taskId, userId),
     onSuccess: () => {
-      toast.success("PIC berhasil dihapus");
+      toast.success("Successfully delete PIC");
       queryClient.invalidateQueries({ queryKey: ["task", groupId] });
     },
     onError: () => {
-      toast.error("Gagal menghapus PIC");
+      toast.error("Failed to delete PIC");
     },
   });
+
   return {
     taskByGroup,
     addTaskMutation,
@@ -92,5 +131,50 @@ export const useTask = (groupId) => {
     updateTaskPositionsMutation,
     assignPicMutation,
     removePicMutation,
+    deleteTaskMutation,
   };
+};
+
+export const useTaskByProject = (projectId) => {
+  return useQuery({
+    queryKey: ["task", "project", projectId],
+    queryFn: () => getByProjectId(projectId),
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ taskId, data }) => updateTask(taskId, data),
+    onSuccess: () => {
+      toast.success("Successfully updated Task");
+      queryClient.invalidateQueries({ queryKey: ["task"] });
+    },
+    onError: (error) => {
+      const errors = error.response?.data?.error;
+      if (Array.isArray(errors)) {
+        errors.forEach((msg) => toast.error(msg));
+      } else {
+        toast.error("Failed to update task");
+      }
+    },
+  });
+};
+
+export const useMyWork = () => {
+  return useQuery({
+    queryKey: ["myWork"],
+    queryFn: fetchMyWork,
+    refetchInterval: false,
+  });
+};
+
+export const usemyWorkAgendaMeeting = () => {
+  return useQuery({
+    queryKey: ["myWorkAgendaMeeting"],
+    queryFn: fetchMyWorkAgendaMeeting,
+    refetchInterval: false,
+  });
 };

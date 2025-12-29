@@ -58,15 +58,15 @@ export const useUsersState = () => {
     },
     onSuccess: (variables) => {
       const message = variables.isEdit
-        ? "User berhasil diperbarui"
-        : "User berhasil dibuat";
+        ? "User updated successfully"
+        : "User added successfully";
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["users"] });
       resetForm();
     },
     onError: (error, variables) => {
       console.error("Mutation error:", error);
-      const action = variables.isEdit ? "memperbarui" : "membuat";
+      const action = variables.isEdit ? "update" : "create";
 
       if (error.response?.data?.error) {
         const errorData = error.response.data.error;
@@ -76,7 +76,7 @@ export const useUsersState = () => {
           toast.error(errorData);
         }
       } else {
-        toast.error(`Gagal ${action} user`);
+        toast.error(`Failed to ${action} user`);
       }
     },
   });
@@ -85,7 +85,7 @@ export const useUsersState = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      toast.success("Berhasil menghapus user");
+      toast.success("User deleted successfully");
       queryClient.invalidateQueries(["users"]);
     },
     onError: (error) => {
@@ -97,7 +97,7 @@ export const useUsersState = () => {
           toast.error(errorData);
         }
       } else {
-        toast.error("Gagal menghapus user");
+        toast.error("Failed to delete user");
       }
     },
   });

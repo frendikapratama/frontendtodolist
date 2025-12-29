@@ -4,6 +4,8 @@ import {
   getWorkspaces,
   createWorkspace,
   getWorkspaceById,
+  deleteWorkspace,
+  updateWorkspace,
 } from "../services/workspace";
 import toast from "react-hot-toast";
 import { addProjectToWorkspace } from "../services/project";
@@ -28,10 +30,11 @@ export const useWorkspace = (kuarterId = null) => {
     queryKey: ["workspaces"],
     queryFn: () => getWorkspaces(),
   });
+
   const createMutation = useMutation({
     mutationFn: ({ kuarterId, data }) => createWorkspace(kuarterId, data),
     onSuccess: (data, variables) => {
-      toast.success("Workspace created successfully");
+      toast.success("Division created successfully");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       if (variables.kuarterId) {
         queryClient.invalidateQueries({
@@ -46,7 +49,7 @@ export const useWorkspace = (kuarterId = null) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah workspace");
+        toast.error("Failed to add division");
       }
     },
   });
@@ -63,7 +66,7 @@ export const useWorkspace = (kuarterId = null) => {
     mutationFn: ({ workspaceId, data }) =>
       addProjectToWorkspace(workspaceId, data),
     onSuccess: (data, variables) => {
-      toast.success("Project berhasil ditambahkan");
+      toast.success("Project added successfully");
       queryClient.invalidateQueries({
         queryKey: ["workspaces", variables.workspaceId],
       });
@@ -80,11 +83,60 @@ export const useWorkspace = (kuarterId = null) => {
           toast.error(msg);
         });
       } else {
-        toast.error("Gagal menambah project");
+        toast.error("Failed to add project");
       }
     },
   });
 
+  const updateWorkspaceMutation = useMutation({
+    mutationFn: ({ id, data }) => updateWorkspace(id, data),
+    onSuccess: (_, variables) => {
+      toast.success("Division updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["workspaces", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      if (variables.kuarterId) {
+        queryClient.invalidateQueries({
+          queryKey: ["kuarter", variables.kuarterId],
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["kuarter"] });
+      }
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed to edit division");
+      }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteWorkspace(id),
+    onSuccess: () => {
+      toast.success("Success Delete Division");
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      if (kuarterId) {
+        queryClient.invalidateQueries({
+          queryKey: ["kuarter", kuarterId],
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["kuarter"] });
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed delete division");
+      }
+    },
+  });
+
+  const getProgressBar = useMutation({});
   return {
     formData,
     setFormData,
@@ -93,5 +145,7 @@ export const useWorkspace = (kuarterId = null) => {
     handleChange,
     WorkspaceDetail,
     addProjectMutation,
+    deleteMutation,
+    updateWorkspaceMutation,
   };
 };
