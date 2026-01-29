@@ -1,9 +1,17 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
 import { createPortal } from "react-dom";
 import ProgressBar from "../../components/ui/ProgressBar";
 import { useWorkspaceStats } from "../../hook/useProgress";
 import { useMember } from "../../hook/useMember";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import { Trash } from "lucide-react";
+import { AuthContext } from "../../context/AuthContext";
 
 const WorkspaceCard = ({
   workspace,
@@ -15,15 +23,24 @@ const WorkspaceCard = ({
 }) => {
   const { workspaceStats } = useWorkspaceStats(workspace._id);
   const progress = workspaceStats.data?.progress ?? 0;
-  const { membersWorkspaceQuery } = useMember("workspace", workspace._id);
-
+  const { membersWorkspaceQuery, removeMemberMutation } = useMember(
+    "workspace",
+    workspace._id,
+  );
+  const { user } = useContext(AuthContext);
   const [selectedMember, setSelectedMember] = useState(null);
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   const [confirmDelete, setConfirmDelete] = useState({
     show: false,
-    workspacesId: null
-  })
+    workspacesId: null,
+  });
+  const [confirmDeleteMember, setConfirmDeleteMember] = useState({
+    show: false,
+    memberId: null,
+    userId: null,
+    username: null,
+  });
 
   const members = membersWorkspaceQuery.data?.members || [];
   const maxVisible = 5;
@@ -52,9 +69,11 @@ const WorkspaceCard = ({
     viewer: "bg-gray-100 text-gray-600 border-gray-200",
   };
 
+  const isAdmin = user?.isSystemAdmin === true;
+
   const handleDelete = useCallback((workspacesId) => {
     setConfirmDelete({ show: true, workspacesId: workspacesId });
-  }, [])
+  }, []);
 
   const confirmDeleteWorkspace = useCallback(() => {
     if (confirmDelete.workspacesId) {
@@ -71,6 +90,41 @@ const WorkspaceCard = ({
       y: rect.bottom + 8,
     });
     setSelectedMember(selectedMember?._id === member._id ? null : member);
+  };
+
+  const handleRemoveMemberClick = (memberId, userId, username) => {
+    setConfirmDeleteMember({
+      show: true,
+      memberId: memberId,
+      userId: userId,
+      username: username,
+    });
+  };
+
+  // Handler untuk konfirmasi delete member
+  const confirmRemoveMember = async () => {
+    console.log(
+      "Remove member with ID:",
+      confirmDeleteMember.memberId,
+      "User ID:",
+      confirmDeleteMember.userId,
+    );
+    try {
+      await removeMemberMutation.mutateAsync({
+        workspaceId: workspace._id,
+        userId: confirmDeleteMember.userId,
+      });
+      setSelectedMember(null);
+      setConfirmDeleteMember({
+        show: false,
+        memberId: null,
+        userId: null,
+        username: null,
+      });
+    } catch (error) {
+      console.error("Error removing member:", error);
+      alert("Failed to remove member");
+    }
   };
 
   const handleShowAll = (e) => {
@@ -152,7 +206,9 @@ const WorkspaceCard = ({
         <div className="relative flex items-center gap-3">
           <MemberAvatar
             member={selectedMember}
-            index={visibleMembers.findIndex((m) => m._id === selectedMember._id)}
+            index={visibleMembers.findIndex(
+              (m) => m._id === selectedMember._id,
+            )}
             size="lg"
             className="ring-2 ring-gray-100"
           />
@@ -166,17 +222,30 @@ const WorkspaceCard = ({
           </div>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <span
-            className={`px-2.5 py-1 rounded-full text-xs font-medium border ${roleColors[selectedMember.role] || roleColors.viewer
-              }`}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
+              roleColors[selectedMember.role] || roleColors.viewer
+            }`}
           >
             {selectedMember.role?.charAt(0).toUpperCase() +
               selectedMember.role?.slice(1)}
           </span>
+          {isAdmin && (
+            <Trash
+              className="text-red-500 hover:text-red-800 w-6 h-5 cursor-pointer"
+              onClick={() =>
+                handleRemoveMemberClick(
+                  selectedMember._id,
+                  selectedMember.user._id,
+                  selectedMember.user.username,
+                )
+              }
+            />
+          )}
         </div>
       </div>,
-      document.body
+      document.body,
     );
 
   // Popover component untuk all members
@@ -226,24 +295,38 @@ const WorkspaceCard = ({
                     </p>
                   </div>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium border ${roleColors[member.role] || roleColors.viewer
-                      }`}
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                      roleColors[member.role] || roleColors.viewer
+                    }`}
                   >
                     {member.role}
                   </span>
+                  {isAdmin && (
+                    <Trash
+                      className="text-red-500 hover:text-red-800 w-6 h-5 cursor-pointer"
+                      onClick={() =>
+                        handleRemoveMemberClick(
+                          member._id,
+                          member.user._id,
+                          member.user.username,
+                        )
+                      }
+                    />
+                  )}
                 </div>
-              )
+              ),
           )}
         </div>
       </div>,
-      document.body
+      document.body,
     );
 
   return (
     <>
       <div
-        className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${isSelected ? "ring-2 ring-blue-500" : ""
-          }`}
+        className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
+          isSelected ? "ring-2 ring-blue-500" : ""
+        }`}
         onClick={() => onCardClick(workspace)}
       >
         <div className="card-body">
@@ -296,13 +379,18 @@ const WorkspaceCard = ({
                               ring-2 ring-white shadow-md
                               hover:ring-2 hover:ring-blue-400
                               rounded-full
-                              ${selectedMember?._id === member._id
+                              ${
+                                selectedMember?._id === member._id
                                   ? "scale-110 -translate-y-1 ring-2 ring-blue-400"
                                   : ""
-                                }
+                              }
                             `}
                             >
-                              <MemberAvatar member={member} index={index} size="md" />
+                              <MemberAvatar
+                                member={member}
+                                index={index}
+                                size="md"
+                              />
                             </button>
 
                             {/* Hover tooltip */}
@@ -319,7 +407,7 @@ const WorkspaceCard = ({
                               />
                             </div>
                           </div>
-                        )
+                        ),
                     )}
 
                     {remainingCount > 0 && (
@@ -386,6 +474,21 @@ const WorkspaceCard = ({
         onConfirm={confirmDeleteWorkspace}
         title="Delete Division"
         message="Are you sure want to delete this Division? this action can't be undo"
+      />
+
+      <ConfirmDialog
+        show={confirmDeleteMember.show}
+        onClose={() =>
+          setConfirmDeleteMember({
+            show: false,
+            memberId: null,
+            userId: null,
+            username: null,
+          })
+        }
+        onConfirm={confirmRemoveMember}
+        title="Remove Member"
+        message={`Are you sure you want to remove ${confirmDeleteMember.username || "this member"} from the workspace? This action cannot be undone.`}
       />
     </>
   );

@@ -124,9 +124,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     newSocket.on("chat:deleted", ({ messageId, deletedBy }) => {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId
-            ? { ...msg, isDeleted: true, deletedBy }
-            : msg
+          msg._id === messageId ? { ...msg, isDeleted: true, deletedBy } : msg
         )
       );
     });
@@ -364,10 +362,11 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
               <img
                 src={
                   msg.sender.photo
-                    ? `${API_URL}${msg.sender.photo.startsWith("/")
-                      ? msg.sender.photo
-                      : "/uploads/users/" + msg.sender.photo
-                    }`
+                    ? `${API_URL}${
+                        msg.sender.photo.startsWith("/")
+                          ? msg.sender.photo
+                          : "/uploads/users/" + msg.sender.photo
+                      }`
                     : `https://ui-avatars.com/api/?name=${msg.sender.username}&background=random`
                 }
                 alt={msg.sender.username}
@@ -384,13 +383,13 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
                   backgroundColor: msg.isDeleted
                     ? "#F3F4F6"
                     : msg.sender._id === currentUser._id
-                      ? "#6366F1"
-                      : "#EEF2FF",
+                    ? "#6366F1"
+                    : "#EEF2FF",
                   color: msg.isDeleted
                     ? "#9CA3AF"
                     : msg.sender._id === currentUser._id
-                      ? "white"
-                      : "#1F2937",
+                    ? "white"
+                    : "#1F2937",
                   fontStyle: msg.isDeleted ? "italic" : "normal",
                   animation: "fadeIn 0.5s ease-in-out",
                 }}
@@ -402,9 +401,17 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
                 )}
 
                 {msg.isDeleted ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                  >
                     <span>🚫</span>
-                    <span>{msg.deletedBy || msg.sender.username} unsent this message</span>
+                    <span>
+                      {msg.deletedBy || msg.sender.username} unsent this message
+                    </span>
                   </div>
                 ) : (
                   <>
@@ -416,123 +423,119 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
                       />
                     )}
                     {msg.type === "file" && msg.fileUrl && (
-                    <a
-                      href = {`${API_URL}${msg.fileUrl}`}
-                    download
-                    style={styles.fileLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                      <a
+                        href={`${API_URL}${msg.fileUrl}`}
+                        download
+                        style={styles.fileLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                    📎 {msg.fileName}
-                  </a>
+                        📎 {msg.fileName}
+                      </a>
                     )}
-                <div>{msg.message}</div>
-              </>
+                    <div>{msg.message}</div>
+                  </>
                 )}
 
-              <div style={styles.timestamp}>
-                {new Date(msg.createdAt).toLocaleTimeString()}
-                {msg.isEdited && " (edited)"}
+                <div style={styles.timestamp}>
+                  {new Date(msg.createdAt).toLocaleTimeString()}
+                  {msg.isEdited && " (edited)"}
+                </div>
               </div>
             </div>
-            </div>
-      ))
+          ))
         )}
-      <div ref={messagesEndRef} />
-    </div>
+        <div ref={messagesEndRef} />
+      </div>
 
-      {/* Context Menu */ }
-  {
-    contextMenu && selectedMessage && (
-      <div
-        style={{
-          ...styles.contextMenu,
-          top: `${contextMenu.y}px`,
-          left: `${contextMenu.x}px`,
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Context Menu */}
+      {contextMenu && selectedMessage && (
         <div
-          style={styles.contextMenuItem}
-          onClick={handleUnsendMessage}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#FEE2E2";
+          style={{
+            ...styles.contextMenu,
+            top: `${contextMenu.y}px`,
+            left: `${contextMenu.x}px`,
           }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "transparent";
-          }}
+          onClick={(e) => e.stopPropagation()}
         >
-          🚫 Unsend
+          <div
+            style={styles.contextMenuItem}
+            onClick={handleUnsendMessage}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#FEE2E2";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "transparent";
+            }}
+          >
+            🚫 Unsend
+          </div>
         </div>
-      </div>
-    )
-  }
+      )}
 
-  {
-    typingUsers.length > 0 && (
-      <div style={styles.typingIndicator}>
-        {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
-        typing...
-      </div>
-    )
-  }
+      {typingUsers.length > 0 && (
+        <div style={styles.typingIndicator}>
+          {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
+          typing...
+        </div>
+      )}
 
-  <form onSubmit={handleSendMessage} style={styles.inputContainer}>
-    <input
-      type="file"
-      ref={fileInputRef}
-      onChange={handleFileSelect}
-      style={{ display: "none" }}
-      accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
-    />
+      <form onSubmit={handleSendMessage} style={styles.inputContainer}>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          style={{ display: "none" }}
+          accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
+        />
 
-    <button
-      type="button"
-      onClick={() => fileInputRef.current?.click()}
-      style={styles.attachButton}
-      title="Attach file"
-    >
-      📎
-    </button>
-
-    {selectedFile && (
-      <div style={styles.selectedFileContainer}>
-        <span style={styles.selectedFile}>{selectedFile.name}</span>
         <button
           type="button"
-          onClick={handleRemoveFile}
-          style={styles.removeFileButton}
+          onClick={() => fileInputRef.current?.click()}
+          style={styles.attachButton}
+          title="Attach file"
         >
-          ✕
+          📎
         </button>
-      </div>
-    )}
 
-    <input
-      type="text"
-      value={newMessage}
-      onChange={(e) => {
-        setNewMessage(e.target.value);
-        handleTyping();
-      }}
-      placeholder="Type a message..."
-      style={styles.input}
-      disabled={!isConnected}
-    />
+        {selectedFile && (
+          <div style={styles.selectedFileContainer}>
+            <span style={styles.selectedFile}>{selectedFile.name}</span>
+            <button
+              type="button"
+              onClick={handleRemoveFile}
+              style={styles.removeFileButton}
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
-    <button
-      type="submit"
-      style={{
-        ...styles.sendButton,
-        opacity: isConnected ? 1 : 0.5,
-        cursor: isConnected ? "pointer" : "not-allowed",
-      }}
-      disabled={!isConnected}
-    >
-      Send
-    </button>
-  </form>
-    </div >
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => {
+            setNewMessage(e.target.value);
+            handleTyping();
+          }}
+          placeholder="Type a message..."
+          style={styles.input}
+          disabled={!isConnected}
+        />
+
+        <button
+          type="submit"
+          style={{
+            ...styles.sendButton,
+            opacity: isConnected ? 1 : 0.5,
+            cursor: isConnected ? "pointer" : "not-allowed",
+          }}
+          disabled={!isConnected}
+        >
+          Send
+        </button>
+      </form>
+    </div>
   );
 };
 

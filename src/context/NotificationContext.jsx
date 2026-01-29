@@ -22,6 +22,7 @@ export const NotificationProvider = ({ children }) => {
 
     const newSocket = io(SOCKET_URL, {
       auth: { token },
+      transports: ["websocket"],
     });
 
     newSocket.on("connect", () => {
@@ -35,7 +36,6 @@ export const NotificationProvider = ({ children }) => {
     });
 
     newSocket.on("notification:new", (notification) => {
-      // console.log("New notification received:", notification);
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
 
@@ -46,9 +46,6 @@ export const NotificationProvider = ({ children }) => {
         });
       }
     });
-
-    // Di NotificationContext.jsx, dalam useEffect socket
-    // Setelah listener notification:new, tambahkan:
 
     newSocket.on("notification:comment", (data) => {
       console.log("Comment notification received:", data);

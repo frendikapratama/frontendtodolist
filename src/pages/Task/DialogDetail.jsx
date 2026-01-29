@@ -540,7 +540,7 @@ const DialogDetail = ({
                       <span className="font-semibold">current status:</span>
                       <span
                         className={`ml-2 px-3 py-1 rounded-full text-xs font-medium inline-block ${getStatusColor(
-                          status
+                          status,
                         )}`}
                       >
                         {statusOptions.find((s) => s.value === status)?.label ||

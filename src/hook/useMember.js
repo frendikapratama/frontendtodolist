@@ -4,6 +4,7 @@ import {
   getMembersProject,
   getMembersWorkspace,
   inviteMember,
+  removeMember,
 } from "../services/member";
 
 export const useMember = (type, id) => {
@@ -27,9 +28,18 @@ export const useMember = (type, id) => {
     },
   });
 
+  const removeMemberMutation = useMutation({
+    mutationFn: ({ workspaceId, userId }) => removeMember(workspaceId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["members-workspace", id]);
+      queryClient.invalidateQueries(["members-project", id]);
+    },
+  });
+
   return {
     membersProjectQuery,
     membersWorkspaceQuery,
     inviteMemberMutation,
+    removeMemberMutation,
   };
 };

@@ -14,3 +14,7 @@ export async function inviteMember(workspaceId, data) {
   const res = await api.post(`workspaces/${workspaceId}/invite`, data);
   return res.data;
 }
+export async function removeMember(workspaceId, userId) {
+  const res = await api.delete(`workspaces/${workspaceId}/members/${userId}`);
+  return res.data;
+}
