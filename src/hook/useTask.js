@@ -145,7 +145,6 @@ export const useTaskByProject = (projectId) => {
 
 export const useUpdateTask = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ taskId, data }) => updateTask(taskId, data),
     onSuccess: () => {
