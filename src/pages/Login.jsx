@@ -39,6 +39,8 @@ export default function Login() {
       <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-4 sm:p-6 w-full max-w-4xl mx-4">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
           <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
+          <div className="flex justify-between">
+          <div></div>
             <div className=" mx-auto flex items-center justify-center flex-col">
               <img src={logo} alt="logo" />
               <GradientText
@@ -50,6 +52,7 @@ export default function Login() {
                 Planify
               </GradientText>
             </div>
+          </div>
           </div>
 
           <div className="backdrop-blur-lg bg-black/10 shadow-lg rounded-2xl p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-4 sm:space-y-6">
