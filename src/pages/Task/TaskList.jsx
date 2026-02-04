@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useTask } from "../../hook/useTask";
 import { useMember } from "../../hook/useMember";
@@ -21,10 +21,23 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
+// Throttle helper untuk mencegah update terlalu sering
+const useThrottle = (callback, delay) => {
+  const lastRun = useRef(Date.now());
 
+  return useCallback(
+    (...args) => {
+      const now = Date.now();
+      if (now - lastRun.current >= delay) {
+        callback(...args);
+        lastRun.current = now;
+      }
+    },
+    [callback, delay],
+  );
+};
 const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const { user: currentUser } = useContext(AuthContext);
-  // Tambahkan state untuk popup PIC
   const [picPopup, setPicPopup] = useState({ show: false, taskId: null });
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const getPhotoUrl = (photoPath) => {
@@ -113,7 +126,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         bValue = bValue?.toLowerCase() || "";
       } else if (
         ["start_date", "due_date", "finish_date", "meeting_date"].includes(
-          sortConfig.key
+          sortConfig.key,
         )
       ) {
         aValue = aValue ? new Date(aValue).getTime() : 0;
@@ -196,7 +209,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   };
   const displayTasks = getSortedTasks();
 
-  // Ganti fungsi handleAssignPic
   const handleAssignPic = useCallback(
     (taskId, email) => {
       const trimmedEmail = email.trim();
@@ -214,10 +226,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           onSuccess: () => {
             setPicPopup({ show: false, taskId: null });
           },
-        }
+        },
       );
     },
-    [assignPicMutation]
+    [assignPicMutation],
   );
 
   const handleDeletePICTask = useCallback((taskId, userId) => {
@@ -266,7 +278,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       {
         threshold: 0,
         rootMargin: "0px",
-      }
+      },
     );
     if (tableEndRef.current) {
       observer.observe(tableEndRef.current);
@@ -294,7 +306,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           setTaskName("");
           setShowAddTask(false);
         },
-      }
+      },
     );
   }, [taskName, addTaskMutation]);
 
@@ -308,7 +320,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       updateTaskMutation.mutate({ taskId, data: { [field]: trimmedValue } });
       setEditingField(null);
     },
-    [updateTaskMutation]
+    [updateTaskMutation],
   );
 
   const calculateAutoNote = (status, due_date, finish_date) => {
@@ -352,7 +364,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         const autoNote = calculateAutoNote(
           newStatus,
           newDueDate,
-          newFinishDate
+          newFinishDate,
         );
 
         if (autoNote) {
@@ -366,7 +378,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       setActivePopup(null);
     },
     // [localTasks, updateTaskMutation, updateSubTaskMutation, syncTasktoSubtasks]
-    [localTasks, updateTaskMutation]
+    [localTasks, updateTaskMutation],
   );
 
   const handleDragStart = (e, index) => {
@@ -380,45 +392,61 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
     const draggedTaskData = JSON.parse(
-      e.dataTransfer.getData("draggedTask") || "{}"
+      e.dataTransfer.getData("draggedTask") || "{}",
     );
+
     if (!draggedTaskData._id) return;
+
     const isSameGroup = sourceGroupId === groupId;
-    const currentDragIndex = isSameGroup ? dragState.index : null;
-    if (currentDragIndex === index) return;
+
+    if (isSameGroup && dragState.index === index) return;
+
     setLocalTasks((prev) => {
       const filtered = prev.filter((t) => !t._isPreview);
-      const newTasks = isSameGroup ? [...filtered] : [...filtered];
-      if (isSameGroup && currentDragIndex !== null) {
-        const [removed] = newTasks.splice(currentDragIndex, 1);
-        newTasks.splice(index, 0, removed);
-      } else {
-        const alreadyHasPreview = newTasks.some(
-          (t) => t._id === draggedTaskData._id && t._isPreview
+
+      if (isSameGroup) {
+        const newTasks = [...filtered];
+        const currentIndex = newTasks.findIndex(
+          (t) => t._id === draggedTaskData._id,
         );
-        if (!alreadyHasPreview) {
-          newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+
+        if (currentIndex !== -1 && currentIndex !== index) {
+          const [removed] = newTasks.splice(currentIndex, 1);
+          newTasks.splice(index, 0, removed);
         }
+
+        return newTasks;
+      } else {
+        const newTasks = [...filtered];
+        newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+        return newTasks;
       }
-      return newTasks;
     });
 
     setDragState((prev) => ({ ...prev, index }));
   };
+  const throttledDragOver = useThrottle(handleDragOver, 50);
 
   const handleDrop = (e, index) => {
     e.preventDefault();
+    e.stopPropagation();
+
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
     const draggedTaskId = e.dataTransfer.getData("taskId");
     const isSameGroup = sourceGroupId === groupId;
+
     setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
 
     if (isSameGroup) {
-      updateTaskPositionsMutation.mutate(
-        localTasks.filter((t) => !t._isPreview).map((t) => t._id)
-      );
+      const finalTasks = localTasks
+        .filter((t) => !t._isPreview)
+        .map((t) => t._id);
+
+      updateTaskPositionsMutation.mutate(finalTasks);
     } else {
       const dropEvent = new CustomEvent("taskDrop", {
         detail: {
@@ -594,7 +622,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           </button>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   };
 
@@ -605,7 +633,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id
+        member.user?._id === currentUser.id,
     );
 
     if (!userMembership) return false;
@@ -621,7 +649,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id
+        member.user?._id === currentUser.id,
     );
 
     if (!userMembership) return false;
@@ -775,7 +803,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
               <div
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
+                onDragOver={(e) => throttledDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 a
@@ -968,7 +996,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                               handlePopupChange(
                                 task._id,
                                 "status",
-                                "In Progress"
+                                "In Progress",
                               )
                             }
                             className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors border border-red-300 text-xs"
@@ -1022,10 +1050,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       task.priority === "Urgent"
                         ? "text-red-700 bg-red-200"
                         : task.priority === "High"
-                        ? "text-orange-800 bg-orange-200"
-                        : task.priority === "Medium"
-                        ? "text-blue-800 bg-blue-200"
-                        : "text-gray-800 bg-gray-200"
+                          ? "text-orange-800 bg-orange-200"
+                          : task.priority === "Medium"
+                            ? "text-blue-800 bg-blue-200"
+                            : "text-gray-800 bg-gray-200"
                     }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "priority" })
@@ -1212,12 +1240,12 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       task.note === "Planning"
                         ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
                         : task.note === "Uncomplete"
-                        ? "text-red-100 bg-red-900 hover:bg-red-400"
-                        : task.note === "Completed - On Time"
-                        ? "text-green-700 bg-green-100 hover:bg-green-200"
-                        : task.note === "Completed - Overdue"
-                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                          ? "text-red-100 bg-red-900 hover:bg-red-400"
+                          : task.note === "Completed - On Time"
+                            ? "text-green-700 bg-green-100 hover:bg-green-200"
+                            : task.note === "Completed - Overdue"
+                              ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                              : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
                     }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
