@@ -89,6 +89,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     "Hold",
   ];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
+  const TYPE_OPTIONS = ["Minor", "Major"];
   const NOTE_OPTIONS = [
     "Completed - On Time",
     "Completed - Overdue",
@@ -658,6 +659,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     return allowedRoles.includes(userMembership.role);
   };
 
+  const canSeeType = () => {
+    if (!currentUser) return false;
+  };
+
   return (
     <div className="overflow-auto max-h-[90vh]">
       <ConfirmDialog
@@ -684,6 +689,19 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
               <SortIcon columnKey="nama" />
             </span>
           </div>
+
+          {/* Type Column - Sortable by count */}
+          {canSeeType && (
+            <div
+              className={`${columnWidths.type} px-6 ml-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+              onClick={() => handleSort("type")}
+            >
+              <span className="flex items-center">
+                Type
+                <SortIcon columnKey="type" />
+              </span>
+            </div>
+          )}
 
           {/* PIC Column - Sortable by count */}
           <div
@@ -878,6 +896,41 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     </span>
                   )}
                 </div>
+
+                {/* Type Col */}
+                {/* {!isMember && ( */}
+                <div
+                  className={`${columnWidths.type} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) => (buttonRefs.current[`type-${task._id}`] = el)}
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.type === "Major"
+                        ? "text-red-800 bg-red-200"
+                        : "text-blue-800 bg-blue-200"
+                    }`}
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "type" })
+                    }
+                  >
+                    {task.type}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "type" && (
+                      <PopupSelect
+                        value={task.priority}
+                        options={TYPE_OPTIONS}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "type", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`type-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
+                {/* )} */}
                 {/* PIC */}
                 <div
                   className={`${columnWidths.pic} flex items-center justify-center gap-1 relative`}
