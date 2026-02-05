@@ -105,7 +105,7 @@ const WorkspaceDetailPage = () => {
               required
             />
             <div className="modal-action">
-              <button type="submit" className="btn btn-primary">
+              <button type="submit" className="btn btn-primary">  
                 Save
               </button>
               <button
@@ -123,7 +123,7 @@ const WorkspaceDetailPage = () => {
       </dialog>
       {/* Invite Member Modal */}
       <dialog id="inviteMemberModal" className="modal">
-        <div className="modal-box">
+        <div className="modal-box max-w-2xl w-full">
           <h3 className="font-bold text-lg">Invite Member</h3>
           <form onSubmit={handleInviteMember}>
             <div className="form-control mt-4">
@@ -144,7 +144,7 @@ const WorkspaceDetailPage = () => {
               <label className="label pb-2">
                 <span className="label-text">Role</span>
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-5">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
@@ -155,6 +155,17 @@ const WorkspaceDetailPage = () => {
                     className="radio radio-primary"
                   />
                   <span>Admin</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="management"
+                    checked={inviteRole === "management"}
+                    onChange={(e) => setInviteRole(e.target.value)}
+                    className="radio radio-primary"
+                  />
+                  <span>Management</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input

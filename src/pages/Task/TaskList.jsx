@@ -83,6 +83,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     "Uncomplete",
     "Planning",
   ];
+  const TYPE_OPTIONS = [
+    "Minor",
+    "Major"
+  ];
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
   const tableEndRef = useRef(null);
   const headerRef = useRef(null);
@@ -465,6 +469,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     task: "w-95",
     pic: "w-32",
     status: "w-40",
+    type: "w-32",
     priority: "w-32",
     meetingDate: "w-40",
     startDate: "w-40",
@@ -610,7 +615,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
     if (!userMembership) return false;
 
-    const allowedRoles = ["admin", "project_manager"];
+    const allowedRoles = ["admin", "project_manager", "management"];
     return allowedRoles.includes(userMembership.role);
   };
 
@@ -668,6 +673,16 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             </span>
           </div>
 
+          {/* Major Minor Column - Sortable */}
+          <div
+            className={`${columnWidths.type} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("type")}
+          >
+            <span className="flex items-center">
+              Type
+              <SortIcon columnKey="type" />
+            </span>
+          </div>
           {/* Status Column - Sortable */}
           <div
             className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
@@ -779,21 +794,17 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 a
-                className={`flex items-center hover:bg-none ${
-                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                } ${
-                  isPreview
+                className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                  } ${isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                }`}
+                  }`}
               >
                 {/* Name */}
                 <div
-                  className={`flex-1 flex items-center ${
-                    columnWidths.task
-                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
-                    isDragging ? "bg-gray-600" : ""
-                  } ${isPreview ? "bg-blue-50" : ""}`}
+                  className={`flex-1 flex items-center ${columnWidths.task
+                    } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${isDragging ? "bg-gray-600" : ""
+                    } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
@@ -802,27 +813,25 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all shrink-0 ${
-                      task.subtask?.length || isHovered
+                    className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
                         ? "opacity-100 hover:bg-gray-200"
                         : "opacity-0"
-                    }`}
+                      }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${
-                          task.subtask?.length
+                        className={`w-4 h-4 ${task.subtask?.length
                             ? "text-gray-700"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       />
                     )}
                   </button>
 
                   {editingField?.taskId === task._id &&
-                  editingField?.field === "nama" ? (
+                    editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
@@ -938,6 +947,39 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     />
                   )}
                 </div>
+                {/* type */}
+                <div
+                  className={`${columnWidths.type} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) =>
+                      (buttonRefs.current[`type-${task._id}`] = el)
+                    }
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.type === "Major"
+                      ? "text-orange-700 bg-orange-200"
+                      : "text-cyan-800 bg-cyan-200"
+                      }`}
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "type" })
+                    }
+                  >
+                    {task.type}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "type" && (
+                      <PopupSelect
+                        value={task.type}
+                        options={TYPE_OPTIONS}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "type", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`type-${task._id}`],
+                        }}
+                      />
+                    )}
+                </div>
                 {/* Status */}
                 <div
                   className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
@@ -1018,15 +1060,14 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) =>
                       (buttonRefs.current[`priority-${task._id}`] = el)
                     }
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
-                      task.priority === "Urgent"
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
                         ? "text-red-700 bg-red-200"
                         : task.priority === "High"
-                        ? "text-orange-800 bg-orange-200"
-                        : task.priority === "Medium"
-                        ? "text-blue-800 bg-blue-200"
-                        : "text-gray-800 bg-gray-200"
-                    }`}
+                          ? "text-orange-800 bg-orange-200"
+                          : task.priority === "Medium"
+                            ? "text-blue-800 bg-blue-200"
+                            : "text-gray-800 bg-gray-200"
+                      }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "priority" })
                     }
@@ -1066,13 +1107,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })
                       : "Set date & time"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1109,10 +1150,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1144,10 +1185,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1179,10 +1220,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.finish_date
                       ? new Date(task.finish_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1208,17 +1249,16 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) => {
                       buttonRefs.current[`note-${task._id}`] = el;
                     }}
-                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
-                      task.note === "Planning"
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
                         ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
                         : task.note === "Uncomplete"
-                        ? "text-red-100 bg-red-900 hover:bg-red-400"
-                        : task.note === "Completed - On Time"
-                        ? "text-green-700 bg-green-100 hover:bg-green-200"
-                        : task.note === "Completed - Overdue"
-                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                    }`}
+                          ? "text-red-100 bg-red-900 hover:bg-red-400"
+                          : task.note === "Completed - On Time"
+                            ? "text-green-700 bg-green-100 hover:bg-green-200"
+                            : task.note === "Completed - Overdue"
+                              ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                              : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                      }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
