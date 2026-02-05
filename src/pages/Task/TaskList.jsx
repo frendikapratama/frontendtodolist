@@ -385,6 +385,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     [localTasks, updateTaskMutation],
   );
 
+  // consol
   const handleDragStart = (e, index) => {
     const task = localTasks[index];
     setDragState({ index, task, fromGroup: groupId });
@@ -394,6 +395,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     e.dataTransfer.setData("draggedTask", JSON.stringify(task));
   };
 
+  // consol
   const handleDragOver = (e, index) => {
     e.preventDefault();
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
@@ -424,6 +426,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     setDragState((prev) => ({ ...prev, index }));
   };
 
+  // update
   const handleDrop = (e, index) => {
     e.preventDefault();
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
@@ -449,11 +452,12 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
     setDragState({ index: null, task: null, fromGroup: null });
   };
-
+  //
   const handleDragEnd = () => {
     setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
     setDragState({ index: null, task: null, fromGroup: null });
   };
+  //
   const handleDeleteTask = useCallback((taskId) => {
     setConfirmDelete({ show: true, taskId: taskId });
   }, []);
@@ -800,6 +804,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
               onMouseEnter={() => setHoveredRow(task._id)}
               onMouseLeave={() => setHoveredRow(null)}
             >
+              {/* console */}
               <div
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
