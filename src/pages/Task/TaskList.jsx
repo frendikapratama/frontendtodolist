@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTask } from "../../hook/useTask";
 import { useMember } from "../../hook/useMember";
@@ -22,7 +22,6 @@ import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 // Throttle helper untuk mencegah update terlalu sering
-// edit
 const useThrottle = (callback, delay) => {
   const lastRun = useRef(Date.now());
 
@@ -37,8 +36,10 @@ const useThrottle = (callback, delay) => {
     [callback, delay],
   );
 };
+
 const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const { user: currentUser } = useContext(AuthContext);
+  // Tambahkan state untuk popup PIC
   const [picPopup, setPicPopup] = useState({ show: false, taskId: null });
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const getPhotoUrl = (photoPath) => {
@@ -90,7 +91,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     "Hold",
   ];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
-  const TYPE_OPTIONS = ["Minor", "Major"];
   const NOTE_OPTIONS = [
     "Completed - On Time",
     "Completed - Overdue",
@@ -98,6 +98,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     "Uncomplete",
     "Planning",
   ];
+  const TYPE_OPTIONS = ["Minor", "Major"];
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
   const tableEndRef = useRef(null);
   const headerRef = useRef(null);
@@ -499,6 +500,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     task: "w-95",
     pic: "w-32",
     status: "w-40",
+    type: "w-32",
     priority: "w-32",
     meetingDate: "w-40",
     startDate: "w-40",
@@ -644,7 +646,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
     if (!userMembership) return false;
 
-    const allowedRoles = ["admin", "project_manager"];
+    const allowedRoles = ["admin", "project_manager", "management"];
     return allowedRoles.includes(userMembership.role);
   };
 
@@ -664,10 +666,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     return allowedRoles.includes(userMembership.role);
   };
 
-  const canSeeType = () => {
-    if (!currentUser) return false;
-  };
-
   return (
     <div className="overflow-auto max-h-[90vh]">
       <ConfirmDialog
@@ -680,6 +678,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         message="Are you sure want to delete this PIC? this action can't be undo"
       />
       <div className="w-[50vw] min-w-max">
+        {/* task */}
         <div
           ref={headerRef}
           className={`flex sticky top-0 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-30 transition-all duration-200 `}
@@ -695,19 +694,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             </span>
           </div>
 
-          {/* Type Column - Sortable by count */}
-          {canSeeType && (
-            <div
-              className={`${columnWidths.type} px-6 ml-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-              onClick={() => handleSort("type")}
-            >
-              <span className="flex items-center">
-                Type
-                <SortIcon columnKey="type" />
-              </span>
-            </div>
-          )}
-
           {/* PIC Column - Sortable by count */}
           <div
             className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
@@ -719,6 +705,16 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             </span>
           </div>
 
+          {/* Major Minor Column - Sortable */}
+          <div
+            className={`${columnWidths.type} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("type")}
+          >
+            <span className="flex items-center">
+              Type
+              <SortIcon columnKey="type" />
+            </span>
+          </div>
           {/* Status Column - Sortable */}
           <div
             className={`${columnWidths.status} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
@@ -902,41 +898,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     </span>
                   )}
                 </div>
-
-                {/* Type Col */}
-                {/* {!isMember && ( */}
-                <div
-                  className={`${columnWidths.type} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
-                >
-                  <span
-                    ref={(el) => (buttonRefs.current[`type-${task._id}`] = el)}
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
-                      task.type === "Major"
-                        ? "text-red-800 bg-red-200"
-                        : "text-blue-800 bg-blue-200"
-                    }`}
-                    onClick={() =>
-                      setActivePopup({ taskId: task._id, field: "type" })
-                    }
-                  >
-                    {task.type}
-                  </span>
-                  {activePopup?.taskId === task._id &&
-                    activePopup?.field === "type" && (
-                      <PopupSelect
-                        value={task.priority}
-                        options={TYPE_OPTIONS}
-                        onChange={(value) =>
-                          handlePopupChange(task._id, "type", value)
-                        }
-                        onClose={() => setActivePopup(null)}
-                        buttonRef={{
-                          current: buttonRefs.current[`type-${task._id}`],
-                        }}
-                      />
-                    )}
-                </div>
-                {/* )} */}
                 {/* PIC */}
                 <div
                   className={`${columnWidths.pic} flex items-center justify-center gap-1 relative`}
@@ -1024,6 +985,38 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       }}
                     />
                   )}
+                </div>
+                {/* type */}
+                <div
+                  className={`${columnWidths.type} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <span
+                    ref={(el) => (buttonRefs.current[`type-${task._id}`] = el)}
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.type === "Major"
+                        ? "text-orange-700 bg-orange-200"
+                        : "text-cyan-800 bg-cyan-200"
+                    }`}
+                    onClick={() =>
+                      setActivePopup({ taskId: task._id, field: "type" })
+                    }
+                  >
+                    {task.type}
+                  </span>
+                  {activePopup?.taskId === task._id &&
+                    activePopup?.field === "type" && (
+                      <PopupSelect
+                        value={task.type}
+                        options={TYPE_OPTIONS}
+                        onChange={(value) =>
+                          handlePopupChange(task._id, "type", value)
+                        }
+                        onClose={() => setActivePopup(null)}
+                        buttonRef={{
+                          current: buttonRefs.current[`type-${task._id}`],
+                        }}
+                      />
+                    )}
                 </div>
                 {/* Status */}
                 <div
