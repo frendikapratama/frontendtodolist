@@ -431,7 +431,7 @@ export default function Sidebar() {
           <div className={`flex items-center pb-1 gap-3 transition-all duration-300 ${isSidebarOpen ? "justify-end" : "justify-center"
             }`}>
             {isSidebarOpen && user && (
-              <p className={`text-black font-semibold text-[1em] ${isSidebarOpen ? "justify-center" : "justify-end"}`}>{user.username}</p>
+              <p className={`text-black font-semibold text-[1em] ${isSidebarOpen ? "justify-center w-25 truncate" : "justify-end"}`}>{user.username}</p>
             )}
             <img
               className="w-10 h-10 border rounded-full"

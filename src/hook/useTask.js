@@ -54,7 +54,7 @@ export const useTask = (groupId, filters = {} /*searchQuery = */) => {
     mutationFn: ({ taskId, data }) => updateTask(taskId, data),
     onSuccess: () => {
       toast.success("Successfully updated Task");
-      queryClient.invalidateQueries({ queryKey: ["task"] });
+      queryClient.invalidateQueries({ queryKey: ["task", groupId, filters] });
     },
     onError: (error) => {
       const errors = error.response?.data?.error;
