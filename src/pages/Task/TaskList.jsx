@@ -212,7 +212,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   };
   const displayTasks = getSortedTasks();
 
-  // Ganti fungsi handleAssignPic
   const handleAssignPic = useCallback(
     (taskId, email) => {
       const trimmedEmail = email.trim();
@@ -398,46 +397,62 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   // consol
   const handleDragOver = (e, index) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
     const draggedTaskData = JSON.parse(
       e.dataTransfer.getData("draggedTask") || "{}",
     );
+
     if (!draggedTaskData._id) return;
+
     const isSameGroup = sourceGroupId === groupId;
-    const currentDragIndex = isSameGroup ? dragState.index : null;
-    if (currentDragIndex === index) return;
+
+    if (isSameGroup && dragState.index === index) return;
+
     setLocalTasks((prev) => {
       const filtered = prev.filter((t) => !t._isPreview);
-      const newTasks = isSameGroup ? [...filtered] : [...filtered];
-      if (isSameGroup && currentDragIndex !== null) {
-        const [removed] = newTasks.splice(currentDragIndex, 1);
-        newTasks.splice(index, 0, removed);
-      } else {
-        const alreadyHasPreview = newTasks.some(
-          (t) => t._id === draggedTaskData._id && t._isPreview,
+
+      if (isSameGroup) {
+        const newTasks = [...filtered];
+        const currentIndex = newTasks.findIndex(
+          (t) => t._id === draggedTaskData._id,
         );
-        if (!alreadyHasPreview) {
-          newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+
+        if (currentIndex !== -1 && currentIndex !== index) {
+          const [removed] = newTasks.splice(currentIndex, 1);
+          newTasks.splice(index, 0, removed);
         }
+
+        return newTasks;
+      } else {
+        const newTasks = [...filtered];
+        newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+        return newTasks;
       }
-      return newTasks;
     });
 
     setDragState((prev) => ({ ...prev, index }));
   };
+  const throttledDragOver = useThrottle(handleDragOver, 50);
 
   // update
   const handleDrop = (e, index) => {
     e.preventDefault();
+    e.stopPropagation();
+
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
     const draggedTaskId = e.dataTransfer.getData("taskId");
     const isSameGroup = sourceGroupId === groupId;
+
     setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
 
     if (isSameGroup) {
-      updateTaskPositionsMutation.mutate(
-        localTasks.filter((t) => !t._isPreview).map((t) => t._id),
-      );
+      const finalTasks = localTasks
+        .filter((t) => !t._isPreview)
+        .map((t) => t._id);
+
+      updateTaskPositionsMutation.mutate(finalTasks);
     } else {
       const dropEvent = new CustomEvent("taskDrop", {
         detail: {
@@ -808,7 +823,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
               <div
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
+                onDragOver={(e) => throttledDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 a
