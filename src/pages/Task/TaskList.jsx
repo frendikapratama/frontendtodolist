@@ -21,6 +21,21 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
+// Throttle helper untuk mencegah update terlalu sering
+const useThrottle = (callback, delay) => {
+  const lastRun = useRef(Date.now());
+
+  return useCallback(
+    (...args) => {
+      const now = Date.now();
+      if (now - lastRun.current >= delay) {
+        callback(...args);
+        lastRun.current = now;
+      }
+    },
+    [callback, delay],
+  );
+};
 
 const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const { user: currentUser } = useContext(AuthContext);
@@ -84,10 +99,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     "Uncomplete",
     "Planning",
   ];
-  const TYPE_OPTIONS = [
-    "Minor",
-    "Major"
-  ];
+  const TYPE_OPTIONS = ["Minor", "Major"];
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
   const tableEndRef = useRef(null);
   const headerRef = useRef(null);
@@ -118,7 +130,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         bValue = bValue?.toLowerCase() || "";
       } else if (
         ["start_date", "due_date", "finish_date", "meeting_date"].includes(
-          sortConfig.key
+          sortConfig.key,
         )
       ) {
         aValue = aValue ? new Date(aValue).getTime() : 0;
@@ -201,7 +213,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   };
   const displayTasks = getSortedTasks();
 
-  // Ganti fungsi handleAssignPic
   const handleAssignPic = useCallback(
     (taskId, email) => {
       const trimmedEmail = email.trim();
@@ -219,10 +230,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           onSuccess: () => {
             setPicPopup({ show: false, taskId: null });
           },
-        }
+        },
       );
     },
-    [assignPicMutation]
+    [assignPicMutation],
   );
 
   const handleDeletePICTask = useCallback((taskId, userId) => {
@@ -271,7 +282,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       {
         threshold: 0,
         rootMargin: "0px",
-      }
+      },
     );
     if (tableEndRef.current) {
       observer.observe(tableEndRef.current);
@@ -299,7 +310,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           setTaskName("");
           setShowAddTask(false);
         },
-      }
+      },
     );
   }, [taskName, addTaskMutation]);
 
@@ -318,7 +329,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       updateTaskMutation.mutate({ taskId, data: updateData });
       setEditingField(null);
     },
-    [updateTaskMutation]
+    [updateTaskMutation],
   );
 
   const calculateAutoNote = (status, due_date, finish_date) => {
@@ -362,7 +373,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         const autoNote = calculateAutoNote(
           newStatus,
           newDueDate,
-          newFinishDate
+          newFinishDate,
         );
 
         if (autoNote) {
@@ -382,7 +393,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       updateTaskMutation.mutate({ taskId, data: updateData });
       setActivePopup(null);
     },
-    [localTasks, updateTaskMutation]
+    [localTasks, updateTaskMutation],
   );
   const handleScaleChange = useCallback(
     (taskId, e) => {
@@ -436,47 +447,65 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     e.dataTransfer.setData("draggedTask", JSON.stringify(task));
   };
 
+  // consol
   const handleDragOver = (e, index) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
     const draggedTaskData = JSON.parse(
-      e.dataTransfer.getData("draggedTask") || "{}"
+      e.dataTransfer.getData("draggedTask") || "{}",
     );
+
     if (!draggedTaskData._id) return;
+
     const isSameGroup = sourceGroupId === groupId;
-    const currentDragIndex = isSameGroup ? dragState.index : null;
-    if (currentDragIndex === index) return;
+
+    if (isSameGroup && dragState.index === index) return;
+
     setLocalTasks((prev) => {
       const filtered = prev.filter((t) => !t._isPreview);
-      const newTasks = isSameGroup ? [...filtered] : [...filtered];
-      if (isSameGroup && currentDragIndex !== null) {
-        const [removed] = newTasks.splice(currentDragIndex, 1);
-        newTasks.splice(index, 0, removed);
-      } else {
-        const alreadyHasPreview = newTasks.some(
-          (t) => t._id === draggedTaskData._id && t._isPreview
+
+      if (isSameGroup) {
+        const newTasks = [...filtered];
+        const currentIndex = newTasks.findIndex(
+          (t) => t._id === draggedTaskData._id,
         );
-        if (!alreadyHasPreview) {
-          newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+
+        if (currentIndex !== -1 && currentIndex !== index) {
+          const [removed] = newTasks.splice(currentIndex, 1);
+          newTasks.splice(index, 0, removed);
         }
+
+        return newTasks;
+      } else {
+        const newTasks = [...filtered];
+        newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+        return newTasks;
       }
-      return newTasks;
     });
 
     setDragState((prev) => ({ ...prev, index }));
   };
+  const throttledDragOver = useThrottle(handleDragOver, 50);
 
+  // update
   const handleDrop = (e, index) => {
     e.preventDefault();
+    e.stopPropagation();
+
     const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
     const draggedTaskId = e.dataTransfer.getData("taskId");
     const isSameGroup = sourceGroupId === groupId;
+
     setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
 
     if (isSameGroup) {
-      updateTaskPositionsMutation.mutate(
-        localTasks.filter((t) => !t._isPreview).map((t) => t._id)
-      );
+      const finalTasks = localTasks
+        .filter((t) => !t._isPreview)
+        .map((t) => t._id);
+
+      updateTaskPositionsMutation.mutate(finalTasks);
     } else {
       const dropEvent = new CustomEvent("taskDrop", {
         detail: {
@@ -491,11 +520,12 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
     setDragState({ index: null, task: null, fromGroup: null });
   };
-
+  //
   const handleDragEnd = () => {
     setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
     setDragState({ index: null, task: null, fromGroup: null });
   };
+  //
   const handleDeleteTask = useCallback((taskId) => {
     setConfirmDelete({ show: true, taskId: taskId });
   }, []);
@@ -654,7 +684,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           </button>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   };
 
@@ -665,7 +695,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id
+        member.user?._id === currentUser.id,
     );
 
     if (!userMembership) return false;
@@ -681,7 +711,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id
+        member.user?._id === currentUser.id,
     );
 
     if (!userMembership) return false;
@@ -702,6 +732,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         message="Are you sure want to delete this PIC? this action can't be undo"
       />
       <div className="w-[50vw] min-w-max">
+        {/* task */}
         <div
           ref={headerRef}
           className={`flex sticky top-0 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200 z-30 transition-all duration-200 `}
@@ -853,24 +884,29 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
               onMouseEnter={() => setHoveredRow(task._id)}
               onMouseLeave={() => setHoveredRow(null)}
             >
+              {/* console */}
               <div
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
+                onDragOver={(e) => throttledDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 a
-                className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                  } ${isPreview
+                className={`flex items-center hover:bg-none ${
+                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                } ${
+                  isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                  }`}
+                }`}
               >
                 {/* Name */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task
-                    } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${isDragging ? "bg-gray-600" : ""
-                    } ${isPreview ? "bg-blue-50" : ""}`}
+                  className={`flex-1 flex items-center ${
+                    columnWidths.task
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                    isDragging ? "bg-gray-600" : ""
+                  } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
@@ -897,7 +933,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   </button>
 
                   {editingField?.taskId === task._id &&
-                    editingField?.field === "nama" ? (
+                  editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
@@ -1018,13 +1054,12 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   className={`${columnWidths.type} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
                 >
                   <span
-                    ref={(el) =>
-                      (buttonRefs.current[`type-${task._id}`] = el)
-                    }
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.type === "Major"
-                      ? "text-orange-700 bg-orange-200"
-                      : "text-cyan-800 bg-cyan-200"
-                      }`}
+                    ref={(el) => (buttonRefs.current[`type-${task._id}`] = el)}
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.type === "Major"
+                        ? "text-orange-700 bg-orange-200"
+                        : "text-cyan-800 bg-cyan-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "type" })
                     }
@@ -1076,7 +1111,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                               handlePopupChange(
                                 task._id,
                                 "status",
-                                "In Progress"
+                                "In Progress",
                               )
                             }
                             className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors border border-red-300 text-xs"
@@ -1188,13 +1223,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })
                       : "Set date & time"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1231,10 +1266,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1266,10 +1301,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1301,10 +1336,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.finish_date
                       ? new Date(task.finish_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
