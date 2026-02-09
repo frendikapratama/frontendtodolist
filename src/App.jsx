@@ -17,6 +17,7 @@ import VerifyResetPassword from "./pages/VerifyResetPassword";
 import AuthPages from "./pages/AuthPages";
 import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
+import MajorTask from "./pages/MajorTask";
 export default function App() {
   return (
     <AuthProvider>
@@ -40,6 +41,7 @@ export default function App() {
 
                 <Route element={<ProtectedRoute />}>
                   <Route element={<Layout />}>
+                    <Route path="/major-task" element={<MajorTask />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/mywork" element={<MyWork />} />
                     <Route path="/kuarter" element={<Kuarter />} />

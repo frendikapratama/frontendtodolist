@@ -65,6 +65,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const [taskName, setTaskName] = useState("");
   const [editingField, setEditingField] = useState(null);
   const [editedValue, setEditedValue] = useState("");
+  const [scaleInput, setScaleInput] = useState({});
   const [activePopup, setActivePopup] = useState(null);
   const [localTasks, setLocalTasks] = useState([]);
   const [dragState, setDragState] = useState({
@@ -320,7 +321,12 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         setEditingField(null);
         return;
       }
-      updateTaskMutation.mutate({ taskId, data: { [field]: trimmedValue } });
+      const updateData = { [field]: trimmedValue };
+      const updatedTasks = localTasks.map((t) =>
+        t._id === taskId ? { ...t, ...updateData } : t,
+      );
+      setLocalTasks(updatedTasks);
+      updateTaskMutation.mutate({ taskId, data: updateData });
       setEditingField(null);
     },
     [updateTaskMutation],
@@ -374,17 +380,64 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           updateData.note = autoNote;
         }
       }
+
+      // ✅ OPTIMISTIC UPDATE - Update localTasks langsung
+      const updatedTasks = localTasks.map((t) =>
+        t._id === taskId ? { ...t, ...updateData } : t,
+      );
+      setLocalTasks(updatedTasks);
+
       // if(field === "status" && task.subtask && task.subtask.length > 0){
       //   syncTasktoSubtasks(value, task.subtask, updateSubTaskMutation)
       // }
       updateTaskMutation.mutate({ taskId, data: updateData });
       setActivePopup(null);
     },
-    // [localTasks, updateTaskMutation, updateSubTaskMutation, syncTasktoSubtasks]
     [localTasks, updateTaskMutation],
   );
+  const handleScaleChange = useCallback(
+    (taskId, e) => {
+      const val = e.target.value;
+      setScaleInput((prev) => ({ ...prev, [taskId]: val }));
+      if (val === "") {
+        return;
+      }
+      if (!/^[0-9]+$/.test(val)) {
+        return;
+      }
+      const num = parseInt(val);
+      if (num >= 1 && num <= 100) {
+        const updateData = { scale: val };
+        const updatedTasks = localTasks.map((t) =>
+          t._id === taskId ? { ...t, ...updateData } : t,
+        );
+        setLocalTasks(updatedTasks);
+        updateTaskMutation.mutate({ taskId, data: updateData });
+      }
+    },
+    [updateTaskMutation, localTasks],
+  );
 
-  // consol
+  const handleScaleBlur = useCallback(
+    (taskId) => {
+      const val = scaleInput[taskId];
+      if (val === "") {
+        const updateData = { scale: "" };
+        const updatedTasks = localTasks.map((t) =>
+          t._id === taskId ? { ...t, ...updateData } : t,
+        );
+        setLocalTasks(updatedTasks);
+        updateTaskMutation.mutate({ taskId, data: updateData });
+      }
+      setScaleInput((prev) => {
+        const updated = { ...prev };
+        delete updated[taskId];
+        return updated;
+      });
+    },
+    [scaleInput, updateTaskMutation, localTasks],
+  );
+
   const handleDragStart = (e, index) => {
     const task = localTasks[index];
     setDragState({ index, task, fromGroup: groupId });
@@ -502,6 +555,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     status: "w-40",
     type: "w-32",
     priority: "w-32",
+    scale: "w-20",
     meetingDate: "w-40",
     startDate: "w-40",
     dueDate: "w-40",
@@ -662,7 +716,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
     if (!userMembership) return false;
 
-    const allowedRoles = ["admin", "project_manager", "member"];
+    const allowedRoles = ["admin", "project_manager", "member", "management"];
     return allowedRoles.includes(userMembership.role);
   };
 
@@ -734,6 +788,17 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             <span className="flex items-center">
               Priority
               <SortIcon columnKey="priority" />
+            </span>
+          </div>
+
+          {/* Priority Column - Sortable */}
+          <div
+            className={`${columnWidths.scale} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            onClick={() => handleSort("scale")}
+          >
+            <span className="flex items-center">
+              Scale
+              <SortIcon columnKey="scale" />
             </span>
           </div>
 
@@ -912,7 +977,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         return (
                           <div
                             key={idx}
-                            className="relative group hover:z-20 z-10 transition-all cursor-pointer"
+                            className="relative group hover:z-40 z-10 transition-all cursor-pointer"
                           >
                             {/* Gunakan foto jika ada */}
                             {photoUrl ? (
@@ -1111,7 +1176,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       setActivePopup({ taskId: task._id, field: "priority" })
                     }
                   >
-                    {task.priority}
+                    {task.priority || "Low"}
                   </span>
                   {activePopup?.taskId === task._id &&
                     activePopup?.field === "priority" && (
@@ -1127,6 +1192,24 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         }}
                       />
                     )}
+                </div>
+                {/* Scale */}
+                <div
+                  className={`${columnWidths.scale} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                >
+                  <input
+                    className="w-14 border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="1-100"
+                    type="text"
+                    inputMode="numeric"
+                    value={
+                      scaleInput[task._id] !== undefined
+                        ? scaleInput[task._id]
+                        : task.scale || ""
+                    }
+                    onChange={(e) => handleScaleChange(task._id, e)}
+                    onBlur={() => handleScaleBlur(task._id)}
+                  />
                 </div>
                 {/* Meeting Date */}
                 <div
