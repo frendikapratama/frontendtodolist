@@ -323,7 +323,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       }
       const updateData = { [field]: trimmedValue };
       const updatedTasks = localTasks.map((t) =>
-        t._id === taskId ? { ...t, ...updateData } : t
+        t._id === taskId ? { ...t, ...updateData } : t,
       );
       setLocalTasks(updatedTasks);
       updateTaskMutation.mutate({ taskId, data: updateData });
@@ -380,13 +380,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           updateData.note = autoNote;
         }
       }
-      
+
       // ✅ OPTIMISTIC UPDATE - Update localTasks langsung
       const updatedTasks = localTasks.map((t) =>
-        t._id === taskId ? { ...t, ...updateData } : t
+        t._id === taskId ? { ...t, ...updateData } : t,
       );
       setLocalTasks(updatedTasks);
-      
+
       // if(field === "status" && task.subtask && task.subtask.length > 0){
       //   syncTasktoSubtasks(value, task.subtask, updateSubTaskMutation)
       // }
@@ -399,7 +399,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     (taskId, e) => {
       const val = e.target.value;
       setScaleInput((prev) => ({ ...prev, [taskId]: val }));
-      if (val === '') {
+      if (val === "") {
         return;
       }
       if (!/^[0-9]+$/.test(val)) {
@@ -409,22 +409,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       if (num >= 1 && num <= 100) {
         const updateData = { scale: val };
         const updatedTasks = localTasks.map((t) =>
-          t._id === taskId ? { ...t, ...updateData } : t
+          t._id === taskId ? { ...t, ...updateData } : t,
         );
         setLocalTasks(updatedTasks);
         updateTaskMutation.mutate({ taskId, data: updateData });
       }
     },
-    [updateTaskMutation, localTasks]
+    [updateTaskMutation, localTasks],
   );
-  
+
   const handleScaleBlur = useCallback(
     (taskId) => {
       const val = scaleInput[taskId];
-      if (val === '') {
+      if (val === "") {
         const updateData = { scale: "" };
         const updatedTasks = localTasks.map((t) =>
-          t._id === taskId ? { ...t, ...updateData } : t
+          t._id === taskId ? { ...t, ...updateData } : t,
         );
         setLocalTasks(updatedTasks);
         updateTaskMutation.mutate({ taskId, data: updateData });
@@ -435,7 +435,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         return updated;
       });
     },
-    [scaleInput, updateTaskMutation, localTasks]
+    [scaleInput, updateTaskMutation, localTasks],
   );
 
   const handleDragStart = (e, index) => {
@@ -915,19 +915,21 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
-                      ? "opacity-100 hover:bg-gray-200"
-                      : "opacity-0"
-                      }`}
+                    className={`p-0.5 rounded transition-all shrink-0 ${
+                      task.subtask?.length || isHovered
+                        ? "opacity-100 hover:bg-gray-200"
+                        : "opacity-0"
+                    }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${task.subtask?.length
-                          ? "text-gray-700"
-                          : "text-gray-400"
-                          }`}
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                        }`}
                       />
                     )}
                   </button>
@@ -975,7 +977,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         return (
                           <div
                             key={idx}
-                            className="relative group hover:z-20 z-10 transition-all cursor-pointer"
+                            className="relative group hover:z-40 z-10 transition-all cursor-pointer"
                           >
                             {/* Gunakan foto jika ada */}
                             {photoUrl ? (
@@ -1200,7 +1202,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     placeholder="1-100"
                     type="text"
                     inputMode="numeric"
-                    value={scaleInput[task._id] !== undefined ? scaleInput[task._id] : (task.scale || "")}
+                    value={
+                      scaleInput[task._id] !== undefined
+                        ? scaleInput[task._id]
+                        : task.scale || ""
+                    }
                     onChange={(e) => handleScaleChange(task._id, e)}
                     onBlur={() => handleScaleBlur(task._id)}
                   />
@@ -1365,16 +1371,17 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) => {
                       buttonRefs.current[`note-${task._id}`] = el;
                     }}
-                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
-                      ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                      : task.note === "Uncomplete"
-                        ? "text-red-100 bg-red-900 hover:bg-red-400"
-                        : task.note === "Completed - On Time"
-                          ? "text-green-700 bg-green-100 hover:bg-green-200"
-                          : task.note === "Completed - Overdue"
-                            ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                            : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                      }`}
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                      task.note === "Planning"
+                        ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                        : task.note === "Uncomplete"
+                          ? "text-red-100 bg-red-900 hover:bg-red-400"
+                          : task.note === "Completed - On Time"
+                            ? "text-green-700 bg-green-100 hover:bg-green-200"
+                            : task.note === "Completed - Overdue"
+                              ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                              : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
