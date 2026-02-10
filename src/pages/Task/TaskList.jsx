@@ -381,7 +381,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         }
       }
       
-      // ✅ OPTIMISTIC UPDATE - Update localTasks langsung
       const updatedTasks = localTasks.map((t) =>
         t._id === taskId ? { ...t, ...updateData } : t
       );
