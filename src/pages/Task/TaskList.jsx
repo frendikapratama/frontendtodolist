@@ -1451,6 +1451,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     subtasks={task.subtask || []}
                     groupId={groupId}
                     workspaceId={workspaceId}
+                    showAddButton={true}
                   />
                 </div>
               )}
