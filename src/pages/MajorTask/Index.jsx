@@ -4,13 +4,96 @@ import {
   useMajorTaskByProject,
 } from "../../hook/useTask";
 import { useMember } from "../../hook/useMember";
-import { Search, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { Search, ChevronDown, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SubtaskList from "../Subtask/SubTaskList";
 import DialogDetail from "../Task/DialogDetail";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 import toast from "react-hot-toast";
+
+// ==================== PROJECT SELECTION DIALOG ====================
+const ProjectSelectionDialog = ({ projects, onSelect, isLoading, onClose }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredProjects =
+    projects?.filter((project) => {
+      const projectName = project.nama?.toLowerCase() || "";
+      const workspaceName = project.workspaceNama?.toLowerCase() || "";
+      const query = searchQuery.toLowerCase();
+
+      return projectName.includes(query) || workspaceName.includes(query);
+    }) || [];
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-7xl w-full mx-4 border border-white/10">
+        <div className="flex flex-row justify-between items-start mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Select Project
+            </h2>
+            <p className="text-white/60 text-sm">
+              Choose a project to view major tasks
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Search Box */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search project or workspace..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all w-64"
+              />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/40 w-4 h-4" />
+            </div>
+
+            {/* Close Button */}
+            <button
+              className="bg-gray-700 p-2 rounded-full hover:bg-gray-600 w-8 h-8 flex items-center justify-center"
+              onClick={onClose}
+            >
+              <span className="text-white text-sm">✕</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto scrollbar-thin">
+          {isLoading ? (
+            <div className="text-white/60 text-center py-8 col-span-1 md:col-span-2">
+              Loading projects...
+            </div>
+          ) : filteredProjects.length > 0 ? (
+            filteredProjects.map((project) => (
+              <button
+                key={project._id}
+                onClick={() => onSelect(project._id)}
+                className="w-full text-left bg-linear-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/40 hover:to-purple-500/40 rounded-lg p-4 border border-white/10 hover:border-white/30 transition-all group"
+              >
+                <div className="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <p className="text-white font-semibold">{project.nama}</p>
+                    <p className="text-white/60 text-sm">
+                      {project.workspaceNama || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="text-white/60 text-center py-8 col-span-1 md:col-span-2">
+              {searchQuery
+                ? `No projects found for "${searchQuery}"`
+                : "No projects available"}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MajorTaskPage = () => {
   const { user: currentUser } = useContext(AuthContext);
@@ -28,6 +111,7 @@ const MajorTaskPage = () => {
   const [openSubtasks, setOpenSubtasks] = useState({});
   const [openDialog, setOpenDialog] = useState({ open: false, task: null });
   const navigate = useNavigate();
+  const [showProjectDialog, setShowProjectDialog] = useState(true);
 
   const { data: projects, isLoading: loadingProject } =
     useProjectWithMajorTask();
@@ -61,7 +145,6 @@ const MajorTaskPage = () => {
       }
     };
   }, []);
-
   // Update workspace ID when project is selected
   useEffect(() => {
     if (selectedProjectId && projects) {
@@ -230,28 +313,69 @@ const MajorTaskPage = () => {
 
   const displayTasks = getSortedTasks();
 
+  const handleSelectProject = (projectId) => {
+    setSelectedProjectId(projectId);
+    setShowProjectDialog(false);
+  };
+
+  const handleCloseProjectDialog = () => {
+    setShowProjectDialog(false);
+  };
+
+  if (showProjectDialog) {
+    return (
+      <ProjectSelectionDialog
+        projects={projects}
+        onSelect={handleSelectProject}
+        isLoading={loadingProject}
+        onClose={handleCloseProjectDialog}
+      />
+    );
+  }
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">
-        Project With Major Task
-      </h1>
+      {/* Tambahkan tombol Change Project */}
 
-      {/* Project Selection Buttons */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        {projects?.map((project) => (
+      {!selectedProjectId && (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] bg-linear-to-br from-[#1A3D64] to-[#1D546C]  rounded-2xl p-12 border-white/10">
+          <div className="text-center space-y-6">
+            {/* Icon */}
+            <div className="mx-auto w-20 h-20 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+              <Search className="w-10 h-10 text-white" />
+            </div>
+
+            {/* Text */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-200 mb-2">
+                No Project Selected
+              </h2>
+              <p className="text-gray-300 text-sm max-w-md">
+                Please select a project to view and manage major tasks
+              </p>
+            </div>
+
+            {/* Button */}
+            <button
+              onClick={() => setShowProjectDialog(true)}
+              className="cursor-pointer bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              Choose Project
+            </button>
+          </div>
+        </div>
+      )}
+
+      {selectedProjectId && (
+        <div className="mb-6 flex items-center justify-between">
           <button
-            key={project._id}
-            onClick={() => setSelectedProjectId(project._id)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedProjectId === project._id
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            onClick={() => setShowProjectDialog(true)}
+            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-all text-sm"
           >
-            {project.nama}
+            Change Project
           </button>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* Loading State */}
       {selectedProjectId && loadingTask && (
@@ -695,5 +819,19 @@ const MajorTaskPage = () => {
     </div>
   );
 };
-
+<style jsx>{`
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+`}</style>;
 export default MajorTaskPage;
