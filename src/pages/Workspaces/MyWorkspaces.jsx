@@ -146,7 +146,7 @@ const MyWorkspaces = () => {
           const taskDate = new Date(
             dueDate.getFullYear(),
             dueDate.getMonth(),
-            dueDate.getDate()
+            dueDate.getDate(),
           );
           return taskDate.getTime() === today.getTime();
         case "month":
@@ -594,7 +594,7 @@ const MyWorkspaces = () => {
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <span
                           className={`text-xs flex flex-row gap-1 px-2 py-1 font-bold rounded uppercase ${getPriorityColor(
-                            task.priority
+                            task.priority,
                           )}`}
                         >
                           <FlagTriangleRight className="w-4 h-4" />
@@ -609,14 +609,14 @@ const MyWorkspaces = () => {
                             task.status === "To Do"
                               ? "bg-gray-600 opacity-85 text-white"
                               : task.status === "Done"
-                              ? "bg-green-600 opacity-85 text-white"
-                              : task.status === "Hold"
-                              ? "bg-black opacity-85 text-white"
-                              : task.status === "Planing"
-                              ? "bg-blue-600 opacity-85 text-white"
-                              : task.status === "Blocked"
-                              ? "bg-red-600 opacity-85 text-white"
-                              : ""
+                                ? "bg-green-600 opacity-85 text-white"
+                                : task.status === "Hold"
+                                  ? "bg-black opacity-85 text-white"
+                                  : task.status === "Planing"
+                                    ? "bg-blue-600 opacity-85 text-white"
+                                    : task.status === "Blocked"
+                                      ? "bg-red-600 opacity-85 text-white"
+                                      : ""
                           }`}
                         >
                           {task.status}

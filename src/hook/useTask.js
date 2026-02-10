@@ -10,6 +10,8 @@ import {
   getByProjectId,
   fetchMyWork,
   fetchMyWorkAgendaMeeting,
+  getProjectsWithMajorTask,
+  getMajorTaskByProject,
 } from "../services/task";
 import toast from "react-hot-toast";
 
@@ -175,5 +177,22 @@ export const usemyWorkAgendaMeeting = () => {
     queryKey: ["myWorkAgendaMeeting"],
     queryFn: fetchMyWorkAgendaMeeting,
     refetchInterval: false,
+  });
+};
+
+export const useMajorTaskByProject = (projectId, filters = {}) => {
+  return useQuery({
+    queryKey: ["task", "major", projectId, filters],
+    queryFn: () => getMajorTaskByProject(projectId, filters),
+    enabled: !!projectId,
+    staleTime: 1000 * 60 * 2,
+    keepPreviousData: true,
+  });
+};
+
+export const useProjectWithMajorTask = () => {
+  return useQuery({
+    queryKey: ["project", "major"],
+    queryFn: getProjectsWithMajorTask,
   });
 };

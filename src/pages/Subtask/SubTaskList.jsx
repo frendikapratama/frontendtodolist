@@ -11,7 +11,13 @@ import { createPortal } from "react-dom";
 import { AuthContext } from "../../context/AuthContext";
 
 // const SubtaskList = ({ taskId, groupId, workspaceId, onSubtaskStatusChange }) => {
-const SubtaskList = ({ taskId, groupId, workspaceId }) => {
+const SubtaskList = ({
+  taskId,
+  groupId,
+  workspaceId,
+  showAddButton = false,
+  readOnly = false,
+}) => {
   const { user: currentUser } = useContext(AuthContext);
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const getPhotoUrl = (photoPath) => {
@@ -85,10 +91,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     "Uncomplete",
     "Planning",
   ];
-  const TYPE_OPTIONS = [
-    "Minor",
-    "Major"
-  ];
+  const TYPE_OPTIONS = ["Minor", "Major"];
 
   useEffect(() => {
     if (subtaskByTask.data) {
@@ -113,10 +116,10 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           onSuccess: () => {
             setPicPopup({ show: false, subtaskId: null });
           },
-        }
+        },
       );
     },
-    [assignPicMutation]
+    [assignPicMutation],
   );
 
   const handlePopupChange = useCallback(
@@ -139,32 +142,33 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
         const autoNote = calculateAutoNote(
           newStatus,
           newDueDate,
-          newFinishDate
+          newFinishDate,
         );
 
         if (autoNote) {
           updateData.note = autoNote;
         }
       }
-      
+
       // ✅ OPTIMISTIC UPDATE - Update localSubtasks langsung
       const updatedSubtasks = localSubtasks.map((s) =>
-        s._id === subtaskId ? { ...s, ...updateData } : s
+        s._id === subtaskId ? { ...s, ...updateData } : s,
       );
       setLocalSubtasks(updatedSubtasks);
-      
+
       updateSubTaskMutation.mutate({ subtaskId, data: updateData });
       setActivePopup(null);
     },
-    [localSubtasks, updateSubTaskMutation]
-    [localSubtasks, updateSubTaskMutation]
+    [localSubtasks, updateSubTaskMutation][
+      (localSubtasks, updateSubTaskMutation)
+    ],
   );
 
   const handleScaleChange = useCallback(
     (subtaskId, e) => {
       const val = e.target.value;
       setScaleInput((prev) => ({ ...prev, [subtaskId]: val }));
-      if (val === '') {
+      if (val === "") {
         return;
       }
       if (!/^[0-9]+$/.test(val)) {
@@ -174,22 +178,22 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
       if (num >= 1 && num <= 100) {
         const updateData = { scale: val };
         const updatedSubtasks = localSubtasks.map((s) =>
-          s._id === subtaskId ? { ...s, ...updateData } : s
+          s._id === subtaskId ? { ...s, ...updateData } : s,
         );
         setLocalSubtasks(updatedSubtasks);
         updateSubTaskMutation.mutate({ subtaskId, data: updateData });
       }
     },
-    [updateSubTaskMutation, localSubtasks]
+    [updateSubTaskMutation, localSubtasks],
   );
-  
+
   const handleScaleBlur = useCallback(
     (subtaskId) => {
       const val = scaleInput[subtaskId];
-      if (val === '') {
+      if (val === "") {
         const updateData = { scale: "" };
         const updatedSubtasks = localSubtasks.map((s) =>
-          s._id === subtaskId ? { ...s, ...updateData } : s
+          s._id === subtaskId ? { ...s, ...updateData } : s,
         );
         setLocalSubtasks(updatedSubtasks);
         updateSubTaskMutation.mutate({ subtaskId, data: updateData });
@@ -200,7 +204,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
         return updated;
       });
     },
-    [scaleInput, updateSubTaskMutation, localSubtasks]
+    [scaleInput, updateSubTaskMutation, localSubtasks],
   );
 
   const handleDragStart = (e, index) => {
@@ -248,7 +252,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     if (confirmDelete.subTaskId) {
       console.log(
         "Calling deleteSubTaskMutation with:",
-        confirmDelete.subTaskId
+        confirmDelete.subTaskId,
       );
       deleteSubTaskMutation.mutate(confirmDelete.subTaskId);
       setConfirmDelete({ show: false, subtaskId: null });
@@ -261,7 +265,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     if (!editedName.trim()) return;
     const updateData = { nama: editedName.trim() };
     const updatedSubtasks = localSubtasks.map((s) =>
-      s._id === subtaskId ? { ...s, ...updateData } : s
+      s._id === subtaskId ? { ...s, ...updateData } : s,
     );
     setLocalSubtasks(updatedSubtasks);
     updateSubTaskMutation.mutate({
@@ -285,7 +289,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           setSubtaskName("");
           setShowForm(false);
         },
-      }
+      },
     );
   };
 
@@ -453,7 +457,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           </button>
         </div>
       </div>,
-      document.body
+      document.body,
     );
   };
 
@@ -470,7 +474,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id
+        member.user?._id === currentUser.id,
     );
 
     if (!userMembership) return false;
@@ -485,7 +489,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id
+        member.user?._id === currentUser.id,
     );
 
     if (!userMembership) return false;
@@ -507,13 +511,14 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
       {localSubtasks.map((s, index) => (
         <div
           key={s._id}
-          draggable
-          onDragStart={(e) => handleDragStart(e, index)}
-          onDragOver={(e) => handleDragOver(e, index)}
-          onDrop={handleDrop}
-          onDragEnd={handleDragEnd}
-          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""
-            }`}
+          draggable={!readOnly}
+          onDragStart={(e) => !readOnly && handleDragStart(e, index)}
+          onDragOver={(e) => !readOnly && handleDragOver(e, index)}
+          onDrop={!readOnly ? handleDrop : undefined}
+          onDragEnd={!readOnly ? handleDragEnd : undefined}
+          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${
+            draggedItem === index ? "opacity-40" : ""
+          }`}
         >
           {/* Name Column */}
           <div
@@ -540,7 +545,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             /> */}
 
-            {editingSubtaskId === s._id ? (
+            {editingSubtaskId === s._id && !readOnly ? (
               <input
                 type="text"
                 className="text-sm border border-gray-300 text-black rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
@@ -554,8 +559,10 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               <span
                 className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text whitespace-normal break-all line-clamp-5"
                 onClick={() => {
-                  setEditingSubtaskId(s._id);
-                  setEditedName(s.nama);
+                  if (!readOnly) {
+                    setEditingSubtaskId(s._id);
+                    setEditedName(s.nama);
+                  }
                 }}
               >
                 {s.nama}
@@ -625,6 +632,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
                 onClick={() => setPicPopup({ show: true, subtaskId: s._id })}
                 className="w-7 h-7 rounded-full text-gray-500 border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
                 title="Assign PIC"
+                disabled={readOnly}
               >
                 <UserPlus size={14} />
               </button>
@@ -648,12 +656,13 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           >
             <span
               ref={(el) => (buttonRefs.current[`type-${s._id}`] = el)}
-              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${s.type === "Major"
-                      ? "text-orange-700 bg-orange-200"
-                      : "text-cyan-800 bg-cyan-200"
-                      }`}
+              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                s.type === "Major"
+                  ? "text-orange-700 bg-orange-200"
+                  : "text-cyan-800 bg-cyan-200"
+              }`}
               onClick={() =>
-                setActivePopup({ subtaskId: s._id, field: "type" })
+                !readOnly && setActivePopup({ subtaskId: s._id, field: "type" })
               }
             >
               {s.type}
@@ -663,9 +672,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
                 <PopupSelect
                   value={s.type || "Medium"}
                   options={TYPE_OPTIONS}
-                  onChange={(value) =>
-                    handlePopupChange(s._id, "type", value)
-                  }
+                  onChange={(value) => handlePopupChange(s._id, "type", value)}
                   onClose={() => setActivePopup(null)}
                   buttonRef={{
                     current: buttonRefs.current[`type-${s._id}`],
@@ -716,6 +723,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
                   ref={(el) => (buttonRefs.current[`status-${s._id}`] = el)}
                   className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
                   onClick={() =>
+                    !readOnly &&
                     setActivePopup({ subtaskId: s._id, field: "status" })
                   }
                 >
@@ -745,15 +753,17 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           >
             <span
               ref={(el) => (buttonRefs.current[`priority-${s._id}`] = el)}
-              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${s.priority === "Urgent"
+              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                s.priority === "Urgent"
                   ? "text-red-700 bg-red-200"
                   : s.priority === "High"
                     ? "text-orange-800 bg-orange-200"
                     : s.priority === "Medium"
                       ? "text-blue-800 bg-blue-200"
                       : "text-gray-800 bg-gray-200"
-                }`}
+              }`}
               onClick={() =>
+                !readOnly &&
                 setActivePopup({ subtaskId: s._id, field: "priority" })
               }
             >
@@ -784,9 +794,14 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               placeholder="1-100"
               type="text"
               inputMode="numeric"
-              value={scaleInput[s._id] !== undefined ? scaleInput[s._id] : (s.scale || "")}
+              value={
+                scaleInput[s._id] !== undefined
+                  ? scaleInput[s._id]
+                  : s.scale || ""
+              }
               onChange={(e) => handleScaleChange(s._id, e)}
               onBlur={() => handleScaleBlur(s._id)}
+              disabled={readOnly}
             />
           </div>
 
@@ -798,6 +813,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               ref={(el) => (buttonRefs.current[`meeting_date-${s._id}`] = el)}
               className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
+                !readOnly &&
                 setActivePopup({
                   subtaskId: s._id,
                   field: "meeting_date",
@@ -806,13 +822,13 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             >
               {s.meeting_date
                 ? new Date(s.meeting_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })
                 : "Set date & time"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -839,6 +855,7 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               ref={(el) => (buttonRefs.current[`start_date-${s._id}`] = el)}
               className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
+                !readOnly &&
                 setActivePopup({
                   subtaskId: s._id,
                   field: "start_date",
@@ -847,10 +864,10 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             >
               {s.start_date
                 ? new Date(s.start_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -876,15 +893,16 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               ref={(el) => (buttonRefs.current[`due_date-${s._id}`] = el)}
               className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
+                !readOnly &&
                 setActivePopup({ subtaskId: s._id, field: "due_date" })
               }
             >
               {s.due_date
                 ? new Date(s.due_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -910,15 +928,16 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
               ref={(el) => (buttonRefs.current[`finish_date-${s._id}`] = el)}
               className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
               onClick={() =>
+                !readOnly &&
                 setActivePopup({ subtaskId: s._id, field: "finish_date" })
               }
             >
               {s.finish_date
                 ? new Date(s.finish_date).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -942,7 +961,8 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           >
             <span
               ref={(el) => (buttonRefs.current[`note-${s._id}`] = el)}
-              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full cursor-pointer ${s.note === "Planning"
+              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full cursor-pointer ${
+                s.note === "Planning"
                   ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
                   : s.note === "Uncomplete"
                     ? "text-red-100 bg-red-900 hover:bg-red-400"
@@ -951,9 +971,9 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
                       : s.note === "Completed - Overdue"
                         ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
                         : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                }`}
+              }`}
               onClick={() =>
-                setActivePopup({ subtaskId: s._id, field: "note" })
+                !readOnly && setActivePopup({ subtaskId: s._id, field: "note" })
               }
             >
               {s.note}
@@ -988,12 +1008,15 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
             >
               Detail
             </button>
-            <div className="bg-gray-100 rounded-lg p-1 pl-2 pr-2 font-medium hover:bg-gray-200">
-              <Trash2
-                className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
-                onClick={() => handleDeleteTask(s._id)}
-              />
-            </div>
+
+            {showAddButton && (
+              <div className="bg-gray-100 rounded-lg p-1 pl-2 pr-2 font-medium hover:bg-gray-200">
+                <Trash2
+                  className="text-red-500 hover:text-red-800 w-4 h-4 cursor-pointer"
+                  onClick={() => handleDeleteTask(s._id)}
+                />
+              </div>
+            )}
             {openDialog.open && (
               <DialogDetail
                 show={openDialog.open}
@@ -1030,13 +1053,15 @@ const SubtaskList = ({ taskId, groupId, workspaceId }) => {
           />
         </div>
       ) : (
-        <button
-          onClick={() => setShowForm(true)}
-          className="sticky left-0 bg-[#F0E4D3] pl-4 mt-1 flex text-[0.8em] items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add subtask
-        </button>
+        showAddButton && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="sticky left-0 bg-[#F0E4D3] pl-4 mt-1 flex text-[0.8em] items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add subtask
+          </button>
+        )
       )}
     </div>
   );

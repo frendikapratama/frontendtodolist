@@ -92,7 +92,7 @@ export async function removePic(taskId, userId) {
 export async function acceptPicInvite(taskId, token, userData = null) {
   const res = await api.post(
     `/task/${taskId}/accept-pic-invite?token=${token}`,
-    userData
+    userData,
   );
   return res.data;
 }
@@ -105,6 +105,51 @@ export const fetchMyWorkAgendaMeeting = async () => {
   const res = await api.get(`task/my-work-agenda-meeting`);
   return res.data.data;
 };
+
+export async function getMajorTaskByProject(projectId, filters = {}) {
+  const params = new URLSearchParams();
+
+  params.append("type", "Major");
+
+  if (filters.search?.trim()) {
+    params.append("search", filters.search.trim());
+  }
+
+  if (filters.status && filters.status !== "all") {
+    params.append("status", filters.status);
+  }
+
+  if (filters.priority && filters.priority !== "all") {
+    params.append("priority", filters.priority);
+  }
+
+  if (filters.note && filters.note !== "all") {
+    params.append("note", filters.note);
+  }
+
+  if (filters.picEmail?.trim()) {
+    params.append("picEmail", filters.picEmail.trim());
+  }
+
+  if (filters.startDate) {
+    params.append("startDate", filters.startDate);
+  }
+
+  if (filters.endDate) {
+    params.append("endDate", filters.endDate);
+  }
+
+  const res = await api.get(
+    `/task/major/${projectId}/tasks?${params.toString()}`,
+  );
+
+  return res.data.data;
+}
+
+export async function getProjectsWithMajorTask() {
+  const res = await api.get("/task/major/projects");
+  return res.data.data;
+}
 
 // export async function myWork(taskId, token, userData = null) {
 //   const res = await api.get(
