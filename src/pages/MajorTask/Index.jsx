@@ -320,7 +320,7 @@ const MajorTaskPage = () => {
   const columnWidths = {
     task: "w-95",
     pic: "w-32",
-    status: "w-42",
+    status: "w-40",
     type: "w-32",
     priority: "w-32",
     scale: "w-20",
@@ -329,7 +329,7 @@ const MajorTaskPage = () => {
     dueDate: "w-40",
     finishDate: "w-40",
     note: "w-50",
-    reason: "w-60",
+    reason: "w-100",
     action: "w-40",
   };
 
@@ -794,7 +794,11 @@ const MajorTaskPage = () => {
                                   [task._id]: !prev[task._id],
                                 }))
                               }
-                              className="p-0.5 rounded shrink-0 hover:bg-gray-200"
+                              className={`p-0.5 rounded shrink-0 hover:bg-gray-200 ${
+                                task.subtask && task.subtask.length > 0
+                                  ? ""
+                                  : "invisible"
+                              }`}
                             >
                               {isOpen ? (
                                 <ChevronDown className="w-4 h-4 text-gray-700" />
@@ -985,7 +989,7 @@ const MajorTaskPage = () => {
                               </div>
                             ) : (
                               <span className="text-[0.7em] text-gray-400">
-                                -
+                                No need reason
                               </span>
                             )}
                           </div>
