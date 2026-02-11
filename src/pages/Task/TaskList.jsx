@@ -152,6 +152,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       } else if (sortConfig.key === "pic") {
         aValue = a.pic?.length || 0;
         bValue = b.pic?.length || 0;
+      } else if (sortConfig.key === "scale") {
+        aValue = aValue ? parseFloat(aValue) : 0;
+        bValue = bValue ? parseFloat(bValue) : 0;
       }
       if (aValue < bValue) {
         return sortConfig.direction === "asc" ? -1 : 1;
@@ -380,8 +383,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           updateData.note = autoNote;
         }
       }
-
-      // ✅ OPTIMISTIC UPDATE - Update localTasks langsung
+      
       const updatedTasks = localTasks.map((t) =>
         t._id === taskId ? { ...t, ...updateData } : t,
       );
@@ -791,7 +793,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             </span>
           </div>
 
-          {/* Priority Column - Sortable */}
+          {/* Scale Column - Sortable */}
           <div
             className={`${columnWidths.scale} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
             onClick={() => handleSort("scale")}
