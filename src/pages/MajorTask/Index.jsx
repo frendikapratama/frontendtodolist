@@ -329,6 +329,7 @@ const MajorTaskPage = () => {
     dueDate: "w-40",
     finishDate: "w-40",
     note: "w-50",
+    reason: "w-60",
     action: "w-40",
   };
 
@@ -446,11 +447,18 @@ const MajorTaskPage = () => {
           <div className="relative z-50 mb-6 bg-linear-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/60 text-sm mb-1">Current Project - <span className="font-bold text-white border p-1 border-white/30">{selectedDivisionName}</span></p>
+                <p className="text-white/60 text-sm mb-1">
+                  Current Project -{" "}
+                  <span className="font-bold text-white border p-1 border-white/30">
+                    {selectedDivisionName}
+                  </span>
+                </p>
                 <h1 className="text-3xl font-bold text-white">
                   {selectedProjectName}
                 </h1>
-                <p className="text-white/60 text-sm pt-1">Select the task column to open the task page.</p>
+                <p className="text-white/60 text-sm pt-1">
+                  Select the task column to open the task page.
+                </p>
               </div>
               <div className="flex flex-row gap-3 items-center">
                 <button
@@ -501,11 +509,10 @@ const MajorTaskPage = () => {
                   {/* Toggle Filters Button */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
-                      hasActiveFilters
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-                    }`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${hasActiveFilters
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+                      }`}
                   >
                     <Filter className="h-4 w-4" />
                     Filters
@@ -742,6 +749,13 @@ const MajorTaskPage = () => {
                       </span>
                     </div>
 
+                    {/* Reason Column - Unsortable */}
+                    <div
+                      className={`${columnWidths.reason} px-6 py-3 font-semibold text-gray-600 uppercase flex items-center justify-center`}
+                    >
+                      Reason
+                    </div>
+
                     {/* Action Column */}
                     <div
                       className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
@@ -862,11 +876,10 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.type} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
-                                task.type === "Major"
-                                  ? "text-orange-700 bg-orange-200"
-                                  : "text-cyan-800 bg-cyan-200"
-                              }`}
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.type === "Major"
+                                ? "text-orange-700 bg-orange-200"
+                                : "text-cyan-800 bg-cyan-200"
+                                }`}
                             >
                               {task.type}
                             </span>
@@ -876,11 +889,13 @@ const MajorTaskPage = () => {
                           <div
                             className={`${columnWidths.status} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
-                            <span className={`px-3 py-1.5 text-[0.8em] rounded-full font-semibold 
-                              ${task.status === "Done-In review" 
-                              ? " bg-yellow-100 text-yellow-700"
-                                : "bg-indigo-100 text-indigo-700"
-                              }`}>
+                            <span
+                              className={`px-3 py-1.5 text-[0.8em] rounded-full font-semibold 
+                              ${task.status === "Done-In review"
+                                  ? " bg-yellow-100 text-yellow-700"
+                                  : "bg-indigo-100 text-indigo-700"
+                                }`}
+                            >
                               {task.status}
                             </span>
                           </div>
@@ -890,15 +905,14 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.priority} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
-                                task.priority === "Urgent"
-                                  ? "text-red-700 bg-red-200"
-                                  : task.priority === "High"
-                                    ? "text-orange-800 bg-orange-200"
-                                    : task.priority === "Medium"
-                                      ? "text-blue-800 bg-blue-200"
-                                      : "text-gray-800 bg-gray-200"
-                              }`}
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.priority === "Urgent"
+                                ? "text-red-700 bg-red-200"
+                                : task.priority === "High"
+                                  ? "text-orange-800 bg-orange-200"
+                                  : task.priority === "Medium"
+                                    ? "text-blue-800 bg-blue-200"
+                                    : "text-gray-800 bg-gray-200"
+                                }`}
                             >
                               {task.priority || "Low"}
                             </span>
@@ -927,8 +941,8 @@ const MajorTaskPage = () => {
                               <span className="text-[0.8em] text-gray-600">
                                 {task[field]
                                   ? new Date(task[field]).toLocaleDateString(
-                                      "id-ID",
-                                    )
+                                    "id-ID",
+                                  )
                                   : "-"}
                               </span>
                             </div>
@@ -952,6 +966,23 @@ const MajorTaskPage = () => {
                             >
                               {task.note || "-"}
                             </span>
+                          </div>
+                          {/* reson */}
+                          <div
+                            className={`${columnWidths.reason} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
+                          >
+                            {task.note === "Completed - Overdue" ? (
+                              <div
+                                className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 break-words px-2 py-1 rounded cursor-pointer w-full"
+                                title={task.reason}
+                              >
+                                {task.reason || "Click to add reason"}
+                              </div>
+                            ) : (
+                              <span className="text-[0.7em] text-gray-400">
+                                -
+                              </span>
+                            )}
                           </div>
 
                           {/* ===== ACTION ===== */}
