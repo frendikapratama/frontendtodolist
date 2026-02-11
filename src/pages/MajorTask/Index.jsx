@@ -628,7 +628,7 @@ const MajorTaskPage = () => {
               <div className="overflow-auto max-h-[90vh] rounded-xl">
                 <div className="w-[50vw] min-w-max">
                   {/* Table Header */}
-                  <div className="flex sticky top-0 z-20 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200">
+                  <div className="flex sticky top-0 z-30 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200">
                     {/* Task Column */}
                     <div
                       className={`${columnWidths.task} sticky left-0 z-10 px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] bg-[#D2C1B6] transition-colors`}
