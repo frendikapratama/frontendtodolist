@@ -15,10 +15,8 @@ const TaskBadges = ({ taskId, task, isSubtask = false }) => {
     if (subtaskList.length > 0) {
       const totalSubtaskNotificationCount = subtaskList.reduce(
         (total, subtask) => {
-          const subtaskCommentCount =
-            subtask.comments?.length || subtask.comment_count || 0;
-          const subtaskAttachmentCount =
-            subtask.attachments?.length || subtask.attachment_count || 0;
+          const subtaskCommentCount = subtask.comments?.length || 0;
+          const subtaskAttachmentCount = subtask.attachments?.length || 0;
           return total + subtaskCommentCount + subtaskAttachmentCount;
         },
         0,
