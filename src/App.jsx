@@ -17,7 +17,7 @@ import VerifyResetPassword from "./pages/VerifyResetPassword";
 import AuthPages from "./pages/AuthPages";
 import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
-import MajorTask from "./pages/MajorTask";
+import MajorTask from "./pages/MajorTask/Index";
 export default function App() {
   return (
     <AuthProvider>
