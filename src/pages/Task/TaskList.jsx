@@ -21,7 +21,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
-import TaskBadges from "./TaskBadges";
+import TaskBadges from "./TaskBadges";x
 // Throttle helper untuk mencegah update terlalu sering
 const useThrottle = (callback, delay) => {
   const lastRun = useRef(Date.now());
