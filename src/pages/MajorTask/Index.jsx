@@ -112,6 +112,7 @@ const MajorTaskPage = () => {
   const navigate = useNavigate();
   const [showProjectDialog, setShowProjectDialog] = useState(true);
   const [selectedProjectName, setSelectedProjectName] = useState("");
+  const [selectedDivisionName, setSelectedDivisionName] = useState("");
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -319,7 +320,7 @@ const MajorTaskPage = () => {
   const columnWidths = {
     task: "w-95",
     pic: "w-32",
-    status: "w-40",
+    status: "w-42",
     type: "w-32",
     priority: "w-32",
     scale: "w-20",
@@ -372,6 +373,7 @@ const MajorTaskPage = () => {
     setSelectedProjectId(projectId);
     const project = projects.find((p) => p._id === projectId);
     setSelectedProjectName(project?.nama || "");
+    setSelectedDivisionName(project?.workspaceNama || "");
     setShowProjectDialog(false);
   };
 
@@ -444,10 +446,11 @@ const MajorTaskPage = () => {
           <div className="relative z-50 mb-6 bg-linear-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/60 text-sm mb-1">Current Project</p>
+                <p className="text-white/60 text-sm mb-1">Current Project - <span className="font-bold text-white border p-1 border-white/30">{selectedDivisionName}</span></p>
                 <h1 className="text-3xl font-bold text-white">
                   {selectedProjectName}
                 </h1>
+                <p className="text-white/60 text-sm pt-1">Select the task column to open the task page.</p>
               </div>
               <div className="flex flex-row gap-3 items-center">
                 <button
@@ -754,19 +757,19 @@ const MajorTaskPage = () => {
                         {/* ================= TASK ROW ================= */}
                         <div
                           className={`flex items-center transition-colors
-          ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
-          ${!isOpen ? "border-b border-gray-100" : ""}
-        `}
+                            ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
+                            ${!isOpen ? "border-b border-gray-100" : ""}
+                          `}
                           onMouseEnter={() => setHoveredRow(task._id)}
                           onMouseLeave={() => setHoveredRow(null)}
                         >
                           {/* ===== TASK NAME (STICKY) ===== */}
                           <div
                             className={`flex items-center ${columnWidths.task}
-            gap-1 px-3 py-3.5 sticky left-0 z-5
-            ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
-            ${!isOpen ? "border-b border-gray-100" : ""}
-          `}
+                              gap-1 px-3 py-3.5 sticky left-0 z-5
+                              ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
+                              ${!isOpen ? "border-b border-gray-100" : ""}
+                            `}
                           >
                             <button
                               onClick={() =>
@@ -870,7 +873,11 @@ const MajorTaskPage = () => {
                           <div
                             className={`${columnWidths.status} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
-                            <span className="px-3 py-1.5 text-[0.8em] rounded-full font-semibold bg-indigo-100 text-indigo-700">
+                            <span className={`px-3 py-1.5 text-[0.8em] rounded-full font-semibold 
+                              ${task.status === "Done-In review" 
+                              ? " bg-yellow-100 text-yellow-700"
+                                : "bg-indigo-100 text-indigo-700"
+                              }`}>
                               {task.status}
                             </span>
                           </div>
@@ -927,7 +934,18 @@ const MajorTaskPage = () => {
                           <div
                             className={`${columnWidths.note} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
-                            <span className="px-3 py-1.5 text-[0.8em] rounded-full font-semibold bg-gray-200 text-gray-700">
+                            <span
+                              className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
+                                ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                                : task.note === "Uncomplete"
+                                  ? "text-red-100 bg-red-900 hover:bg-red-400"
+                                  : task.note === "Completed - On Time"
+                                    ? "text-green-700 bg-green-100 hover:bg-green-200"
+                                    : task.note === "Completed - Overdue"
+                                      ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                                      : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                                }`}
+                            >
                               {task.note || "-"}
                             </span>
                           </div>
@@ -935,7 +953,7 @@ const MajorTaskPage = () => {
                           {/* ===== ACTION ===== */}
                           <div className="w-40 px-6 py-3.5 flex justify-center">
                             <button
-                              className="bg-gray-100 rounded-xl px-3 py-1 text-xs hover:bg-gray-200"
+                              className="bg-gray-100 text-black rounded-xl px-3 py-1 text-xs hover:bg-gray-200"
                               onClick={() => {
                                 if (canAccess()) {
                                   setOpenDialog({ open: true, task });
