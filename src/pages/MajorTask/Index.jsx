@@ -798,10 +798,9 @@ const MajorTaskPage = () => {
 
                           {/* ===== PIC ===== */}
                           <div
-                            // className={`${columnWidths.pic} px-6 py-3.5 flex items-center justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                             className={`${columnWidths.pic} flex items-center justify-center gap-1 relative`}
                           >
-                            {task.pic && task.pic.length > 0 && (
+                            {task.pic && task.pic.length > 0 ? (
                               <div className="flex -space-x-2">
                                 {task.pic.slice(0, 3).map((picUser, idx) => {
                                   const photoUrl = picUser.photo
@@ -813,7 +812,6 @@ const MajorTaskPage = () => {
                                       key={idx}
                                       className="relative group transition-all cursor-pointer"
                                     >
-                                      {/* Gunakan foto jika ada */}
                                       {photoUrl ? (
                                         <img
                                           src={photoUrl}
@@ -831,7 +829,6 @@ const MajorTaskPage = () => {
                                         </div>
                                       )}
 
-                                      {/* Tooltip untuk user info */}
                                       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
                                         <div className="font-medium">
                                           {picUser.username}
@@ -851,6 +848,8 @@ const MajorTaskPage = () => {
                                   </div>
                                 )}
                               </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
                             )}
                           </div>
 
