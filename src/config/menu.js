@@ -21,6 +21,6 @@ export const menuItems = [
     id: "major-task",
     label: "Major Task",
     path: "/major-task",
-    icon: "folderkanban",
+    icon: "ListTodo",
   },
 ];

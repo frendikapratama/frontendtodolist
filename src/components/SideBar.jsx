@@ -5,9 +5,9 @@ import { useWorkspace } from "../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
 import GradientText from "../components/ui/GradientText";
 import Profile from "../assets/LogoPlanify.png";
-import ToggleButtonExit from "../components/ui/ToggleButtonExit"
-import { useAuth } from "../hook/useContext"
-import LogoutButton from "../components/ui/LogoutButton"
+import ToggleButtonExit from "../components/ui/ToggleButtonExit";
+import { useAuth } from "../hook/useContext";
+import LogoutButton from "../components/ui/LogoutButton";
 
 import { useSelectedWorkspace } from "../context/WorkspaceContext";
 import { useKuarter } from "../hook/useKuarter";
@@ -22,7 +22,8 @@ import {
   Briefcase,
   FolderOpen,
   BookOpen,
-  FolderKanban
+  FolderKanban,
+  ListTodo,
 } from "lucide-react";
 import ProfileDialog from "./ui/ProfileDialog";
 
@@ -35,7 +36,8 @@ const iconMap = {
   briefcase: Briefcase,
   folder: FolderOpen,
   bookopen: BookOpen,
-  folderkanban: FolderKanban
+  folderkanban: FolderKanban,
+  ListTodo: ListTodo,
 };
 
 export default function Sidebar() {
@@ -44,15 +46,18 @@ export default function Sidebar() {
   const [showQuartersSection, setShowQuartersSection] = useState(false);
   const [selectedQuarterId, setSelectedQuarterId] = useState(null);
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState({ open: null, profile: null })
+  const [openDialog, setOpenDialog] = useState({ open: null, profile: null });
   const { user, logout } = useAuth();
-  const currentPhotoUrl =(user.photo ? `${import.meta.env.VITE_API_URL}/uploads/users/${user.photo}` : "https://placehold.co/400");
+  const currentPhotoUrl = user.photo
+    ? `${import.meta.env.VITE_API_URL}/uploads/users/${user.photo}`
+    : "https://placehold.co/400";
   const location = useLocation();
 
   const navigate = useNavigate();
   const { workspacesQuery } = useWorkspace();
   const { data: workspaces } = workspacesQuery;
-  const { selectedWorkspaceId, setSelectedWorkspaceId } = useSelectedWorkspace();
+  const { selectedWorkspaceId, setSelectedWorkspaceId } =
+    useSelectedWorkspace();
   const { kuarterQuery } = useKuarter();
   const { data: kuarters = [] } = kuarterQuery;
 
@@ -73,11 +78,13 @@ export default function Sidebar() {
       const projectId = projectMatch[1];
 
       for (const workspace of workspaces) {
-        const project = workspace.projects?.find(p => p._id === projectId);
+        const project = workspace.projects?.find((p) => p._id === projectId);
         if (project) {
           setSelectedWorkspaceId(workspace._id);
 
-          const relatedQuarter = kuarters?.find(k => k.workspace?.includes(workspace._id));
+          const relatedQuarter = kuarters?.find((k) =>
+            k.workspace?.includes(workspace._id),
+          );
           if (relatedQuarter) {
             setSelectedQuarterId(relatedQuarter._id);
           }
@@ -120,29 +127,34 @@ export default function Sidebar() {
         <div key={item.id} className="space-y-1">
           <button
             onClick={() => toggleSubmenu(item.id)}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group ${active
-              ? "bg-blue-50 text-blue-700"
-              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-              }`}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group ${
+              active
+                ? "bg-blue-50 text-blue-700"
+                : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+            }`}
           >
             <div className="flex items-center space-x-3">
               {IconComponent && (
                 <IconComponent
-                  className={`w-5 h-5 ${active
-                    ? "text-blue-600"
-                    : "text-gray-500 group-hover:text-blue-600"
-                    }`}
+                  className={`w-5 h-5 ${
+                    active
+                      ? "text-blue-600"
+                      : "text-gray-500 group-hover:text-blue-600"
+                  }`}
                 />
               )}
-              <span className={`font-medium transition-opacity duration-300 ${!isSidebarOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+              <span
+                className={`font-medium transition-opacity duration-300 ${!isSidebarOpen ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}
+              >
                 {item.label}
               </span>
             </div>
-            {isSidebarOpen && (isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-            ))}
+            {isSidebarOpen &&
+              (isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              ))}
           </button>
 
           {isExpanded && isSidebarOpen && (
@@ -163,12 +175,13 @@ export default function Sidebar() {
             flex rounded-lg mt-2 transition-all duration-300 group
             ${isSidebarOpen ? "justify-start items-center px-2 py-2" : "ml-2 justify-center items-center w-7 h-7"}
             ${isChild ? "pl-8" : ""}
-            ${isActive
-            ? "bg-[#0E7490] text-white shadow-sm"
-            : isChild
-              ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-          }
+            ${
+              isActive
+                ? "bg-[#0E7490] text-white shadow-sm"
+                : isChild
+                  ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+            }
           `
         }
         onClick={() => {
@@ -185,9 +198,7 @@ export default function Sidebar() {
           />
         )}
         {isSidebarOpen && (
-          <span
-            className="ml-3 font-medium whitespace-nowrap transition-all duration-300 ease-in-out"
-          >
+          <span className="ml-3 font-medium whitespace-nowrap transition-all duration-300 ease-in-out">
             {item.label}
           </span>
         )}
@@ -197,10 +208,11 @@ export default function Sidebar() {
 
   const getRelatedWorkspaces = () => {
     if (!selectedQuarterId || !kuarters?.length) return [];
-    const selectedQuarter = kuarters.find(k => k._id === selectedQuarterId);
-    if (!selectedQuarter?.workspace || selectedQuarter.workspace.length === 0) return [];
+    const selectedQuarter = kuarters.find((k) => k._id === selectedQuarterId);
+    if (!selectedQuarter?.workspace || selectedQuarter.workspace.length === 0)
+      return [];
     const workspaceIds = selectedQuarter.workspace;
-    return workspaces?.filter(ws => workspaceIds.includes(ws._id)) || [];
+    return workspaces?.filter((ws) => workspaceIds.includes(ws._id)) || [];
   };
   const relatedWorkspaces = getRelatedWorkspaces();
 
@@ -219,22 +231,35 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed lg:sticky lg:top-0 z-40 h-screen transition-all duration-300 ${isSidebarOpen ? "w-45" : "w-15"
-        }`}>
+      <div
+        className={`fixed lg:sticky lg:top-0 z-40 h-screen transition-all duration-300 ${
+          isSidebarOpen ? "w-45" : "w-15"
+        }`}
+      >
         <aside className="w-full p-2 h-full bg-[#EFECE3] border-r border-gray-900 flex flex-col shadow-sm">
           {/* Header */}
           <div className="p-3 pb-4 border-b border-gray-200">
-            <div className={`flex items-center transition-all duration-300 ${isSidebarOpen ? "justify-center" : "justify-center"
-              }`}>
+            <div
+              className={`flex items-center transition-all duration-300 ${
+                isSidebarOpen ? "justify-center" : "justify-center"
+              }`}
+            >
               <img
                 src={Profile}
                 alt="Logo"
-                className={`transition-all duration-300 ${isSidebarOpen ? "w-9 h-9" : "scale-300"
-                  }`}
+                className={`transition-all duration-300 ${
+                  isSidebarOpen ? "w-9 h-9" : "scale-300"
+                }`}
               />
               {isSidebarOpen && (
                 <GradientText
-                  colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
+                  colors={[
+                    "#40ffaa",
+                    "#4079ff",
+                    "#40ffaa",
+                    "#4079ff",
+                    "#40ffaa",
+                  ]}
                   animationSpeed={3}
                   showBorder={false}
                   className="custom-class text-2xl transition-opacity duration-300"
@@ -256,13 +281,16 @@ export default function Sidebar() {
                   {isSidebarOpen ? (
                     <>
                       <button
-                        onClick={() => setShowQuartersSection(!showQuartersSection)}
+                        onClick={() =>
+                          setShowQuartersSection(!showQuartersSection)
+                        }
                         className="w-full flex items-center justify-between text-[0.8em] pt-2 font-semibold text-gray-500 uppercase mb-2 hover:text-gray-700 transition-colors"
                       >
                         <span>Quarters</span>
                         <ChevronRight
-                          className={`w-4 h-4 transition-transform ${showQuartersSection ? "rotate-90" : ""
-                            }`}
+                          className={`w-4 h-4 transition-transform ${
+                            showQuartersSection ? "rotate-90" : ""
+                          }`}
                         />
                       </button>
 
@@ -284,15 +312,19 @@ export default function Sidebar() {
                                       setIsSidebarOpen(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center px-3 h-10 py-2.5 rounded-lg transition-all group ${location.pathname === `/kuarter/${k._id}` && isSidebarOpen
-                                    ? "bg-blue-600 text-white"
-                                    : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-                                    }`}
+                                  className={`w-full flex items-center px-3 h-10 py-2.5 rounded-lg transition-all group ${
+                                    location.pathname === `/kuarter/${k._id}` &&
+                                    isSidebarOpen
+                                      ? "bg-blue-600 text-white"
+                                      : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                                  }`}
                                 >
                                   <div className="w-6 h-6 rounded bg-green-500 text-white flex items-center justify-center mr-2 text-[0.8em] font-semibold">
                                     {k.nama.charAt(0).toUpperCase()}
                                   </div>
-                                  <span className="font-medium text-[0.9em]">{k.nama}</span>
+                                  <span className="font-medium text-[0.9em]">
+                                    {k.nama}
+                                  </span>
                                 </button>
 
                                 {/* Workspace dan Projects*/}
@@ -302,20 +334,36 @@ export default function Sidebar() {
                                       <div>
                                         <div className="relative">
                                           <button
-                                            onClick={() => setWorkspaceDropdownOpen(!workspaceDropdownOpen)}
+                                            onClick={() =>
+                                              setWorkspaceDropdownOpen(
+                                                !workspaceDropdownOpen,
+                                              )
+                                            }
                                             className="w-full flex items-center text-[0.8em] justify-between px-3 py-2 bg-white border border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
                                           >
                                             <div className="flex items-center">
                                               <Briefcase className="w-4 h-4 mr-2 text-gray-600" />
                                               <span className="text-[1em] text-gray-700">
-                                                {selectedWorkspaceId && relatedWorkspaces.find(w => w._id === selectedWorkspaceId)
-                                                  ? relatedWorkspaces.find(w => w._id === selectedWorkspaceId).nama
+                                                {selectedWorkspaceId &&
+                                                relatedWorkspaces.find(
+                                                  (w) =>
+                                                    w._id ===
+                                                    selectedWorkspaceId,
+                                                )
+                                                  ? relatedWorkspaces.find(
+                                                      (w) =>
+                                                        w._id ===
+                                                        selectedWorkspaceId,
+                                                    ).nama
                                                   : "Select Workspace"}
                                               </span>
                                             </div>
                                             <ChevronDown
-                                              className={`w-4 h-4 text-gray-400 transition-transform ${workspaceDropdownOpen ? "rotate-180" : ""
-                                                }`}
+                                              className={`w-4 h-4 text-gray-400 transition-transform ${
+                                                workspaceDropdownOpen
+                                                  ? "rotate-180"
+                                                  : ""
+                                              }`}
                                             />
                                           </button>
 
@@ -325,16 +373,28 @@ export default function Sidebar() {
                                                 <button
                                                   key={ws._id}
                                                   onClick={() => {
-                                                    setSelectedWorkspaceId(ws._id);
-                                                    setWorkspaceDropdownOpen(false);
+                                                    setSelectedWorkspaceId(
+                                                      ws._id,
+                                                    );
+                                                    setWorkspaceDropdownOpen(
+                                                      false,
+                                                    );
                                                   }}
-                                                  className={`w-full flex items-center px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 ${selectedWorkspaceId === ws._id ? "bg-blue-50" : ""
-                                                    }`}
+                                                  className={`w-full flex items-center px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+                                                    selectedWorkspaceId ===
+                                                    ws._id
+                                                      ? "bg-blue-50"
+                                                      : ""
+                                                  }`}
                                                 >
                                                   <div className="w-5 h-5 rounded bg-[#0E7490] text-white flex items-center justify-center mr-2 text-[0.7em] font-semibold">
-                                                    {ws.nama.charAt(0).toUpperCase()}
+                                                    {ws.nama
+                                                      .charAt(0)
+                                                      .toUpperCase()}
                                                   </div>
-                                                  <span className="text-gray-700 text-[0.9em]">{ws.nama}</span>
+                                                  <span className="text-gray-700 text-[0.9em]">
+                                                    {ws.nama}
+                                                  </span>
                                                 </button>
                                               ))}
                                             </div>
@@ -345,32 +405,47 @@ export default function Sidebar() {
                                         {selectedWorkspaceId && (
                                           <div className="mt-2 space-y-1">
                                             {relatedWorkspaces
-                                              .filter(ws => ws._id === selectedWorkspaceId)
-                                              .map(ws => (
-                                                ws.projects?.length > 0 && (
-                                                  <div key={ws._id}>
-                                                    {ws.projects.map((project) => (
-                                                      <NavLink
-                                                        key={project._id}
-                                                        to={`/project/${project._id}`}
-                                                        onClick={() => {
-                                                          if (window.innerWidth < 1024) {
-                                                            setIsSidebarOpen(false);
-                                                          }
-                                                        }}
-                                                        className={({ isActive }) =>
-                                                          `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${isActive
-                                                            ? "bg-[#0E7490] text-white text-[0.9em]"
-                                                            : "text-gray-600 hover:text-[#234C6A] hover:bg-blue-50 text-[0.9em]"
-                                                          }`
-                                                        }
-                                                      >
-                                                        {project.nama}
-                                                      </NavLink>
-                                                    ))}
-                                                  </div>
-                                                )
-                                              ))}
+                                              .filter(
+                                                (ws) =>
+                                                  ws._id ===
+                                                  selectedWorkspaceId,
+                                              )
+                                              .map(
+                                                (ws) =>
+                                                  ws.projects?.length > 0 && (
+                                                    <div key={ws._id}>
+                                                      {ws.projects.map(
+                                                        (project) => (
+                                                          <NavLink
+                                                            key={project._id}
+                                                            to={`/project/${project._id}`}
+                                                            onClick={() => {
+                                                              if (
+                                                                window.innerWidth <
+                                                                1024
+                                                              ) {
+                                                                setIsSidebarOpen(
+                                                                  false,
+                                                                );
+                                                              }
+                                                            }}
+                                                            className={({
+                                                              isActive,
+                                                            }) =>
+                                                              `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
+                                                                isActive
+                                                                  ? "bg-[#0E7490] text-white text-[0.9em]"
+                                                                  : "text-gray-600 hover:text-[#234C6A] hover:bg-blue-50 text-[0.9em]"
+                                                              }`
+                                                            }
+                                                          >
+                                                            {project.nama}
+                                                          </NavLink>
+                                                        ),
+                                                      )}
+                                                    </div>
+                                                  ),
+                                              )}
                                           </div>
                                         )}
                                       </div>
@@ -399,16 +474,22 @@ export default function Sidebar() {
                               setSelectedWorkspaceId(k.workspace[0]);
                             }
                           }}
-                          className={`w-full flex items-center justify-center py-2 rounded-lg transition-all ${location.pathname === `/kuarter/${k._id}` || selectedQuarterId === k._id
-                            ? "bg-none text-white"
-                            : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-                            }`}
+                          className={`w-full flex items-center justify-center py-2 rounded-lg transition-all ${
+                            location.pathname === `/kuarter/${k._id}` ||
+                            selectedQuarterId === k._id
+                              ? "bg-none text-white"
+                              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                          }`}
                           title={k.nama}
                         >
-                          <div className={`w-7 h-7 rounded flex items-center justify-center text-[0.8em] font-semibold ${location.pathname === `/kuarter/${k._id}` || selectedQuarterId === k._id
-                            ? "bg-blue-600 rounded-xl text-white"
-                            : "bg-green-500 text-white"
-                            }`}>
+                          <div
+                            className={`w-7 h-7 rounded flex items-center justify-center text-[0.8em] font-semibold ${
+                              location.pathname === `/kuarter/${k._id}` ||
+                              selectedQuarterId === k._id
+                                ? "bg-blue-600 rounded-xl text-white"
+                                : "bg-green-500 text-white"
+                            }`}
+                          >
                             {k.nama.charAt(0).toUpperCase()}
                           </div>
                         </button>
@@ -428,10 +509,17 @@ export default function Sidebar() {
           )}
           <div className="w-full h-px bg-gray-300 my-3"></div>
           {/* User Profile */}
-          <div className={`flex items-center pb-1 gap-3 transition-all duration-300 ${isSidebarOpen ? "justify-end" : "justify-center"
-            }`}>
+          <div
+            className={`flex items-center pb-1 gap-3 transition-all duration-300 ${
+              isSidebarOpen ? "justify-end" : "justify-center"
+            }`}
+          >
             {isSidebarOpen && user && (
-              <p className={`text-black font-semibold text-[1em] ${isSidebarOpen ? "justify-center w-25 truncate" : "justify-end"}`}>{user.username}</p>
+              <p
+                className={`text-black font-semibold text-[1em] ${isSidebarOpen ? "justify-center w-25 truncate" : "justify-end"}`}
+              >
+                {user.username}
+              </p>
             )}
             <img
               className="w-10 h-10 border rounded-full"
