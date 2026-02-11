@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useContext } from "react";
+import TaskBadges from "../Task/TaskBadges";
 import { useSubTask } from "../../hook/useSubTask";
 import { Plus, UserPlus, X, Trash2 } from "lucide-react";
 import PopupSelect from "../Task/PopupSelect";
@@ -160,7 +161,7 @@ const SubtaskList = ({
       setActivePopup(null);
     },
     [localSubtasks, updateSubTaskMutation][
-      (localSubtasks, updateSubTaskMutation)
+    (localSubtasks, updateSubTaskMutation)
     ],
   );
 
@@ -516,9 +517,8 @@ const SubtaskList = ({
           onDragOver={(e) => !readOnly && handleDragOver(e, index)}
           onDrop={!readOnly ? handleDrop : undefined}
           onDragEnd={!readOnly ? handleDragEnd : undefined}
-          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${
-            draggedItem === index ? "opacity-40" : ""
-          }`}
+          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""
+            }`}
         >
           {/* Name Column */}
           <div
@@ -568,6 +568,7 @@ const SubtaskList = ({
                 {s.nama}
               </span>
             )}
+            <TaskBadges taskId={s._id} isSubtask={true} task={s} groupId={groupId} />
           </div>
 
           {/* PIC Column */}
@@ -656,11 +657,10 @@ const SubtaskList = ({
           >
             <span
               ref={(el) => (buttonRefs.current[`type-${s._id}`] = el)}
-              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
-                s.type === "Major"
-                  ? "text-orange-700 bg-orange-200"
-                  : "text-cyan-800 bg-cyan-200"
-              }`}
+              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${s.type === "Major"
+                ? "text-orange-700 bg-orange-200"
+                : "text-cyan-800 bg-cyan-200"
+                }`}
               onClick={() =>
                 !readOnly && setActivePopup({ subtaskId: s._id, field: "type" })
               }
@@ -753,15 +753,14 @@ const SubtaskList = ({
           >
             <span
               ref={(el) => (buttonRefs.current[`priority-${s._id}`] = el)}
-              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
-                s.priority === "Urgent"
-                  ? "text-red-700 bg-red-200"
-                  : s.priority === "High"
-                    ? "text-orange-800 bg-orange-200"
-                    : s.priority === "Medium"
-                      ? "text-blue-800 bg-blue-200"
-                      : "text-gray-800 bg-gray-200"
-              }`}
+              className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${s.priority === "Urgent"
+                ? "text-red-700 bg-red-200"
+                : s.priority === "High"
+                  ? "text-orange-800 bg-orange-200"
+                  : s.priority === "Medium"
+                    ? "text-blue-800 bg-blue-200"
+                    : "text-gray-800 bg-gray-200"
+                }`}
               onClick={() =>
                 !readOnly &&
                 setActivePopup({ subtaskId: s._id, field: "priority" })
@@ -822,13 +821,13 @@ const SubtaskList = ({
             >
               {s.meeting_date
                 ? new Date(s.meeting_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })
                 : "Set date & time"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -864,10 +863,10 @@ const SubtaskList = ({
             >
               {s.start_date
                 ? new Date(s.start_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -899,10 +898,10 @@ const SubtaskList = ({
             >
               {s.due_date
                 ? new Date(s.due_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -934,10 +933,10 @@ const SubtaskList = ({
             >
               {s.finish_date
                 ? new Date(s.finish_date).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
@@ -961,17 +960,16 @@ const SubtaskList = ({
           >
             <span
               ref={(el) => (buttonRefs.current[`note-${s._id}`] = el)}
-              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full cursor-pointer ${
-                s.note === "Planning"
-                  ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                  : s.note === "Uncomplete"
-                    ? "text-red-100 bg-red-900 hover:bg-red-400"
-                    : s.note === "Completed - On Time"
-                      ? "text-green-700 bg-green-100 hover:bg-green-200"
-                      : s.note === "Completed - Overdue"
-                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-              }`}
+              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full cursor-pointer ${s.note === "Planning"
+                ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                : s.note === "Uncomplete"
+                  ? "text-red-100 bg-red-900 hover:bg-red-400"
+                  : s.note === "Completed - On Time"
+                    ? "text-green-700 bg-green-100 hover:bg-green-200"
+                    : s.note === "Completed - Overdue"
+                      ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                      : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                }`}
               onClick={() =>
                 !readOnly && setActivePopup({ subtaskId: s._id, field: "note" })
               }
