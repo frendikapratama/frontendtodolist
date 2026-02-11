@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useTask } from "../../hook/useTask";
 import { useMember } from "../../hook/useMember";
@@ -60,6 +60,28 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const { updateSubTaskMutation } = useSubTask(null, groupId);
   const { data, isLoading, isError } = taskByGroup;
   const { syncTasktoSubtasks, syncSubtasktoTask } = useStatusSync();
+  const isAuthorized = useMemo(() => {
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id,
+    );
+    if (!userMembership) return false;
+    const allowedRoles = ["admin", "project_manager", "management"];
+    return allowedRoles.includes(userMembership.role);
+  }, [currentUser, membersWorkspaceQuery.data]);
+  const isMember = useMemo(() => {
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id,
+    );
+    if (!userMembership) return false;
+    const allowedRoles = ["admin", "project_manager", "member", "management"];
+    return allowedRoles.includes(userMembership.role);
+  }, [currentUser, membersWorkspaceQuery.data]);
   const [openDialog, setOpenDialog] = useState({ open: false, task: null });
   const [showAddTask, setShowAddTask] = useState(false);
   const [openSubtasks, setOpenSubtasks] = useState({});
@@ -67,6 +89,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const [editingField, setEditingField] = useState(null);
   const [editedValue, setEditedValue] = useState("");
   const [scaleInput, setScaleInput] = useState({});
+  const [reasonInput, setReasonInput] = useState({});
   const [activePopup, setActivePopup] = useState(null);
   const [localTasks, setLocalTasks] = useState([]);
   const [dragState, setDragState] = useState({
@@ -255,7 +278,17 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       console.log("no taskid or userId found in confirmaationdelete");
     }
   }, [confirmDeletePIC.taskId, setConfirmDeletePIC.userId, removePicMutation]);
-
+  const handleOpenDialog = useCallback(
+    (taskId) => {
+      if (isMember) {
+        const task = localTasks.find((t) => t._id === taskId);
+        setOpenDialog({ open: true, task: task });
+      } else {
+        toast.error("Only Member can view task detailed");
+      }
+    },
+    [localTasks, isMember],
+  );
   useEffect(() => {
     const handleGlobalDragEnd = () => {
       setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
@@ -420,6 +453,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     },
     [updateTaskMutation, localTasks],
   );
+  const handleReasonChange = useCallback((taskId, e) => {
+    const val = e.target.value;
+    setReasonInput((prev) => ({ ...prev, [taskId]: val }));
+  }, []);
 
   const handleScaleBlur = useCallback(
     (taskId) => {
@@ -439,6 +476,35 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       });
     },
     [scaleInput, updateTaskMutation, localTasks],
+  );
+  const handleReasonBlur = useCallback(
+    (taskId) => {
+      const val = reasonInput[taskId];
+      if (val === undefined) return;
+      const trimmedValue = val.trim();
+      const updateData = { reason: trimmedValue };
+      const updatedTasks = localTasks.map((t) =>
+        t._id === taskId ? { ...t, ...updateData } : t,
+      );
+      setLocalTasks(updatedTasks);
+      updateTaskMutation.mutate({ taskId, data: updateData });
+      setReasonInput((prev) => {
+        const updated = { ...prev };
+        delete updated[taskId];
+        return updated;
+      });
+    },
+    [reasonInput, updateTaskMutation, localTasks],
+  );
+
+  const handleReasonKeyDown = useCallback(
+    (taskId, e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleReasonBlur(taskId);
+      }
+    },
+    [handleReasonBlur],
   );
 
   const handleDragStart = (e, index) => {
@@ -564,6 +630,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     dueDate: "w-40",
     finishDate: "w-40",
     note: "w-50",
+    reason: "w-100",
     action: "w-40",
   };
 
@@ -689,38 +756,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       </div>,
       document.body,
     );
-  };
-
-  const isAuthorized = () => {
-    if (!currentUser || !membersWorkspaceQuery.data) return false;
-
-    // Cari membership current user dalam workspace members
-    const userMembership = membersWorkspaceQuery.data.members?.find(
-      (member) =>
-        member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id,
-    );
-
-    if (!userMembership) return false;
-
-    const allowedRoles = ["admin", "project_manager", "management"];
-    return allowedRoles.includes(userMembership.role);
-  };
-
-  const isMember = () => {
-    if (!currentUser || !membersWorkspaceQuery.data) return false;
-
-    // Cari membership current user dalam workspace members
-    const userMembership = membersWorkspaceQuery.data.members?.find(
-      (member) =>
-        member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id,
-    );
-
-    if (!userMembership) return false;
-
-    const allowedRoles = ["admin", "project_manager", "member", "management"];
-    return allowedRoles.includes(userMembership.role);
   };
 
   return (
@@ -859,13 +894,23 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
               <SortIcon columnKey="note" />
             </span>
           </div>
+
+          {/* Reason Column - Unsortable */}
+          <div
+            className={`${columnWidths.reason} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
+            // onClick={() => handleSort("reason")}
+          >
+            <span className="flex items-center">
+              Reason
+              {/* <SortIcon columnKey="reason" /> */}
+            </span>
+          </div>
           <div
             className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
           >
             Action
           </div>
         </div>
-        {/*  "No results" section to use searchQuery instead of debouncedSearch */}
         {displayTasks?.length === 0 && hasActiveFilters && (
           <div className="px-6 py-8 text-center text-gray-500">
             <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
@@ -900,17 +945,21 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 a
-                className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                  } ${isPreview
+                className={`flex items-center hover:bg-none ${
+                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                } ${
+                  isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                  }`}
+                }`}
               >
                 {/* Name */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task
-                    } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20  ${isDragging ? "bg-gray-600" : ""
-                    } ${isPreview ? "bg-blue-50" : ""}`}
+                  className={`flex-1 flex items-center ${
+                    columnWidths.task
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                    isDragging ? "bg-gray-600" : ""
+                  } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
@@ -919,25 +968,27 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
-                      ? "opacity-100 hover:bg-gray-200"
-                      : "opacity-0"
-                      }`}
+                    className={`p-0.5 rounded transition-all shrink-0 ${
+                      task.subtask?.length || isHovered
+                        ? "opacity-100 hover:bg-gray-200"
+                        : "opacity-0"
+                    }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${task.subtask?.length
-                          ? "text-gray-700"
-                          : "text-gray-400"
-                          }`}
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                        }`}
                       />
                     )}
                   </button>
 
                   {editingField?.taskId === task._id &&
-                    editingField?.field === "nama" ? (
+                  editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
@@ -1061,10 +1112,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 >
                   <span
                     ref={(el) => (buttonRefs.current[`type-${task._id}`] = el)}
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.type === "Major"
-                      ? "text-orange-700 bg-orange-200"
-                      : "text-cyan-800 bg-cyan-200"
-                      }`}
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.type === "Major"
+                        ? "text-orange-700 bg-orange-200"
+                        : "text-cyan-800 bg-cyan-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "type" })
                     }
@@ -1079,6 +1131,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         onChange={(value) =>
                           handlePopupChange(task._id, "type", value)
                         }
+                        s
                         onClose={() => setActivePopup(null)}
                         buttonRef={{
                           current: buttonRefs.current[`type-${task._id}`],
@@ -1099,7 +1152,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       </span>
 
                       {/* Tombol hanya muncul jika user authorized */}
-                      {isAuthorized() && (
+                      {isAuthorized && (
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() =>
@@ -1166,14 +1219,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) =>
                       (buttonRefs.current[`priority-${task._id}`] = el)
                     }
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
-                      ? "text-red-700 bg-red-200"
-                      : task.priority === "High"
-                        ? "text-orange-800 bg-orange-200"
-                        : task.priority === "Medium"
-                          ? "text-blue-800 bg-blue-200"
-                          : "text-gray-800 bg-gray-200"
-                      }`}
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.priority === "Urgent"
+                        ? "text-red-700 bg-red-200"
+                        : task.priority === "High"
+                          ? "text-orange-800 bg-orange-200"
+                          : task.priority === "Medium"
+                            ? "text-blue-800 bg-blue-200"
+                            : "text-gray-800 bg-gray-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "priority" })
                     }
@@ -1231,13 +1285,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })
                       : "Set date & time"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1274,10 +1328,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1309,10 +1363,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1344,10 +1398,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.finish_date
                       ? new Date(task.finish_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1373,16 +1427,17 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) => {
                       buttonRefs.current[`note-${task._id}`] = el;
                     }}
-                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
-                      ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                      : task.note === "Uncomplete"
-                        ? "text-red-100 bg-red-900 hover:bg-red-400"
-                        : task.note === "Completed - On Time"
-                          ? "text-green-700 bg-green-100 hover:bg-green-200"
-                          : task.note === "Completed - Overdue"
-                            ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                            : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                      }`}
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                      task.note === "Planning"
+                        ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                        : task.note === "Uncomplete"
+                          ? "text-red-100 bg-red-900 hover:bg-red-400"
+                          : task.note === "Completed - On Time"
+                            ? "text-green-700 bg-green-100 hover:bg-green-200"
+                            : task.note === "Completed - Overdue"
+                              ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                              : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
@@ -1404,18 +1459,65 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       />
                     )}
                 </div>
+                {/* Reason */}
+                <div
+                  className={`${columnWidths.reason} px-6 py-3.5 border-b border-gray-100 flex justify-center`}
+                >
+                  {task.note === "Completed - Overdue" ? (
+                    editingField?.taskId === task._id &&
+                    editingField?.field === "reason" ? (
+                      <input
+                        className="w-full border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Max 2 sentences"
+                        type="text"
+                        value={
+                          reasonInput[task._id] !== undefined
+                            ? reasonInput[task._id]
+                            : task.reason || ""
+                        }
+                        onChange={(e) => handleReasonChange(task._id, e)}
+                        onBlur={() => {
+                          handleReasonBlur(task._id);
+                          setEditingField(null);
+                        }}
+                        onKeyDown={(e) => {
+                          handleReasonKeyDown(task._id, e);
+                          if (e.key === "Enter" || e.key === "Escape") {
+                            setEditingField(null);
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <div
+                        className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 break-all px-2 py-1 rounded cursor-pointer w-full"
+                        onClick={() => {
+                          setEditingField({
+                            taskId: task._id,
+                            field: "reason",
+                          });
+                          setReasonInput((prev) => ({
+                            ...prev,
+                            [task._id]: task.reason || "",
+                          }));
+                        }}
+                        title={task.reason}
+                      >
+                        {task.reason || "Click to add reason"}
+                      </div>
+                    )
+                  ) : (
+                    <span className="text-[0.7em] text-gray-400">
+                      No need reason
+                    </span>
+                  )}
+                </div>
                 {/* Action Button */}
                 <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
                   <div className="w-40 px-6 py-3.5 gap-2 border-b border-gray-100 items-center flex justify-center">
                     <button
                       className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
-                      onClick={() => {
-                        if (isMember()) {
-                          setOpenDialog({ open: true, task: task });
-                        } else {
-                          toast.error("Only members can view task details");
-                        }
-                      }}
+                      onClick={() => handleOpenDialog(task._id)}
                     >
                       Detail
                     </button>
@@ -1426,15 +1528,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       />
                     </div>
                   </div>
-                  {openDialog.open && (
-                    <DialogDetail
-                      draggable
-                      show={openDialog.open}
-                      onClose={() => setOpenDialog({ open: false, task: null })}
-                      taskId={openDialog.task?._id}
-                      taskData={openDialog.task}
-                    />
-                  )}
                 </div>
               </div>
               <ConfirmDialog
@@ -1459,6 +1552,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             </div>
           );
         })}
+        {openDialog.open && (
+          <DialogDetail
+            draggable
+            show={openDialog.open}
+            onClose={() => setOpenDialog({ open: false, task: null })}
+            taskId={openDialog.task?._id}
+            taskData={openDialog.task}
+          />
+        )}
         {localTasks?.length === 0 && (
           <div
             className="px-6 py-3 border-b border-gray-100"
