@@ -509,10 +509,11 @@ const MajorTaskPage = () => {
                   {/* Toggle Filters Button */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${hasActiveFilters
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-                      }`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
+                      hasActiveFilters
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+                    }`}
                   >
                     <Filter className="h-4 w-4" />
                     Filters
@@ -876,10 +877,11 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.type} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.type === "Major"
-                                ? "text-orange-700 bg-orange-200"
-                                : "text-cyan-800 bg-cyan-200"
-                                }`}
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
+                                task.type === "Major"
+                                  ? "text-orange-700 bg-orange-200"
+                                  : "text-cyan-800 bg-cyan-200"
+                              }`}
                             >
                               {task.type}
                             </span>
@@ -891,10 +893,11 @@ const MajorTaskPage = () => {
                           >
                             <span
                               className={`px-3 py-1.5 text-[0.8em] rounded-full font-semibold 
-                              ${task.status === "Done-In review"
+                              ${
+                                task.status === "Done-In review"
                                   ? " bg-yellow-100 text-yellow-700"
                                   : "bg-indigo-100 text-indigo-700"
-                                }`}
+                              }`}
                             >
                               {task.status}
                             </span>
@@ -905,14 +908,15 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.priority} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.priority === "Urgent"
-                                ? "text-red-700 bg-red-200"
-                                : task.priority === "High"
-                                  ? "text-orange-800 bg-orange-200"
-                                  : task.priority === "Medium"
-                                    ? "text-blue-800 bg-blue-200"
-                                    : "text-gray-800 bg-gray-200"
-                                }`}
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
+                                task.priority === "Urgent"
+                                  ? "text-red-700 bg-red-200"
+                                  : task.priority === "High"
+                                    ? "text-orange-800 bg-orange-200"
+                                    : task.priority === "Medium"
+                                      ? "text-blue-800 bg-blue-200"
+                                      : "text-gray-800 bg-gray-200"
+                              }`}
                             >
                               {task.priority || "Low"}
                             </span>
@@ -941,8 +945,8 @@ const MajorTaskPage = () => {
                               <span className="text-[0.8em] text-gray-600">
                                 {task[field]
                                   ? new Date(task[field]).toLocaleDateString(
-                                    "id-ID",
-                                  )
+                                      "id-ID",
+                                    )
                                   : "-"}
                               </span>
                             </div>
@@ -953,16 +957,17 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.note} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
-                                ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                                : task.note === "Uncomplete"
-                                  ? "text-red-100 bg-red-900 hover:bg-red-400"
-                                  : task.note === "Completed - On Time"
-                                    ? "text-green-700 bg-green-100 hover:bg-green-200"
-                                    : task.note === "Completed - Overdue"
-                                      ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                                      : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                                }`}
+                              className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                                task.note === "Planning"
+                                  ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                                  : task.note === "Uncomplete"
+                                    ? "text-red-100 bg-red-900 hover:bg-red-400"
+                                    : task.note === "Completed - On Time"
+                                      ? "text-green-700 bg-green-100 hover:bg-green-200"
+                                      : task.note === "Completed - Overdue"
+                                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                              }`}
                             >
                               {task.note || "-"}
                             </span>
@@ -973,7 +978,7 @@ const MajorTaskPage = () => {
                           >
                             {task.note === "Completed - Overdue" ? (
                               <div
-                                className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 break-words px-2 py-1 rounded cursor-pointer w-full"
+                                className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 wrap-break-word px-2 py-1 rounded cursor-pointer w-full"
                                 title={task.reason}
                               >
                                 {task.reason || "Click to add reason"}
