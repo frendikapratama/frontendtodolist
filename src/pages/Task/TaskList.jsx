@@ -331,6 +331,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (sortConfig.key) {
+      displayTasks.forEach(task => {
+        if (task.subtask && task.subtask.length > 0) {
+          localStorage.setItem(`sort-task-${task._id}`, JSON.stringify(sortConfig));
+        }
+      });
+    }
+  }, [sortConfig, displayTasks]);
   const handleAddTask = useCallback(() => {
     const trimmedName = taskName.trim();
     if (!trimmedName) return;
@@ -1540,6 +1549,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     groupId={groupId}
                     workspaceId={workspaceId}
                     showAddButton={true}
+                    parentSortConfig={sortConfig}
                   />
                 </div>
               )}
