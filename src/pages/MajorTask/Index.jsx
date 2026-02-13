@@ -112,6 +112,7 @@ const MajorTaskPage = () => {
   const navigate = useNavigate();
   const [showProjectDialog, setShowProjectDialog] = useState(true);
   const [selectedProjectName, setSelectedProjectName] = useState("");
+  const [selectedDivisionName, setSelectedDivisionName] = useState("");
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -328,6 +329,7 @@ const MajorTaskPage = () => {
     dueDate: "w-40",
     finishDate: "w-40",
     note: "w-50",
+    reason: "w-100",
     action: "w-40",
   };
 
@@ -372,6 +374,7 @@ const MajorTaskPage = () => {
     setSelectedProjectId(projectId);
     const project = projects.find((p) => p._id === projectId);
     setSelectedProjectName(project?.nama || "");
+    setSelectedDivisionName(project?.workspaceNama || "");
     setShowProjectDialog(false);
   };
 
@@ -444,10 +447,18 @@ const MajorTaskPage = () => {
           <div className="relative z-50 mb-6 bg-linear-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/60 text-sm mb-1">Current Project</p>
+                <p className="text-white/60 text-sm mb-1">
+                  Current Project -{" "}
+                  <span className="font-bold text-white border p-1 border-white/30">
+                    {selectedDivisionName}
+                  </span>
+                </p>
                 <h1 className="text-3xl font-bold text-white">
                   {selectedProjectName}
                 </h1>
+                <p className="text-white/60 text-sm pt-1">
+                  Select the task column to open the task page.
+                </p>
               </div>
               <div className="flex flex-row gap-3 items-center">
                 <button
@@ -498,11 +509,10 @@ const MajorTaskPage = () => {
                   {/* Toggle Filters Button */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
-                      hasActiveFilters
+                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${hasActiveFilters
                         ? "bg-blue-600 text-white hover:bg-blue-700"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-                    }`}
+                      }`}
                   >
                     <Filter className="h-4 w-4" />
                     Filters
@@ -617,7 +627,7 @@ const MajorTaskPage = () => {
               <div className="overflow-auto max-h-[90vh] rounded-xl">
                 <div className="w-[50vw] min-w-max">
                   {/* Table Header */}
-                  <div className="flex sticky top-0 z-20 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200">
+                  <div className="flex sticky top-0 z-30 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200">
                     {/* Task Column */}
                     <div
                       className={`${columnWidths.task} sticky left-0 z-10 px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] bg-[#D2C1B6] transition-colors`}
@@ -739,6 +749,13 @@ const MajorTaskPage = () => {
                       </span>
                     </div>
 
+                    {/* Reason Column - Unsortable */}
+                    <div
+                      className={`${columnWidths.reason} px-6 py-3 font-semibold text-gray-600 uppercase flex items-center justify-center`}
+                    >
+                      Reason
+                    </div>
+
                     {/* Action Column */}
                     <div
                       className={`${columnWidths.action} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center`}
@@ -755,19 +772,19 @@ const MajorTaskPage = () => {
                         {/* ================= TASK ROW ================= */}
                         <div
                           className={`flex items-center transition-colors
-          ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
-          ${!isOpen ? "border-b border-gray-100" : ""}
-        `}
+                            ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
+                            ${!isOpen ? "border-b border-gray-100" : ""}
+                          `}
                           onMouseEnter={() => setHoveredRow(task._id)}
                           onMouseLeave={() => setHoveredRow(null)}
                         >
                           {/* ===== TASK NAME (STICKY) ===== */}
                           <div
                             className={`flex items-center ${columnWidths.task}
-            gap-1 px-3 py-3.5 sticky left-0 z-5
-            ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
-            ${!isOpen ? "border-b border-gray-100" : ""}
-          `}
+                              gap-1 px-3 py-3.5 sticky left-0 z-5
+                              ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
+                              ${!isOpen ? "border-b border-gray-100" : ""}
+                            `}
                           >
                             <button
                               onClick={() =>
@@ -776,7 +793,10 @@ const MajorTaskPage = () => {
                                   [task._id]: !prev[task._id],
                                 }))
                               }
-                              className="p-0.5 rounded shrink-0 hover:bg-gray-200"
+                              className={`p-0.5 rounded shrink-0 hover:bg-gray-200 ${task.subtask && task.subtask.length > 0
+                                  ? ""
+                                  : "invisible"
+                                }`}
                             >
                               {isOpen ? (
                                 <ChevronDown className="w-4 h-4 text-gray-700" />
@@ -858,11 +878,10 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.type} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
-                                task.type === "Major"
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.type === "Major"
                                   ? "text-orange-700 bg-orange-200"
                                   : "text-cyan-800 bg-cyan-200"
-                              }`}
+                                }`}
                             >
                               {task.type}
                             </span>
@@ -872,7 +891,13 @@ const MajorTaskPage = () => {
                           <div
                             className={`${columnWidths.status} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
-                            <span className="px-3 py-1.5 text-[0.8em] rounded-full font-semibold bg-indigo-100 text-indigo-700">
+                            <span
+                              className={`px-3 py-1.5 text-[0.8em] rounded-full font-semibold 
+                              ${task.status === "Done-In review"
+                                  ? " bg-yellow-100 text-yellow-700"
+                                  : "bg-indigo-100 text-indigo-700"
+                                }`}
+                            >
                               {task.status}
                             </span>
                           </div>
@@ -882,15 +907,14 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.priority} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
-                                task.priority === "Urgent"
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.priority === "Urgent"
                                   ? "text-red-700 bg-red-200"
                                   : task.priority === "High"
                                     ? "text-orange-800 bg-orange-200"
                                     : task.priority === "Medium"
                                       ? "text-blue-800 bg-blue-200"
                                       : "text-gray-800 bg-gray-200"
-                              }`}
+                                }`}
                             >
                               {task.priority || "Low"}
                             </span>
@@ -919,8 +943,8 @@ const MajorTaskPage = () => {
                               <span className="text-[0.8em] text-gray-600">
                                 {task[field]
                                   ? new Date(task[field]).toLocaleDateString(
-                                      "id-ID",
-                                    )
+                                    "id-ID",
+                                  )
                                   : "-"}
                               </span>
                             </div>
@@ -930,15 +954,43 @@ const MajorTaskPage = () => {
                           <div
                             className={`${columnWidths.note} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
-                            <span className="px-3 py-1.5 text-[0.8em] rounded-full font-semibold bg-gray-200 text-gray-700">
+                            <span
+                              className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
+                                  ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                                  : task.note === "Uncomplete"
+                                    ? "text-red-100 bg-red-900 hover:bg-red-400"
+                                    : task.note === "Completed - On Time"
+                                      ? "text-green-700 bg-green-100 hover:bg-green-200"
+                                      : task.note === "Completed - Overdue"
+                                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                                        : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                                }`}
+                            >
                               {task.note || "-"}
                             </span>
+                          </div>
+                          {/* reson */}
+                          <div
+                            className={`${columnWidths.reason} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
+                          >
+                            {task.note === "Completed - Overdue" ? (
+                              <div
+                                className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 wrap-break-word px-2 py-1 rounded cursor-pointer w-full"
+                                title={task.reason}
+                              >
+                                {task.reason || "Click to add reason"}
+                              </div>
+                            ) : (
+                              <span className="text-[0.7em] text-gray-400">
+                                No need reason
+                              </span>
+                            )}
                           </div>
 
                           {/* ===== ACTION ===== */}
                           <div className="w-40 px-6 py-3.5 flex justify-center">
                             <button
-                              className="bg-gray-100 rounded-xl px-3 py-1 text-xs hover:bg-gray-200"
+                              className="bg-gray-100 text-black rounded-xl px-3 py-1 text-xs hover:bg-gray-200"
                               onClick={() => {
                                 if (canAccess()) {
                                   setOpenDialog({ open: true, task });
@@ -964,6 +1016,7 @@ const MajorTaskPage = () => {
                               workspaceId={selectedWorkspaceId}
                               showAddButton={false}
                               readOnly={true}
+                              parentSortConfig={sortConfig}
                             />
                           </div>
                         )}

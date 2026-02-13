@@ -127,20 +127,18 @@ export default function Sidebar() {
         <div key={item.id} className="space-y-1">
           <button
             onClick={() => toggleSubmenu(item.id)}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group ${
-              active
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group ${active
+              ? "bg-blue-50 text-blue-700"
+              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+              }`}
           >
             <div className="flex items-center space-x-3">
               {IconComponent && (
                 <IconComponent
-                  className={`w-5 h-5 ${
-                    active
-                      ? "text-blue-600"
-                      : "text-gray-500 group-hover:text-blue-600"
-                  }`}
+                  className={`w-5 h-5 ${active
+                    ? "text-blue-600"
+                    : "text-gray-500 group-hover:text-blue-600"
+                    }`}
                 />
               )}
               <span
@@ -175,13 +173,12 @@ export default function Sidebar() {
             flex rounded-lg mt-2 transition-all duration-300 group
             ${isSidebarOpen ? "justify-start items-center px-2 py-2" : "ml-2 justify-center items-center w-7 h-7"}
             ${isChild ? "pl-8" : ""}
-            ${
-              isActive
-                ? "bg-[#0E7490] text-white shadow-sm"
-                : isChild
-                  ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-            }
+            ${isActive
+            ? "bg-[#0E7490] text-white shadow-sm"
+            : isChild
+              ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+          }
           `
         }
         onClick={() => {
@@ -232,24 +229,21 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed lg:sticky lg:top-0 z-40 h-screen transition-all duration-300 ${
-          isSidebarOpen ? "w-45" : "w-15"
-        }`}
+        className={`fixed lg:sticky lg:top-0 z-40 h-screen transition-all duration-300 ${isSidebarOpen ? "w-45" : "w-15"
+          }`}
       >
         <aside className="w-full p-2 h-full bg-[#EFECE3] border-r border-gray-900 flex flex-col shadow-sm">
           {/* Header */}
           <div className="p-3 pb-4 border-b border-gray-200">
             <div
-              className={`flex items-center transition-all duration-300 ${
-                isSidebarOpen ? "justify-center" : "justify-center"
-              }`}
+              className={`flex items-center transition-all duration-300 ${isSidebarOpen ? "justify-center" : "justify-center"
+                }`}
             >
               <img
                 src={Profile}
                 alt="Logo"
-                className={`transition-all duration-300 ${
-                  isSidebarOpen ? "w-9 h-9" : "scale-300"
-                }`}
+                className={`transition-all duration-300 ${isSidebarOpen ? "w-9 h-9" : "scale-300"
+                  }`}
               />
               {isSidebarOpen && (
                 <GradientText
@@ -288,9 +282,8 @@ export default function Sidebar() {
                       >
                         <span>Quarters</span>
                         <ChevronRight
-                          className={`w-4 h-4 transition-transform ${
-                            showQuartersSection ? "rotate-90" : ""
-                          }`}
+                          className={`w-4 h-4 transition-transform ${showQuartersSection ? "rotate-90" : ""
+                            }`}
                         />
                       </button>
 
@@ -312,12 +305,11 @@ export default function Sidebar() {
                                       setIsSidebarOpen(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center px-3 h-10 py-2.5 rounded-lg transition-all group ${
-                                    location.pathname === `/kuarter/${k._id}` &&
+                                  className={`w-full flex items-center px-3 h-10 py-2.5 rounded-lg transition-all group ${location.pathname === `/kuarter/${k._id}` &&
                                     isSidebarOpen
-                                      ? "bg-blue-600 text-white"
-                                      : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-                                  }`}
+                                    ? "bg-blue-600 text-white"
+                                    : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                                    }`}
                                 >
                                   <div className="w-6 h-6 rounded bg-green-500 text-white flex items-center justify-center mr-2 text-[0.8em] font-semibold">
                                     {k.nama.charAt(0).toUpperCase()}
@@ -345,25 +337,24 @@ export default function Sidebar() {
                                               <Briefcase className="w-4 h-4 mr-2 text-gray-600" />
                                               <span className="text-[1em] text-gray-700">
                                                 {selectedWorkspaceId &&
-                                                relatedWorkspaces.find(
-                                                  (w) =>
-                                                    w._id ===
-                                                    selectedWorkspaceId,
-                                                )
+                                                  relatedWorkspaces.find(
+                                                    (w) =>
+                                                      w._id ===
+                                                      selectedWorkspaceId,
+                                                  )
                                                   ? relatedWorkspaces.find(
-                                                      (w) =>
-                                                        w._id ===
-                                                        selectedWorkspaceId,
-                                                    ).nama
+                                                    (w) =>
+                                                      w._id ===
+                                                      selectedWorkspaceId,
+                                                  ).nama
                                                   : "Select Workspace"}
                                               </span>
                                             </div>
                                             <ChevronDown
-                                              className={`w-4 h-4 text-gray-400 transition-transform ${
-                                                workspaceDropdownOpen
-                                                  ? "rotate-180"
-                                                  : ""
-                                              }`}
+                                              className={`w-4 h-4 text-gray-400 transition-transform ${workspaceDropdownOpen
+                                                ? "rotate-180"
+                                                : ""
+                                                }`}
                                             />
                                           </button>
 
@@ -380,12 +371,11 @@ export default function Sidebar() {
                                                       false,
                                                     );
                                                   }}
-                                                  className={`w-full flex items-center px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 ${
-                                                    selectedWorkspaceId ===
+                                                  className={`w-full flex items-center px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 ${selectedWorkspaceId ===
                                                     ws._id
-                                                      ? "bg-blue-50"
-                                                      : ""
-                                                  }`}
+                                                    ? "bg-blue-50"
+                                                    : ""
+                                                    }`}
                                                 >
                                                   <div className="w-5 h-5 rounded bg-[#0E7490] text-white flex items-center justify-center mr-2 text-[0.7em] font-semibold">
                                                     {ws.nama
@@ -432,10 +422,9 @@ export default function Sidebar() {
                                                             className={({
                                                               isActive,
                                                             }) =>
-                                                              `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
-                                                                isActive
-                                                                  ? "bg-[#0E7490] text-white text-[0.9em]"
-                                                                  : "text-gray-600 hover:text-[#234C6A] hover:bg-blue-50 text-[0.9em]"
+                                                              `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${isActive
+                                                                ? "bg-[#0E7490] text-white text-[0.9em]"
+                                                                : "text-gray-600 hover:text-[#234C6A] hover:bg-blue-50 text-[0.9em]"
                                                               }`
                                                             }
                                                           >
@@ -474,21 +463,19 @@ export default function Sidebar() {
                               setSelectedWorkspaceId(k.workspace[0]);
                             }
                           }}
-                          className={`w-full flex items-center justify-center py-2 rounded-lg transition-all ${
-                            location.pathname === `/kuarter/${k._id}` ||
+                          className={`w-full flex items-center justify-center py-2 rounded-lg transition-all ${location.pathname === `/kuarter/${k._id}` ||
                             selectedQuarterId === k._id
-                              ? "bg-none text-white"
-                              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-                          }`}
+                            ? "bg-none text-white"
+                            : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                            }`}
                           title={k.nama}
                         >
                           <div
-                            className={`w-7 h-7 rounded flex items-center justify-center text-[0.8em] font-semibold ${
-                              location.pathname === `/kuarter/${k._id}` ||
+                            className={`w-7 h-7 rounded flex items-center justify-center text-[0.8em] font-semibold ${location.pathname === `/kuarter/${k._id}` ||
                               selectedQuarterId === k._id
-                                ? "bg-blue-600 rounded-xl text-white"
-                                : "bg-green-500 text-white"
-                            }`}
+                              ? "bg-blue-600 rounded-xl text-white"
+                              : "bg-green-500 text-white"
+                              }`}
                           >
                             {k.nama.charAt(0).toUpperCase()}
                           </div>
@@ -510,9 +497,8 @@ export default function Sidebar() {
           <div className="w-full h-px bg-gray-300 my-3"></div>
           {/* User Profile */}
           <div
-            className={`flex items-center pb-1 gap-3 transition-all duration-300 ${
-              isSidebarOpen ? "justify-end" : "justify-center"
-            }`}
+            className={`flex items-center pb-1 gap-3 transition-all duration-300 ${isSidebarOpen ? "justify-end" : "justify-center"
+              }`}
           >
             {isSidebarOpen && user && (
               <p
@@ -527,18 +513,20 @@ export default function Sidebar() {
               alt="Profile"
               onClick={() => setOpenDialog({ open: true, profile: user })}
             />
-            {openDialog.open && (
-              <ProfileDialog
-                show={openDialog.open}
-                onClose={() => setOpenDialog({ open: false, profile: null })}
-                userId={openDialog.user?._id}
-                profileData={openDialog.profile}
-              />
-            )}
           </div>
         </aside>
       </div>
 
+      <div className="z-100">
+        {openDialog.open && (
+          <ProfileDialog
+            show={openDialog.open}
+            onClose={() => setOpenDialog({ open: false, profile: null })}
+            userId={openDialog.user?._id}
+            profileData={openDialog.profile}
+          />
+        )}
+      </div>
       {/* Toggle Button */}
       {!openDialog.open && (
         <div className="fixed bottom-18 left-2 z-40">

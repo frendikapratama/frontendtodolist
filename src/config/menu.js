@@ -19,7 +19,7 @@ export const menuItems = [
   },
   {
     id: "major-task",
-    label: "Major Task",
+    label: "Major Tasks",
     path: "/major-task",
     icon: "ListTodo",
   },

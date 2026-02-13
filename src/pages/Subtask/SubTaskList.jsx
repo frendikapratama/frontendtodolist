@@ -18,6 +18,7 @@ const SubtaskList = ({
   workspaceId,
   showAddButton = false,
   readOnly = false,
+  parentSortConfig
 }) => {
   const { user: currentUser } = useContext(AuthContext);
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -60,7 +61,9 @@ const SubtaskList = ({
   const [subtaskName, setSubtaskName] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingSubtaskId, setEditingSubtaskId] = useState(null);
+  const [reasonInput, setReasonInput] = useState({})
   const [editedName, setEditedName] = useState("");
+  const [editingField, setEditingField] = useState(null);
   const [localSubtasks, setLocalSubtasks] = useState([]);
   const [draggedItem, setDraggedItem] = useState(null);
   const [activePopup, setActivePopup] = useState(null);
@@ -74,6 +77,74 @@ const SubtaskList = ({
     subtaskId: null,
     userId: null,
   });
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
+  useEffect(() => {
+    if (parentSortConfig && parentSortConfig.key) {
+      setSortConfig(parentSortConfig);
+    } else {
+      const savedSort = localStorage.getItem(`sort-task-${taskId}`);
+      if (savedSort) {
+        setSortConfig(JSON.parse(savedSort));
+      }
+    }
+  }, [parentSortConfig, taskId]);
+  useEffect(() => {
+    if (subtaskByTask.data) {
+      setLocalSubtasks(subtaskByTask.data);
+    }
+  }, [subtaskByTask.data]);
+  const getSortedSubtasks = useCallback(() => {
+    if (!sortConfig.key || !localSubtasks) return localSubtasks;
+
+    const sorted = [...localSubtasks].sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      if (sortConfig.key === "nama") {
+        aValue = aValue?.toLowerCase() || "";
+        bValue = bValue?.toLowerCase() || "";
+      } else if (
+        ["start_date", "due_date", "finish_date", "meeting_date"].includes(
+          sortConfig.key,
+        )
+      ) {
+        aValue = aValue ? new Date(aValue).getTime() : 0;
+        bValue = bValue ? new Date(bValue).getTime() : 0;
+      } else if (sortConfig.key === "priority") {
+        const priorityOrder = { Low: 1, Medium: 2, High: 3, Urgent: 4 };
+        aValue = priorityOrder[aValue] || 0;
+        bValue = priorityOrder[bValue] || 0;
+      } else if (sortConfig.key === "status") {
+        const statusOrder = {
+          "To Do": 1,
+          "In Progress": 2,
+          Hold: 3,
+          Blocked: 4,
+          Done: 5,
+        };
+        aValue = statusOrder[aValue] || 0;
+        bValue = statusOrder[bValue] || 0;
+      } else if (sortConfig.key === "pic") {
+        aValue = a.pic?.length || 0;
+        bValue = b.pic?.length || 0;
+      } else if (sortConfig.key === "scale") {
+        aValue = aValue ? parseFloat(aValue) : 0;
+        bValue = bValue ? parseFloat(bValue) : 0;
+      }
+
+      if (aValue < bValue) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+    return sorted;
+  }, [localSubtasks, sortConfig]);
+  const displaySubtasks = getSortedSubtasks();
   const [scaleInput, setScaleInput] = useState({});
 
   const buttonRefs = useRef({});
@@ -151,7 +222,6 @@ const SubtaskList = ({
         }
       }
 
-      // ✅ OPTIMISTIC UPDATE - Update localSubtasks langsung
       const updatedSubtasks = localSubtasks.map((s) =>
         s._id === subtaskId ? { ...s, ...updateData } : s,
       );
@@ -164,6 +234,12 @@ const SubtaskList = ({
     (localSubtasks, updateSubTaskMutation)
     ],
   );
+  const handleReasonChange = useCallback(
+    (subtaskId, e) => {
+      const val = e.target.value;
+      setReasonInput((prev) => ({ ...prev, [subtaskId]: val }));
+    }, []
+  )
 
   const handleScaleChange = useCallback(
     (subtaskId, e) => {
@@ -206,6 +282,35 @@ const SubtaskList = ({
       });
     },
     [scaleInput, updateSubTaskMutation, localSubtasks],
+  );
+  const handleReasonBlur = useCallback(
+    (subtaskId) => {
+      const val = reasonInput[subtaskId];
+      if (val === undefined) return;
+      const trimmedValue = val.trim();
+      const updateData = { reason: trimmedValue };
+      const updateSubtask = localSubtasks.map((s) =>
+        s._id === subtaskId ? { ...s, ...updateData } : s,
+      );
+      setLocalSubtasks(updateSubtask);
+      updateSubTaskMutation.mutate({ subtaskId, data: updateData });
+      setReasonInput((prev) => {
+        const updated = { ...prev };
+        delete updated[subtaskId];
+        return updated;
+      });
+    },
+    [reasonInput, updateSubTaskMutation, localSubtasks],
+  );
+
+  const handleReasonKeyDown = useCallback(
+    (taskId, e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleReasonBlur(taskId);
+      }
+    },
+    [handleReasonBlur],
   );
 
   const handleDragStart = (e, index) => {
@@ -306,6 +411,7 @@ const SubtaskList = ({
     dueDate: "w-40",
     finishDate: "w-40",
     note: "w-50",
+    reason: "w-100",
     action: "w-40",
   };
   const handleDeletePIC = useCallback((subtaskId, userId) => {
@@ -509,7 +615,7 @@ const SubtaskList = ({
         title="Delete PIC"
         message="Are you sure want to delete this PIC? this action can't be undo"
       />
-      {localSubtasks.map((s, index) => (
+      {displaySubtasks.map((s, index) => (
         <div
           key={s._id}
           draggable={!readOnly}
@@ -988,6 +1094,53 @@ const SubtaskList = ({
                   }}
                 />
               )}
+          </div>
+          {/* Reason Column */}
+          <div
+            className={`${columnWidths.reason} px-6 py-3.5 border-b border-gray-100 flex justify-center`}
+          >
+            {s.note === "Completed - Overdue" ? (
+              editingField?.subtaskId === s._id && editingField?.field === "reason" ? (
+                <input
+                  className="w-full border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Max 2 sentences"
+                  type="text" 
+                  value={
+                    reasonInput[s._id] !== undefined
+                      ? reasonInput[s._id]
+                      : s.reason || ""
+                  }
+                  onChange={(e) => handleReasonChange(s._id, e)}
+                  onBlur={() => {
+                    handleReasonBlur(s._id);
+                    setEditingField(null);
+                  }}
+                  onKeyDown={(e) => {
+                    handleReasonKeyDown(s._id, e);
+                    if (e.key === "Enter" || e.key === "Escape") {
+                      setEditingField(null);
+                    }
+                  }}
+                  autoFocus
+                />
+              ) : (
+                <div
+                  className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 break-all px-2 py-1 rounded cursor-pointer w-full"
+                  onClick={() => {
+                    setEditingField({ subtaskId: s._id, field: "reason" });
+                    setReasonInput((prev) => ({
+                      ...prev,
+                      [s._id]: s.reason || ""
+                    }));
+                  }}
+                  title={s.reason}
+                >
+                  {s.reason || "Click to add reason"}
+                </div>
+              )
+            ) : (
+              <span className="text-[0.7em] text-gray-400">No need reason</span>
+            )}
           </div>
 
           {/* Action Column */}
