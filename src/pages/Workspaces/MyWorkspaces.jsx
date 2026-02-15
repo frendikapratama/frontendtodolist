@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   Clock,
   Calendar,
@@ -11,17 +11,24 @@ import {
   AlertCircle,
   FlagTriangleRight,
   PauseCircle,
+  CloudCog,
 } from "lucide-react";
 import { useAuth } from "../../hook/useContext";
 import { useMyWork } from "../../hook/useTask";
 import { usemyWorkAgendaMeeting } from "../../hook/useTask";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLog, useLogId } from "../../hook/useLog";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import NotificationBell from "../../components/ui/NotificationBell";
+import { useContext } from "react";
 
 const MyWorkspaces = () => {
+  const tooltipRef = useRef(null);
   const { user } = useAuth();
   const { data, isLoading, refetch, error } = useMyWork();
+
+  const { onlineUserId, allUser } = useContext(AuthContext);
   const {
     data: dataAgenda,
     isLoading: isLoadingAgenda,
@@ -317,9 +324,22 @@ const MyWorkspaces = () => {
     const result = date.replace("T", " ").replace(".000Z", "");
     return result;
   }
+  const [activeUserId, setActiveUserId] = useState(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+        setActiveUserId(null);
+      }
+    };
+    if (activeUserId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeUserId]);
   if (isLoading) return <p>Loading Data ....</p>;
   if (error) return <p>Error ....</p>;
-
   return (
     <div className="p-2 bg-linear-to-tl from-[#1A3D64] to-[#1D546C] min-h-screen">
       {user && (
@@ -327,7 +347,46 @@ const MyWorkspaces = () => {
           <h1 className="text-2xl text-white font-semibold drop-shadow-lg">
             {greeting()}, {user.username}
           </h1>
-          <NotificationBell />
+          <div className="flex flex-row justify-center items-center gap-4">
+            <div className="relative flex gap-4 overflow-x-auto  max-w-70 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent px-2">
+              <div className="flex gap-4 min-w-max py-2">
+                {Array.isArray(allUser) && allUser.map((u) => {
+                  const isUserOnline = Array.isArray(onlineUserId) && onlineUserId.includes(u._id);
+                  return (
+                    <div key={u._id} className="relative shrink-0" ref={activeUserId === u._id ? tooltipRef : null}>
+                      <div
+                        onClick={() =>
+                          setActiveUserId(activeUserId === u._id ? null : u._id)
+                        }
+                        className="relative w-10 h-10 cursor-pointer"
+                      >
+                        {u.photo ? (
+                          <img
+                            src={`${import.meta.env.VITE_API_URL}/uploads/users/${u.photo}`}
+                            alt={u.username}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white font-semibold">
+                            {u.username?.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        {isUserOnline && (
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-gray-900 rounded-full"></span>
+                        )}
+                      </div>
+                      {activeUserId === u._id && (
+                        <div className="fixed top-20 -translate-x-1/5 bg-gray-800 text-white text-xs px-3 py-2 rounded-md shadow-lg whitespace-nowrap z-99">
+                          {u.username}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <NotificationBell />
+          </div>
         </div>
       )}
 
@@ -442,13 +501,13 @@ const MyWorkspaces = () => {
                     {agenda.group} -{" "}
                     {agenda.meeting_date
                       ? new Date(agenda.meeting_date).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })
                       : "No meeting date"}
                   </p>
                   <p className="text-xs text-gray-400">
@@ -473,41 +532,37 @@ const MyWorkspaces = () => {
           <div className="flex items-center gap-4 mb-4 border-b border-white/10 pb-3">
             <button
               onClick={() => setSelectedPeriod("all")}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                selectedPeriod === "all"
-                  ? "bg-primary text-white shadow-lg shadow-blue-500/50"
-                  : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedPeriod === "all"
+                ? "bg-primary text-white shadow-lg shadow-blue-500/50"
+                : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setSelectedPeriod("today")}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                selectedPeriod === "today"
-                  ? "bg-primary text-white shadow-lg shadow-blue-500/50"
-                  : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedPeriod === "today"
+                ? "bg-primary text-white shadow-lg shadow-blue-500/50"
+                : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                }`}
             >
               Today
             </button>
             <button
               onClick={() => setSelectedPeriod("month")}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                selectedPeriod === "month"
-                  ? "bg-primary text-white shadow-lg shadow-blue-500/50"
-                  : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedPeriod === "month"
+                ? "bg-primary text-white shadow-lg shadow-blue-500/50"
+                : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                }`}
             >
               Month
             </button>
             <button
               onClick={() => setSelectedPeriod("year")}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                selectedPeriod === "year"
-                  ? "bg-primary text-white shadow-lg shadow-blue-500/50"
-                  : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-              }`}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${selectedPeriod === "year"
+                ? "bg-primary text-white shadow-lg shadow-blue-500/50"
+                : "text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                }`}
             >
               Year
             </button>
@@ -605,19 +660,18 @@ const MyWorkspaces = () => {
                           {formatDueDate(task.due_date)}
                         </span>
                         <span
-                          className={`text-xs px-2 py-1 rounded-full backdrop-blur-sm text-gray-300 border border-white/10 ${
-                            task.status === "To Do"
-                              ? "bg-gray-600 opacity-85 text-white"
-                              : task.status === "Done"
-                                ? "bg-green-600 opacity-85 text-white"
-                                : task.status === "Hold"
-                                  ? "bg-black opacity-85 text-white"
-                                  : task.status === "Planing"
-                                    ? "bg-blue-600 opacity-85 text-white"
-                                    : task.status === "Blocked"
-                                      ? "bg-red-600 opacity-85 text-white"
-                                      : ""
-                          }`}
+                          className={`text-xs px-2 py-1 rounded-full backdrop-blur-sm text-gray-300 border border-white/10 ${task.status === "To Do"
+                            ? "bg-gray-600 opacity-85 text-white"
+                            : task.status === "Done"
+                              ? "bg-green-600 opacity-85 text-white"
+                              : task.status === "Hold"
+                                ? "bg-black opacity-85 text-white"
+                                : task.status === "Planing"
+                                  ? "bg-blue-600 opacity-85 text-white"
+                                  : task.status === "Blocked"
+                                    ? "bg-red-600 opacity-85 text-white"
+                                    : ""
+                            }`}
                         >
                           {task.status}
                         </span>
