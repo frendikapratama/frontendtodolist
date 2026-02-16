@@ -35,7 +35,7 @@ const KuarterDetail = () => {
 
   return (
     <div className="p-2s overflow-hidden">
-      <div className="flex flex-row justify-between pr-2">
+      <div className="flex flex-row justify-between pr-2 pt-2">
         <button
           onClick={() => navigate(-1)}
           className="text-[0.8em] text-white hover:text-blue-300 active:text-blue-400 font-semibold transition-colors duration-200"

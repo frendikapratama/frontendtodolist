@@ -320,7 +320,7 @@ const MajorTaskPage = () => {
   const columnWidths = {
     task: "w-95",
     pic: "w-32",
-    status: "w-40",
+    status: "w-42",
     type: "w-32",
     priority: "w-32",
     scale: "w-20",

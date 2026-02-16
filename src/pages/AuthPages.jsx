@@ -61,7 +61,7 @@ export default function AuthCard() {
         setError("");
         try {
             const res = await api.post("login", { email, password });
-            await login(res.data.token);
+            await login(res.data.accessToken);
             navigate("/kuarter");
         } catch (err) {
             toast.error(err.response?.data?.message || "Login Failed");
