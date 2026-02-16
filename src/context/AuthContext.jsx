@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await api.get("/users");
         const users = res.data.users || res.data.data || res.data || [];
-        setAllUser(Array.isArray(users) ? users : []);
+        setAllUser(Array.isArray(users) ? users : []);  
       } catch (err) {
         console.error("Failed to fetch users:", err);
         setAllUser([]);
