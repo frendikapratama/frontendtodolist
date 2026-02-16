@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import api from "../api/axios";
 import { API_URL, SOCKET_URL } from "../api/axios";
+import toast from "react-hot-toast";
 
 const chatApi = {
   async getWorkspaceMessages(workspaceId, page = 1, limit = 50) {
@@ -169,7 +170,8 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         const data = await chatApi.getWorkspaceMessages(workspaceId);
         setMessages(data);
       } catch (error) {
-        alert("Failed to load messages");
+        // alert("Failed to load messages");
+        toast.error('Failed to load message')
       } finally {
         setIsLoading(false);
       }
@@ -205,7 +207,8 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
 
     if (!newMessage.trim() && !selectedFile) return;
     if (!socket || !isConnected) {
-      alert("Not connected to chat server");
+      // alert("Not connected to chat server");
+      toast.error('Not connected to chat server')
       return;
     }
 
@@ -235,7 +238,8 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         fileInputRef.current.value = "";
       }
     } catch (error) {
-      alert("Failed to send message");
+      // alert("Failed to send message");
+      toast.error('Failed to send message');
     }
   };
 
@@ -243,7 +247,8 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        alert("File size must be less than 10MB");
+        // alert("File size must be less than 10MB");
+        toast.error('File size must be less than 10MB')
         return;
       }
       setSelectedFile(file);
@@ -293,7 +298,8 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
       }
     } catch (error) {
       console.error("Error unsending message:", error);
-      alert("Failed to unsend message");
+      toast.error('Failed to unsend message')
+      // alert("Failed to unsend message");
     }
 
     setContextMenu(null);

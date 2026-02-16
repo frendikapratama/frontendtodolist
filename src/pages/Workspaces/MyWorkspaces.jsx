@@ -12,6 +12,7 @@ import {
   FlagTriangleRight,
   PauseCircle,
   CloudCog,
+  Users,
 } from "lucide-react";
 import { useAuth } from "../../hook/useContext";
 import { useMyWork } from "../../hook/useTask";
@@ -324,7 +325,32 @@ const MyWorkspaces = () => {
     const result = date.replace("T", " ").replace(".000Z", "");
     return result;
   }
+  const formateToWIB = (dateString) => {
+    const date = new Date(dateString)
+    const wibOffSet = 7 * 60
+    const localOffSet = date.getTimezoneOffset()
+    const wibTime = new Date(date.getTime() + (wibOffSet + localOffSet) * 60000)
+    return wibTime.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Jakarta"
+    })
+  }
   const [activeUserId, setActiveUserId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const openSidebar = () => {
+    setIsSidebarVisible(true);
+    setTimeout(() => setIsSidebarOpen(true), 10);
+  };
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+    setTimeout(() => setIsSidebarVisible(false), 300);
+  };
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
@@ -338,6 +364,17 @@ const MyWorkspaces = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeUserId]);
+  const sortedUser = useMemo(() => {
+    if (!Array.isArray(allUser)) return [];
+    return [...allUser].sort((a, b) => {
+      const aOnline = Array.isArray(onlineUserId) && onlineUserId.includes(a._id)
+      const bOnline = Array.isArray(onlineUserId) && onlineUserId.includes(b._id)
+      if (aOnline & !bOnline) return -1
+      if (!aOnline & bOnline) return 1
+      return 0
+    }, [allUser, onlineUserId])
+  })
+  // console.log(sortedUser)
   if (isLoading) return <p>Loading Data ....</p>;
   if (error) return <p>Error ....</p>;
   return (
@@ -350,7 +387,7 @@ const MyWorkspaces = () => {
           <div className="flex flex-row justify-center items-center gap-4">
             <div className="relative flex gap-4 overflow-x-auto  max-w-70 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent px-2">
               <div className="flex gap-4 min-w-max py-2">
-                {Array.isArray(allUser) && allUser.map((u) => {
+                {Array.isArray(allUser) && sortedUser.map((u) => {
                   const isUserOnline = Array.isArray(onlineUserId) && onlineUserId.includes(u._id);
                   return (
                     <div key={u._id} className="relative shrink-0" ref={activeUserId === u._id ? tooltipRef : null}>
@@ -385,9 +422,122 @@ const MyWorkspaces = () => {
                 })}
               </div>
             </div>
+            <button
+              onClick={openSidebar}
+              className="text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
+            >
+              <Users className="w-5 h-5" />
+            </button>
             <NotificationBell />
           </div>
         </div>
+      )}
+      {isSidebarVisible && (
+        <>
+          {/* Overlay */}
+          <div
+            onClick={closeSidebar}
+            className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'
+              }`}
+          />
+          {/* Sidebar */}
+          <div
+            className={`fixed right-0 top-0 h-full w-80 bg-linear-to-b from-[#1A3D64] to-[#1D546C] shadow-2xl z-50 overflow-hidden transition-transform duration-300 ease-out ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+              }`}
+          >
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/10">
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Members
+                </h2>
+                <button
+                  onClick={closeSidebar}
+                  className="text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* User List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {/* Online Users Section */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    Online ({sortedUser.filter(u => onlineUserId?.includes(u._id)).length})
+                  </h3>
+                  {sortedUser
+                    .filter(u => onlineUserId?.includes(u._id))
+                    .map((u) => (
+                      <div
+                        key={u._id}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-colors duration-150 cursor-pointer"
+                      >
+                        <div className="relative shrink-0">
+                          {u.photo ? (
+                            <img
+                              src={`${import.meta.env.VITE_API_URL}/uploads/users/${u.photo}`}
+                              alt={u.username}
+                              className="w-12 h-12 rounded-full object-cover ring-2 ring-green-500"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center text-white font-semibold ring-2 ring-green-500">
+                              {u.username?.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1A3D64] rounded-full"></span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-medium truncate">{u.username}</p>
+                          <p className="text-xs text-green-400">Active now</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Offline Users Section */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+                    Offline ({sortedUser.filter(u => !onlineUserId?.includes(u._id)).length})
+                  </h3>
+                  {sortedUser
+                    .filter(u => !onlineUserId?.includes(u._id))
+                    .map((u) => (
+                      <div
+                        key={u._id}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-colors duration-150 cursor-pointer"
+                      >
+                        <div className="relative shrink-0">
+                          {u.photo ? (
+                            <img
+                              src={`${import.meta.env.VITE_API_URL}/uploads/users/${u.photo}`}
+                              alt={u.username}
+                              className="w-12 h-12 rounded-full object-cover opacity-70"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center text-white font-semibold opacity-70">
+                              {u.username?.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-[#1A3D64] rounded-full"></span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-medium truncate opacity-70">{u.username}</p>
+                          <p className="text-white text-xs font-medium truncate opacity-50">Last-online: {formateToWIB(u.lastSeen)}</p>
+                          <p className="text-xs text-gray-500">Offline</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* First Row */}
