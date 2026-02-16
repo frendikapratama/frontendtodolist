@@ -61,19 +61,54 @@ export const AuthProvider = ({ children }) => {
   //     socket.off("onlineUsers");
   //   };
   // }, []);
+  // useEffect(() => {
+  //   if (!token) return;
+  //   const newSocket = initSocket(token);
+  //   setSocket(newSocket);
+  //   newSocket.on("onlineUsers", (users) => {
+  //     setOnlineUserId(users);
+  //   });
+  //   const interval = setInterval(() => {
+  //     newSocket.emit("heartbeat");
+  //   }, 60000);
+  //   return () => {
+  //     clearInterval(interval);
+  //     newSocket.off("onlineUsers");
+  //     newSocket.disconnect();
+  //   };
+  // }, [token]);
+
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      return;
+    }
     const newSocket = initSocket(token);
     setSocket(newSocket);
     newSocket.on("onlineUsers", (users) => {
       setOnlineUserId(users);
     });
+    newSocket.on("connect", () => {
+      console.log('Socket connected in AuthContext:', newSocket.id);
+    });
+    newSocket.on("connect_error", (error) => {
+      console.error('Socket connection error in AuthContext:', error.message);
+    });
+    newSocket.on("disconnect", (reason) => {
+      console.log('Socket disconnected in AuthContext:', reason);
+    });
     const interval = setInterval(() => {
-      newSocket.emit("heartbeat");
-    }, 60000);
+      if (newSocket.connected) {
+        newSocket.emit("heartbeat");
+      } else {
+        console.log('Socket not connected, skipping heartbeat');
+      }
+    }, 30000);
     return () => {
       clearInterval(interval);
       newSocket.off("onlineUsers");
+      newSocket.off("connect");
+      newSocket.off("connect_error");
+      newSocket.off("disconnect");
       newSocket.disconnect();
     };
   }, [token]);
@@ -104,7 +139,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await api.get("/users");
         const users = res.data.users || res.data.data || res.data || [];
-        setAllUser(Array.isArray(users) ? users : []);
+        setAllUser(Array.isArray(users) ? users : []);  
       } catch (err) {
         console.error("Failed to fetch users:", err);
         setAllUser([]);
