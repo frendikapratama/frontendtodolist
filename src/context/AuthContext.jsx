@@ -11,6 +11,11 @@ export const AuthProvider = ({ children }) => {
   const [onlineUserId, setOnlineUserId] = useState([])
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  socket.on("onlineUsers", (users) => {
+    console.log("ONLINE USERS RECEIVED:", users);
+    setOnlineUserId(users);
+  });
+
 
   // useEffect(() => {
   //   if (!token) return;
