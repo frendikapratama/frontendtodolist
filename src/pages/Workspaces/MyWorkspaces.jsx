@@ -375,6 +375,11 @@ const MyWorkspaces = () => {
     }, [allUser, onlineUserId])
   })
   console.log(sortedUser)
+  console.log("ONLINE IDS:", onlineUserIds);
+  console.log("CURRENT USER ID:", user._id);
+  console.log("TYPE ONLINE ID:", typeof onlineUserIds[0]);
+  console.log("TYPE USER ID:", typeof user._id);
+
   if (isLoading) return <p>Loading Data ....</p>;
   if (error) return <p>Error ....</p>;
   return (
