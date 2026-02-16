@@ -21,6 +21,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/id";
 import { useAttachment } from "../../hook/useAttachment";
 import { useNotifications } from "../../context/NotificationContext";
+import toast from "react-hot-toast" 
+
 dayjs.extend(relativeTime);
 dayjs.locale("id");
 
@@ -189,7 +191,8 @@ const DialogDetail = ({
         await uploadAttachmentMutation.mutateAsync(file);
       } catch (error) {
         console.error("Error uploading file:", error);
-        alert(`Gagal upload ${file.name}`);
+        // alert(`Gagal upload ${file.name}`);
+        toast.error('Failed to upload file')
       }
     }
 
@@ -203,8 +206,10 @@ const DialogDetail = ({
     try {
       await deleteAttachmentMutation.mutateAsync(attachmentId);
     } catch (error) {
-      console.error("Error deleting file:", error);
-      alert("Gagal menghapus file");
+
+      // console.error("Error deleting file:", error);
+      // alert("Gagal menghapus file");
+      toast.error('Only uploader can delete')
     }
   };
 
@@ -270,7 +275,8 @@ const DialogDetail = ({
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading file:", error);
-      alert("Gagal mendownload file");
+      // alert("Gagal mendownload file");
+      toast.error('Failed to download file')
     }
   };
   return (
