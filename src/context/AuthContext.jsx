@@ -61,23 +61,68 @@ export const AuthProvider = ({ children }) => {
   //     socket.off("onlineUsers");
   //   };
   // }, []);
+  // useEffect(() => {
+  //   if (!token) return;
+  //   const newSocket = initSocket(token);
+  //   setSocket(newSocket);
+  //   newSocket.on("onlineUsers", (users) => {
+  //     setOnlineUserId(users);
+  //   });
+  //   const interval = setInterval(() => {
+  //     newSocket.emit("heartbeat");
+  //   }, 60000);
+  //   return () => {
+  //     clearInterval(interval);
+  //     newSocket.off("onlineUsers");
+  //     newSocket.disconnect();
+  //   };
+  // }, [token]);
+
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      console.log('⚠️ No token available for socket');
+      return;
+    }
+
+    console.log('🔌 Initializing socket with token');
     const newSocket = initSocket(token);
     setSocket(newSocket);
+
+    // Handle onlineUsers event DI SINI
     newSocket.on("onlineUsers", (users) => {
+      console.log('Online users received in AuthContext:', users);
+      console.log('Type:', typeof users, 'IsArray:', Array.isArray(users));
+      console.log('Length:', users?.length);
       setOnlineUserId(users);
     });
+    newSocket.on("connect", () => {
+      console.log('Socket connected in AuthContext:', newSocket.id);
+    });
+    newSocket.on("connect_error", (error) => {
+      console.error('Socket connection error in AuthContext:', error.message);
+    });
+    newSocket.on("disconnect", (reason) => {
+      console.log('🔌 Socket disconnected in AuthContext:', reason);
+    });
     const interval = setInterval(() => {
-      newSocket.emit("heartbeat");
-    }, 60000);
+      if (newSocket.connected) {
+        console.log('Sending heartbeat');
+        newSocket.emit("heartbeat");
+      } else {
+        console.log('Socket not connected, skipping heartbeat');
+      }
+    }, 30000);
     return () => {
+      console.log('Cleaning up socket');
       clearInterval(interval);
       newSocket.off("onlineUsers");
+      newSocket.off("connect");
+      newSocket.off("connect_error");
+      newSocket.off("disconnect");
       newSocket.disconnect();
     };
   }, [token]);
-
+  
   // Initialize auth on mount
   useEffect(() => {
     const initAuth = async () => {
