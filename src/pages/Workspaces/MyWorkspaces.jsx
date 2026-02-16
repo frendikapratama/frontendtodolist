@@ -417,11 +417,11 @@ const MyWorkspaces = () => {
                           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-gray-900 rounded-full"></span>
                         )}
                       </div>
-                      {activeUserId === u._id && (
-                        <div className="fixed top-20 -translate-x-1/5 bg-gray-800 text-white text-xs px-3 py-2 rounded-md shadow-lg whitespace-nowrap z-99">
+                      {/* {activeUserId === u._id && ( */}
+                        {/* <div className="fixed top-20 -translate-x-1/5 bg-gray-800 text-white text-xs px-3 py-2 rounded-md shadow-lg whitespace-nowrap z-99">
                           {u.username}
-                        </div>
-                      )}
+                        </div> */}
+                      {/* )} */}
                     </div>
                   );
                 })}
