@@ -22,9 +22,6 @@ let socket = null;
 
 export const initSocket = (token) => {
     const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL;
-    console.log('Initializing socket...');
-    console.log('Socket URL:', SOCKET_URL);
-    console.log('Token:', token ? 'Present' : 'Missing');
     socket = io(SOCKET_URL, {
         auth: { token },
         withCredentials: true,

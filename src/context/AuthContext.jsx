@@ -80,19 +80,11 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!token) {
-      console.log('⚠️ No token available for socket');
       return;
     }
-
-    console.log('🔌 Initializing socket with token');
     const newSocket = initSocket(token);
     setSocket(newSocket);
-
-    // Handle onlineUsers event DI SINI
     newSocket.on("onlineUsers", (users) => {
-      console.log('Online users received in AuthContext:', users);
-      console.log('Type:', typeof users, 'IsArray:', Array.isArray(users));
-      console.log('Length:', users?.length);
       setOnlineUserId(users);
     });
     newSocket.on("connect", () => {
@@ -102,18 +94,16 @@ export const AuthProvider = ({ children }) => {
       console.error('Socket connection error in AuthContext:', error.message);
     });
     newSocket.on("disconnect", (reason) => {
-      console.log('🔌 Socket disconnected in AuthContext:', reason);
+      console.log('Socket disconnected in AuthContext:', reason);
     });
     const interval = setInterval(() => {
       if (newSocket.connected) {
-        console.log('Sending heartbeat');
         newSocket.emit("heartbeat");
       } else {
         console.log('Socket not connected, skipping heartbeat');
       }
     }, 30000);
     return () => {
-      console.log('Cleaning up socket');
       clearInterval(interval);
       newSocket.off("onlineUsers");
       newSocket.off("connect");
@@ -122,7 +112,7 @@ export const AuthProvider = ({ children }) => {
       newSocket.disconnect();
     };
   }, [token]);
-  
+
   // Initialize auth on mount
   useEffect(() => {
     const initAuth = async () => {
