@@ -318,6 +318,7 @@ const MajorTaskPage = () => {
   };
 
   const columnWidths = {
+    group: "w-95",
     task: "w-95",
     pic: "w-32",
     status: "w-42",
@@ -639,6 +640,17 @@ const MajorTaskPage = () => {
                       </span>
                     </div>
 
+                    {/* group name */}
+                    <div
+                      className={`${columnWidths.group} sticky left-0 z-10 px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] bg-[#D2C1B6] transition-colors`}
+                      onClick={() => handleSort("group")}
+                    >
+                      <span className="flex items-center">
+                        Group Name
+                        <SortIcon columnKey="group" />
+                      </span>
+                    </div>
+
                     {/* PIC Column */}
                     <div
                       className={`${columnWidths.pic} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
@@ -812,6 +824,39 @@ const MajorTaskPage = () => {
                               }
                             >
                               {task.nama}
+                            </span>
+                            <TaskBadges taskId={task._id} task={task} />
+                          </div>
+                          <div
+                            className={`flex items-center ${columnWidths.task}
+                              gap-1 px-3 py-3.5 sticky left-0 z-5
+                              ${hoveredRow === task._id ? "bg-[#eae7de]" : "bg-[#EFECE3]"}
+                              ${!isOpen ? "border-b border-gray-100" : ""}
+                            `}
+                          >
+                            <button
+                              onClick={() =>
+                                setOpenSubtasks((prev) => ({
+                                  ...prev,
+                                  [task._id]: !prev[task._id],
+                                }))
+                              }
+                              className={`p-0.5 rounded shrink-0 hover:bg-gray-200 ${task.subtask && task.subtask.length > 0
+                                  ? ""
+                                  : "invisible"
+                                }`}
+                            >
+                              {isOpen ? (
+                                <ChevronDown className="w-4 h-4 text-gray-700" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-gray-700" />
+                              )}
+                            </button>
+
+                            <span
+                              className="text-[0.8em] text-gray-700 px-1 break-all flex-1 min-w-0 "
+                            >
+                              {task.groups[0]?.nama}
                             </span>
                             <TaskBadges taskId={task._id} task={task} />
                           </div>
