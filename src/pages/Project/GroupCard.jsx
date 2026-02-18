@@ -444,10 +444,10 @@ const GroupCard = ({ group, index, workspaceId }) => {
               )}
             </div>
             <div className="text-gray-300 flex gap-3">
-              <span className=" text-xs rounded-full  text-orange-700">
+              <span className=" text-base underline  rounded-full   text-orange-700 flex justify-center items-center">
                 Major: {majorCount}
               </span>
-              <span className=" text-xs rounded-full  text-cyan-800">
+              <span className=" text-base underline rounded-full  text-cyan-800 flex justify-center items-center">
                 Minor: {minorCount}
               </span>
               <button
