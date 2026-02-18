@@ -321,10 +321,6 @@ const MyWorkspaces = () => {
     });
     return allTasks.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
   }, [data]);
-  function splitFormatDate(date) {
-    const result = date.replace("T", " ").replace(".000Z", "");
-    return result;
-  }
   const formateToWIB = (dateString) => {
     const date = new Date(dateString)
     const wibOffSet = 7 * 60
@@ -374,11 +370,11 @@ const MyWorkspaces = () => {
       return 0
     }, [allUser, onlineUserId])
   })
-  console.log(sortedUser)
-  console.log("ONLINE IDS:", onlineUserId);
-  console.log("CURRENT USER ID:", user._id);
-  console.log("TYPE ONLINE ID:", typeof onlineUserId[0]);
-  console.log("TYPE USER ID:", typeof user._id);
+  // console.log(sortedUser)
+  // console.log("ONLINE IDS:", onlineUserId);
+  // console.log("CURRENT USER ID:", user._id);
+  // console.log("TYPE ONLINE ID:", typeof onlineUserId[0]);
+  // console.log("TYPE USER ID:", typeof user._id);
 
   if (isLoading) return <p>Loading Data ....</p>;
   if (error) return <p>Error ....</p>;

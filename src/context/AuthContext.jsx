@@ -96,6 +96,11 @@ export const AuthProvider = ({ children }) => {
     newSocket.on("disconnect", (reason) => {
       console.log('Socket disconnected in AuthContext:', reason);
     });
+    newSocket.on("user:offline", ({ userId, lastSeen }) => {
+      setAllUser(prev => 
+        prev.map(u => u._id === userId ? { ...u, lastSeen } : u)
+      )
+    })
     const interval = setInterval(() => {
       if (newSocket.connected) {
         newSocket.emit("heartbeat");
@@ -108,6 +113,7 @@ export const AuthProvider = ({ children }) => {
       newSocket.off("onlineUsers");
       newSocket.off("connect");
       newSocket.off("connect_error");
+      newSocket.off("user:offline");
       newSocket.off("disconnect");
       newSocket.disconnect();
     };
