@@ -8,6 +8,12 @@ import { useProgress } from "../../hook/useProgress";
 import { useRecentUpdates } from "../../context/RecentlyContext";
 
 const GroupCard = ({ group, index, workspaceId }) => {
+  const { taskByGroup: allTasksQuery } = useTask(group._id, {});
+  const majorCount =
+    allTasksQuery.data?.filter((t) => t.type === "Major").length || 0;
+  const minorCount =
+    allTasksQuery.data?.filter((t) => t.type === "Minor").length || 0;
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -28,7 +34,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
 
   const { taskByGroup, updateTaskMutation } = useTask(
     group._id,
-    debouncedFilters
+    debouncedFilters,
   );
   const { updateGroupMutation, deleteMutation } = useGroup();
   const { progressByGroup } = useProgress(group._id);
@@ -394,7 +400,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
               {progressData.done > 0 && (
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                    "done"
+                    "done",
                   )}`}
                 >
                   Done: {progressData.done}
@@ -403,7 +409,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
               {progressData.in_progress > 0 && (
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                    "in_progress"
+                    "in_progress",
                   )}`}
                 >
                   In Progress: {progressData.in_progress}
@@ -412,7 +418,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
               {progressData.to_do > 0 && (
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                    "to_do"
+                    "to_do",
                   )}`}
                 >
                   To Do: {progressData.to_do}
@@ -421,7 +427,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
               {progressData.Hold > 0 && (
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                    "Hold"
+                    "Hold",
                   )}`}
                 >
                   Hold: {progressData.Hold}
@@ -430,14 +436,20 @@ const GroupCard = ({ group, index, workspaceId }) => {
               {progressData.blocked > 0 && (
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                    "blocked"
+                    "blocked",
                   )}`}
                 >
                   Blocked: {progressData.blocked}
                 </span>
               )}
             </div>
-            <div className="text-gray-300">
+            <div className="text-gray-300 flex gap-3">
+              <span className=" text-xs rounded-full  text-orange-700">
+                Major: {majorCount}
+              </span>
+              <span className=" text-xs rounded-full  text-cyan-800">
+                Minor: {minorCount}
+              </span>
               <button
                 className={`text-[0.8em] rounded-lg p-2 transition-all duration-200 ${
                   isRecentUpdatesOpen
