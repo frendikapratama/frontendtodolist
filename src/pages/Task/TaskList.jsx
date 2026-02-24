@@ -333,9 +333,12 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
   useEffect(() => {
     if (sortConfig.key) {
-      displayTasks.forEach(task => {
+      displayTasks.forEach((task) => {
         if (task.subtask && task.subtask.length > 0) {
-          localStorage.setItem(`sort-task-${task._id}`, JSON.stringify(sortConfig));
+          localStorage.setItem(
+            `sort-task-${task._id}`,
+            JSON.stringify(sortConfig),
+          );
         }
       });
     }
@@ -768,7 +771,18 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   };
 
   return (
-    <div className="overflow-auto max-h-[90vh]">
+    <div
+      className="overflow-auto max-h-[90vh]"
+      style={{
+        scrollbarColor: "#000000 #f1f1f1",
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget;
+        el.style.cssText += `
+      --scrollbar-style: block;
+    `;
+      }}
+    >
       <ConfirmDialog
         show={confirmDeletePIC.show}
         onClose={() =>
@@ -907,7 +921,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           {/* Reason Column - Unsortable */}
           <div
             className={`${columnWidths.reason} px-6 py-3 font-semibold text-gray-600 uppercase items-center flex justify-center cursor-pointer hover:bg-[#C5B5A8] transition-colors`}
-          // onClick={() => handleSort("reason")}
+            // onClick={() => handleSort("reason")}
           >
             <span className="flex items-center">
               Reason
@@ -954,17 +968,21 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 a
-                className={`flex items-center hover:bg-none ${isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
-                  } ${isPreview
+                className={`flex items-center hover:bg-none ${
+                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                } ${
+                  isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
                     : ""
-                  }`}
+                }`}
               >
                 {/* Name */}
                 <div
-                  className={`flex-1 flex items-center ${columnWidths.task
-                    } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${isDragging ? "bg-gray-600" : ""
-                    } ${isPreview ? "bg-blue-50" : ""}`}
+                  className={`flex-1 flex items-center ${
+                    columnWidths.task
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                    isDragging ? "bg-gray-600" : ""
+                  } ${isPreview ? "bg-blue-50" : ""}`}
                 >
                   <button
                     onClick={() =>
@@ -973,25 +991,27 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         [task._id]: !prev[task._id],
                       }))
                     }
-                    className={`p-0.5 rounded transition-all shrink-0 ${task.subtask?.length || isHovered
+                    className={`p-0.5 rounded transition-all shrink-0 ${
+                      task.subtask?.length || isHovered
                         ? "opacity-100 hover:bg-gray-200"
                         : "opacity-0"
-                      }`}
+                    }`}
                   >
                     {openSubtasks[task._id] ? (
                       <ChevronDown className="w-4 h-4 text-gray-700" />
                     ) : (
                       <ChevronRight
-                        className={`w-4 h-4 ${task.subtask?.length
+                        className={`w-4 h-4 ${
+                          task.subtask?.length
                             ? "text-gray-700"
                             : "text-gray-400"
-                          }`}
+                        }`}
                       />
                     )}
                   </button>
 
                   {editingField?.taskId === task._id &&
-                    editingField?.field === "nama" ? (
+                  editingField?.field === "nama" ? (
                     <input
                       type="text"
                       className="text-sm border text-black border-gray-300 rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500 cursor-text"
@@ -1011,17 +1031,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     <span
                       className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-10 flex-1 min-w-0"
                       onClick={() => {
-                        setEditingField({ taskId: task._id, field: "nama" });
+                        setEditingField({
+                          taskId: task._id,
+                          field: "nama",
+                        });
                         setEditedValue(task.nama);
                       }}
                     >
                       {task.nama}
                     </span>
                   )}
-                  <button
-                    onClick={() => handleOpenDialog(task._id)}
-                  >
-                    <TaskBadges taskId={task._id} task={task} groupId={groupId}  />
+                  <button onClick={() => handleOpenDialog(task._id)}>
+                    <TaskBadges
+                      taskId={task._id}
+                      task={task}
+                      groupId={groupId}
+                    />
                   </button>
                 </div>
                 {/* PIC */}
@@ -1118,10 +1143,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 >
                   <span
                     ref={(el) => (buttonRefs.current[`type-${task._id}`] = el)}
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.type === "Major"
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.type === "Major"
                         ? "text-orange-700 bg-orange-200"
                         : "text-cyan-800 bg-cyan-200"
-                      }`}
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "type" })
                     }
@@ -1194,7 +1220,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         }
                         className="px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
                         onClick={() =>
-                          setActivePopup({ taskId: task._id, field: "status" })
+                          setActivePopup({
+                            taskId: task._id,
+                            field: "status",
+                          })
                         }
                       >
                         {task.status}
@@ -1224,16 +1253,20 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) =>
                       (buttonRefs.current[`priority-${task._id}`] = el)
                     }
-                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${task.priority === "Urgent"
+                    className={`px-3 py-1 text-[0.8em] font-medium rounded-full cursor-pointer hover:bg-gray-200 ${
+                      task.priority === "Urgent"
                         ? "text-red-700 bg-red-200"
                         : task.priority === "High"
                           ? "text-orange-800 bg-orange-200"
                           : task.priority === "Medium"
                             ? "text-blue-800 bg-blue-200"
                             : "text-gray-800 bg-gray-200"
-                      }`}
+                    }`}
                     onClick={() =>
-                      setActivePopup({ taskId: task._id, field: "priority" })
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "priority",
+                      })
                     }
                   >
                     {task.priority || "Low"}
@@ -1289,13 +1322,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })
                       : "Set date & time"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1332,10 +1365,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   >
                     {task.start_date
                       ? new Date(task.start_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1362,15 +1395,18 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     }
                     className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
                     onClick={() =>
-                      setActivePopup({ taskId: task._id, field: "due_date" })
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "due_date",
+                      })
                     }
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1397,15 +1433,18 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     }
                     className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
                     onClick={() =>
-                      setActivePopup({ taskId: task._id, field: "finish_date" })
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "finish_date",
+                      })
                     }
                   >
                     {task.finish_date
                       ? new Date(task.finish_date).toLocaleString("id-ID", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
@@ -1431,7 +1470,8 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) => {
                       buttonRefs.current[`note-${task._id}`] = el;
                     }}
-                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
+                    className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                      task.note === "Planning"
                         ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
                         : task.note === "Uncomplete"
                           ? "text-red-100 bg-red-900 hover:bg-red-400"
@@ -1440,7 +1480,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                             : task.note === "Completed - Overdue"
                               ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
                               : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                      }`}
+                    }`}
                     onClick={() =>
                       setActivePopup({ taskId: task._id, field: "note" })
                     }
@@ -1468,7 +1508,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 >
                   {task.note === "Completed - Overdue" ? (
                     editingField?.taskId === task._id &&
-                      editingField?.field === "reason" ? (
+                    editingField?.field === "reason" ? (
                       <input
                         className="w-full border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Max 2 sentences"
