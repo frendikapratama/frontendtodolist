@@ -774,7 +774,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     <div
       className="overflow-auto max-h-[90vh]"
       style={{
-        scrollbarColor: "#000000 #f1f1f1",
+        scrollbarColor: "#0f766e #f1f1f1",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget;
