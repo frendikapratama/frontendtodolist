@@ -510,10 +510,11 @@ const MajorTaskPage = () => {
                   {/* Toggle Filters Button */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${hasActiveFilters
+                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
+                      hasActiveFilters
                         ? "bg-blue-600 text-white hover:bg-blue-700"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-                      }`}
+                    }`}
                   >
                     <Filter className="h-4 w-4" />
                     Filters
@@ -625,7 +626,18 @@ const MajorTaskPage = () => {
 
             {/* Task Table */}
             {tasks && tasks.length > 0 && (
-              <div className="overflow-auto max-h-[90vh] rounded-xl">
+              <div
+                className="overflow-auto max-h-[90vh] rounded-xl"
+                style={{
+                  scrollbarColor: "#0f766e #f1f1f1",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget;
+                  el.style.cssText += `
+      --scrollbar-style: block;
+    `;
+                }}
+              >
                 <div className="w-[50vw] min-w-max">
                   {/* Table Header */}
                   <div className="flex sticky top-0 z-30 bg-[#D2C1B6] text-[0.6em] border-b border-gray-200">
@@ -805,10 +817,11 @@ const MajorTaskPage = () => {
                                   [task._id]: !prev[task._id],
                                 }))
                               }
-                              className={`p-0.5 rounded shrink-0 hover:bg-gray-200 ${task.subtask && task.subtask.length > 0
+                              className={`p-0.5 rounded shrink-0 hover:bg-gray-200 ${
+                                task.subtask && task.subtask.length > 0
                                   ? ""
                                   : "invisible"
-                                }`}
+                              }`}
                             >
                               {isOpen ? (
                                 <ChevronDown className="w-4 h-4 text-gray-700" />
@@ -841,10 +854,11 @@ const MajorTaskPage = () => {
                                   [task._id]: !prev[task._id],
                                 }))
                               }
-                              className={`p-0.5 rounded shrink-0 hover:bg-gray-200 ${task.subtask && task.subtask.length > 0
+                              className={`p-0.5 rounded shrink-0 hover:bg-gray-200 ${
+                                task.subtask && task.subtask.length > 0
                                   ? ""
                                   : "invisible"
-                                }`}
+                              }`}
                             >
                               {isOpen ? (
                                 <ChevronDown className="w-4 h-4 text-gray-700" />
@@ -853,9 +867,7 @@ const MajorTaskPage = () => {
                               )}
                             </button>
 
-                            <span
-                              className="text-[0.8em] text-gray-700 px-1 break-all flex-1 min-w-0 "
-                            >
+                            <span className="text-[0.8em] text-gray-700 px-1 break-all flex-1 min-w-0 ">
                               {task.groups[0]?.nama}
                             </span>
                             <TaskBadges taskId={task._id} task={task} />
@@ -923,10 +935,11 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.type} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.type === "Major"
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
+                                task.type === "Major"
                                   ? "text-orange-700 bg-orange-200"
                                   : "text-cyan-800 bg-cyan-200"
-                                }`}
+                              }`}
                             >
                               {task.type}
                             </span>
@@ -938,10 +951,11 @@ const MajorTaskPage = () => {
                           >
                             <span
                               className={`px-3 py-1.5 text-[0.8em] rounded-full font-semibold 
-                              ${task.status === "Done-In review"
+                              ${
+                                task.status === "Done-In review"
                                   ? " bg-yellow-100 text-yellow-700"
                                   : "bg-indigo-100 text-indigo-700"
-                                }`}
+                              }`}
                             >
                               {task.status}
                             </span>
@@ -952,14 +966,15 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.priority} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${task.priority === "Urgent"
+                              className={`px-3 py-1 text-[0.8em] rounded-full font-medium ${
+                                task.priority === "Urgent"
                                   ? "text-red-700 bg-red-200"
                                   : task.priority === "High"
                                     ? "text-orange-800 bg-orange-200"
                                     : task.priority === "Medium"
                                       ? "text-blue-800 bg-blue-200"
                                       : "text-gray-800 bg-gray-200"
-                                }`}
+                              }`}
                             >
                               {task.priority || "Low"}
                             </span>
@@ -988,8 +1003,8 @@ const MajorTaskPage = () => {
                               <span className="text-[0.8em] text-gray-600">
                                 {task[field]
                                   ? new Date(task[field]).toLocaleDateString(
-                                    "id-ID",
-                                  )
+                                      "id-ID",
+                                    )
                                   : "-"}
                               </span>
                             </div>
@@ -1000,7 +1015,8 @@ const MajorTaskPage = () => {
                             className={`${columnWidths.note} px-6 py-3.5 flex justify-center ${!isOpen ? "border-b border-gray-100" : ""}`}
                           >
                             <span
-                              className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${task.note === "Planning"
+                              className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                                task.note === "Planning"
                                   ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
                                   : task.note === "Uncomplete"
                                     ? "text-red-100 bg-red-900 hover:bg-red-400"
@@ -1009,7 +1025,7 @@ const MajorTaskPage = () => {
                                       : task.note === "Completed - Overdue"
                                         ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
                                         : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
-                                }`}
+                              }`}
                             >
                               {task.note || "-"}
                             </span>
