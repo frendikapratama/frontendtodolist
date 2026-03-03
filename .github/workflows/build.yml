@@ -28,4 +28,3 @@ jobs:
           tags: |
             ghcr.io/frendikapratama/frontendtodolist:${{ github.sha }}
             ghcr.io/frendikapratama/frontendtodolist:0.0.12
-

@@ -15,7 +15,7 @@ const AcceptWorkspaceInvite = () => {
     password: "",
     confirmPassword: "",
     noHp: "",
-    posisi: "",
+    // posisi: "",
     departemen: "",
     divisi: "",
   });
@@ -33,7 +33,7 @@ const AcceptWorkspaceInvite = () => {
   useEffect(() => {
     if (!workspaceId || !token) {
       setError(
-        "Link undangan tidak valid. Pastikan Anda mengakses link yang benar."
+        "Link undangan tidak valid. Pastikan Anda mengakses link yang benar.",
       );
       return;
     }
@@ -71,7 +71,7 @@ const AcceptWorkspaceInvite = () => {
       console.error("Verification error:", error.response || error);
       setError(
         error.response?.data?.message ||
-          "Token tidak valid atau sudah kedaluwarsa"
+          "Token tidak valid atau sudah kedaluwarsa",
       );
     }
   };
@@ -99,8 +99,8 @@ const AcceptWorkspaceInvite = () => {
         return;
       }
 
-      if (!formData.username || !formData.noHp || !formData.posisi) {
-        setError("Username, No. HP, dan Posisi wajib diisi");
+      if (!formData.username || !formData.noHp) {
+        setError("Username dan No. HP wajib diisi");
         return;
       }
     }
@@ -118,7 +118,7 @@ const AcceptWorkspaceInvite = () => {
         toast.success(
           isRegistered
             ? "Invitation accepted! you are the part of this division."
-            : "Registration completed! your are the part of this division."
+            : "Registration completed! your are the part of this division.",
         );
 
         setTimeout(() => {
@@ -128,7 +128,8 @@ const AcceptWorkspaceInvite = () => {
     } catch (error) {
       console.error("Submit error:", error);
       setError(
-        error.response?.data?.message || "Something went wrong during the registration"
+        error.response?.data?.message ||
+          "Something went wrong during the registration",
       );
     } finally {
       setLoading(false);
@@ -144,7 +145,8 @@ const AcceptWorkspaceInvite = () => {
             Invalid Link
           </h2>
           <p className="text-gray-600 mb-6">
-            This link is invalid or has expired. Please check the email for the latest link.
+            This link is invalid or has expired. Please check the email for the
+            latest link.
           </p>
           <button
             onClick={() => navigate("/")}
@@ -192,7 +194,9 @@ const AcceptWorkspaceInvite = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-500 text-white p-6 text-center">
           <div className="text-4xl mb-2">🏢</div>
-          <h1 className="text-2xl font-bold">Accepting the invitation to the division</h1>
+          <h1 className="text-2xl font-bold">
+            Accepting the invitation to the division
+          </h1>
           <p className="text-blue-100 mt-2">
             {isRegistered
               ? "Accept the Invitation"
@@ -239,7 +243,8 @@ const AcceptWorkspaceInvite = () => {
           {isRegistered ? (
             <div className="text-center">
               <p className="text-gray-700 mb-4">
-                Click the button bellow to accept the invitation and joining the division.
+                Click the button bellow to accept the invitation and joining the
+                division.
               </p>
               <button
                 type="submit"
@@ -414,7 +419,7 @@ const AcceptWorkspaceInvite = () => {
                   placeholder="Example: 081234567890"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Position *
                 </label>
@@ -427,7 +432,7 @@ const AcceptWorkspaceInvite = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Example: Software engineer"
                 />
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Department

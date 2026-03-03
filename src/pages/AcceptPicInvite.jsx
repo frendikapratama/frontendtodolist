@@ -16,7 +16,7 @@ const AcceptPicInvite = () => {
     password: "",
     confirmPassword: "",
     noHp: "",
-    posisi: "",
+    // posisi: "",
     departemen: "",
     divisi: "",
   });
@@ -37,7 +37,7 @@ const AcceptPicInvite = () => {
     // Validasi parameter
     if (!taskId && !subTaskId) {
       setError(
-        "Link undangan tidak valid. Pastikan Anda mengakses link yang benar."
+        "Link undangan tidak valid. Pastikan Anda mengakses link yang benar.",
       );
       return;
     }
@@ -89,7 +89,7 @@ const AcceptPicInvite = () => {
       console.error("Verification error:", error.response || error); // Tambahkan logging
       setError(
         error.response?.data?.message ||
-          "Token tidak valid atau sudah kedaluwarsa"
+          "Token tidak valid atau sudah kedaluwarsa",
       );
     }
   };
@@ -117,8 +117,8 @@ const AcceptPicInvite = () => {
         return;
       }
 
-      if (!formData.username || !formData.noHp || !formData.posisi) {
-        setError("Username, No. HP, dan Posisi wajib diisi");
+      if (!formData.username || !formData.noHp) {
+        setError("Username dan No. HP wajib diisi");
         return;
       }
     }
@@ -141,7 +141,7 @@ const AcceptPicInvite = () => {
         toast.success(
           isRegistered
             ? `Invitation has been accepted! Now you are the PIC for this ${itemType}.`
-            : `Registration successfully! Now you are the PIC for this ${itemType}.`
+            : `Registration successfully! Now you are the PIC for this ${itemType}.`,
         );
 
         setTimeout(() => {
@@ -151,7 +151,8 @@ const AcceptPicInvite = () => {
     } catch (error) {
       console.error("Submit error:", error); // Tambahkan logging
       setError(
-        error.response?.data?.message || "Something went wrong during registration"
+        error.response?.data?.message ||
+          "Something went wrong during registration",
       );
     } finally {
       setLoading(false);
@@ -167,7 +168,8 @@ const AcceptPicInvite = () => {
             Invalid Link
           </h2>
           <p className="text-gray-600 mb-6">
-            This link is invalid or has expired. Please check the email for the latest link.
+            This link is invalid or has expired. Please check the email for the
+            latest link.
           </p>
           <button
             onClick={() => navigate("/")}
@@ -263,7 +265,8 @@ const AcceptPicInvite = () => {
           {isRegistered ? (
             <div className="text-center">
               <p className="text-gray-700 mb-4">
-                Click the button below to accept the invitation and be a PIC for this 
+                Click the button below to accept the invitation and be a PIC for
+                this
                 {inviteType === "subTask" ? " subTask" : " task"} project.
               </p>
               <button
@@ -443,20 +446,32 @@ const AcceptPicInvite = () => {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Position *
-                </label>
-                <input
+                  Position (Optional)
+                </label> */}
+              {/* <input
                   type="text"
-                  name="posisi"
+                  name=""
                   value={formData.posisi}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Example: Software Engineer"
-                />
-              </div>
+                /> */}
+
+              {/* <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  name="posisi"
+                  value={formData.posisi}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Position</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Teknisi">Teknisi</option>
+                  <option value="User">User</option>
+                </select> */}
+              {/* </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -536,13 +551,16 @@ const AcceptPicInvite = () => {
                 disabled={loading}
                 className="w-full bg-blue-500 text-white py-3 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 font-medium"
               >
-                {loading ? "Registering..." : "Register and accept the invitation"}
+                {loading
+                  ? "Registering..."
+                  : "Register and accept the invitation"}
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
-                Dengan mendaftar, Anda menyetujui untuk menjadi PIC{" "}
-                By registering, you agree to be the Person in Charge (PIC) for this {" "}
-                {inviteType === "subTask" ? "subTask" : "task"} and join the related division.
+                Dengan mendaftar, Anda menyetujui untuk menjadi PIC By
+                registering, you agree to be the Person in Charge (PIC) for this{" "}
+                {inviteType === "subTask" ? "subTask" : "task"} and join the
+                related division.
               </p>
             </>
           )}
