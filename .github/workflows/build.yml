@@ -1,4 +1,4 @@
-name: Build & Push Frontend Planify
+name: Build & Push Fe Planify
 
 on:
   push:
