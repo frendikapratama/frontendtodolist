@@ -19,12 +19,12 @@ import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import MajorTask from "./pages/MajorTask/Index";
 export default function App() {
-  if (import.meta.env.MODE === 'development') {
-      console.log = () => { };
-      console.debug = () => { };
-      console.info = () => { };
-    }
-    return (
+  if (import.meta.env.MODE === "development") {
+    console.log = () => {};
+    console.debug = () => {};
+    console.info = () => {};
+  }
+  return (
     <AuthProvider>
       <WorkspaceProvider>
         <NotificationProvider>

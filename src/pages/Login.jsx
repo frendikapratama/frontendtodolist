@@ -22,7 +22,7 @@ export default function Login() {
       navigate("/kuarter");
     } catch (err) {
       // setError(err.response?.data?.message || "Login gagal");
-      toast.error(err.response?.data?.message || "Login Failed")
+      toast.error(err.response?.data?.message || "Login Failed");
     }
   };
   const handleKey = (e) => {
@@ -30,6 +30,7 @@ export default function Login() {
       handleSubmit(e);
     }
   };
+
   const handleForgotPassword = async (e) => {
     navigate("/forgot-password");
   };
@@ -39,20 +40,26 @@ export default function Login() {
       <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-4 sm:p-6 w-full max-w-4xl mx-4">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
           <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
-          <div className="flex justify-between">
-          <div></div>
-            <div className=" mx-auto flex items-center justify-center flex-col">
-              <img src={logo} alt="logo" />
-              <GradientText
-                colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
-                animationSpeed={3}
-                showBorder={false}
-                className="custom-class text-[4em] transition-opacity duration-300"
-              >
-                Planify
-              </GradientText>
+            <div className="flex justify-between">
+              <div></div>
+              <div className=" mx-auto flex items-center justify-center flex-col">
+                <img src={logo} alt="logo" />
+                <GradientText
+                  colors={[
+                    "#40ffaa",
+                    "#4079ff",
+                    "#40ffaa",
+                    "#4079ff",
+                    "#40ffaa",
+                  ]}
+                  animationSpeed={3}
+                  showBorder={false}
+                  className="custom-class text-[4em] transition-opacity duration-300"
+                >
+                  Planify
+                </GradientText>
+              </div>
             </div>
-          </div>
           </div>
 
           <div className="backdrop-blur-lg bg-black/10 shadow-lg rounded-2xl p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-4 sm:space-y-6">

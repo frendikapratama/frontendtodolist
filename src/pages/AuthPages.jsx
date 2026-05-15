@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 export default function AuthCard() {
     const { login } = useContext(AuthContext);
     const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +61,7 @@ export default function AuthCard() {
         e.preventDefault();
         setError("");
         try {
-            const res = await api.post("login", { email, password });
+            const res = await api.post("login", { identifier, password });
             await login(res.data.accessToken);
             navigate("/kuarter");
         } catch (err) {
@@ -213,14 +214,14 @@ export default function AuthCard() {
             <div className="space-y-5">
                 <div>
                     <label className="block text-lg mb-1 text-slate-700 font-semibold">
-                        Email
+                        Email or Username
                     </label>
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
                         className="w-full border-b-2 border-b-blue-500 focus:border-b-blue-300 focus:ring-0 focus:outline-none px-2 sm:px-2 py-2 bg-transparent text-white placeholder-gray-300 text-sm sm:text-base"
-                        placeholder="Enter your email"
+                        placeholder="Enter your email or username"
                         onKeyDown={handleKey}
                         required
                     />
