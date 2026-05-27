@@ -18,6 +18,7 @@ import AuthPages from "./pages/AuthPages";
 import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import MajorTask from "./pages/MajorTask/Index";
+import ReportPage from "./pages/Report/Index";
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};
@@ -47,6 +48,7 @@ export default function App() {
                 <Route element={<ProtectedRoute />}>
                   <Route element={<Layout />}>
                     <Route path="/major-task" element={<MajorTask />} />
+                    <Route path="/reports" element={<ReportPage />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/mywork" element={<MyWork />} />
                     <Route path="/kuarter" element={<Kuarter />} />

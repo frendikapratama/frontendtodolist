@@ -23,4 +23,10 @@ export const menuItems = [
     path: "/major-task",
     icon: "ListTodo",
   },
+  {
+    id: "Reports",
+    label: "Reports",
+    path: "/reports",
+    icon: "reports",
+  },
 ];
