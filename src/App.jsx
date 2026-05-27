@@ -19,6 +19,7 @@ import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import MajorTask from "./pages/MajorTask/Index";
 import ReportPage from "./pages/Report/Index";
+
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};
