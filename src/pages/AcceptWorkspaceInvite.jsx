@@ -485,6 +485,7 @@ const AcceptWorkspaceInvite = () => {
                   <option value="HRD">HRD</option>
                   <option value="GA">GA</option>
                   <option value="Finance">Finance</option>
+                  <option value="Management Trainee">Management Trainee</option>
                 </select>
               </div>
               <button
