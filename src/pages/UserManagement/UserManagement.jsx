@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useUsersState, useDebounce } from "../../hook/useUsers";
-import { DEPARTEMEN_DIVISI } from "../../../../backendtodolistaldo/utils/departement";
+import { DEPARTEMEN_DIVISI } from "../../config/departemenDivisi";
 import { getWorkspaces } from "../../services/workspace";
 import { 
   addUserToWorkspace, 
