@@ -267,7 +267,9 @@ export default function Sidebar() {
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto flex flex-col space-y-1">
             <div className="flex text-xs justify-start flex-col">
-              {menuItems.map((item) => renderMenuItem(item))}
+              {menuItems
+                .filter((item) => !item.requireAdmin || user?.isSystemAdmin)
+                .map((item) => renderMenuItem(item))}
 
               {/* Quarters Section */}
               {kuarters?.length > 0 && (

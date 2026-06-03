@@ -29,4 +29,11 @@ export const menuItems = [
     path: "/reports",
     icon: "reports",
   },
+  {
+    id: "User Management",
+    label: "User Management",
+    path: "/user-management",
+    icon: "users",
+    requireAdmin: true,
+  },
 ];

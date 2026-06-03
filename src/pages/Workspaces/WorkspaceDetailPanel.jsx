@@ -3,7 +3,6 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import AnimatedNumber from "../../components/ui/AnimatedNumber";
 import { useWorkspaceStats } from "../../hook/useProgress";
 
-// ==================== ANIMATED DIVISION NAME COMPONENT ====================
 const AnimatedDivisionName = ({ name }) => {
   const [prevName, setPrevName] = useState(name);
   const [isAnimating, setIsAnimating] = useState(false);

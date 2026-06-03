@@ -1,12 +1,26 @@
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery ,keepPreviousData } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   createUser,
   getUsers,
   updateUser,
   deleteUser,
 } from "../services/userServices";
+
+export function useDebounce(value, delay = 500) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export const useUsersState = () => {
   const [preview, setPreview] = useState(null);
@@ -20,11 +34,12 @@ export const useUsersState = () => {
     noHp: "",
     departemen: "",
     divisi: "",
-    posisi: "",
+    posisi: "User",
     role: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
+
   const [filters, setFilters] = useState({
     search: "",
     role: "all",
@@ -32,44 +47,53 @@ export const useUsersState = () => {
     departemen: "all",
     page: 1,
     limit: 10,
+    isSystemAdmin: "all",
   });
 
   const resetForm = () => {
     setFormData(initialFormData);
     setPreview(null);
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Get users query
   const userQuery = useQuery({
     queryKey: ["users", filters],
     queryFn: () => getUsers(filters),
+     placeholderData: keepPreviousData, 
   });
 
-  // Create and update mutation
   const mutation = useMutation({
-    mutationFn: ({ data, isEdit }) => {
+    mutationFn: ({ id, data, isEdit }) => {
       if (isEdit) {
-        return updateUser(data);
+        return updateUser(id, data);
       }
+
       return createUser(data);
     },
-    onSuccess: (variables) => {
-      const message = variables.isEdit
-        ? "User updated successfully"
-        : "User added successfully";
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+
+    onSuccess: (_, variables) => {
+      toast.success(
+        variables.isEdit
+          ? "User updated successfully"
+          : "User added successfully"
+      );
+
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+
       resetForm();
     },
+
     onError: (error, variables) => {
-      console.error("Mutation error:", error);
       const action = variables.isEdit ? "update" : "create";
 
       if (error.response?.data?.error) {
         const errorData = error.response.data.error;
+
         if (Array.isArray(errorData)) {
           errorData.forEach((msg) => toast.error(msg));
         } else {
@@ -81,16 +105,21 @@ export const useUsersState = () => {
     },
   });
 
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
+
     onSuccess: () => {
       toast.success("User deleted successfully");
-      queryClient.invalidateQueries(["users"]);
+
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
     },
+
     onError: (error) => {
       if (error.response?.data?.error) {
         const errorData = error.response.data.error;
+
         if (Array.isArray(errorData)) {
           errorData.forEach((msg) => toast.error(msg));
         } else {
@@ -102,27 +131,10 @@ export const useUsersState = () => {
     },
   });
 
-  const handleSubmit = (e, isEdit = false) => {
-    e.preventDefault();
-    const submitData = { ...formData };
-
-    mutation.mutate({ data: submitData, isEdit });
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   return {
     preview,
     mutation,
     fileInputRef,
-    handleChange,
-    handleSubmit,
     resetForm,
     setPreview,
     formData,

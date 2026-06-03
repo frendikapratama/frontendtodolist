@@ -83,7 +83,6 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
       )
     ) {
       deleteMutation.mutate(workspaceId);
-      // Reset selected workspace if deleted
       if (selectedCardId === workspaceId) {
         setSelectedCardId(null);
         if (onWorkspaceSelect) {

@@ -19,6 +19,7 @@ import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import MajorTask from "./pages/MajorTask/Index";
 import ReportPage from "./pages/Report/Index";
+import UserManagement from "./pages/UserManagement/UserManagement";
 
 export default function App() {
   if (import.meta.env.MODE === "development") {
@@ -48,6 +49,7 @@ export default function App() {
 
                 <Route element={<ProtectedRoute />}>
                   <Route element={<Layout />}>
+                    <Route path="/user-management" element={<UserManagement />} />
                     <Route path="/major-task" element={<MajorTask />} />
                     <Route path="/reports" element={<ReportPage />} />
                     <Route path="/dashboard" element={<Dashboard />} />
