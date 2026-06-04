@@ -20,7 +20,7 @@ import {
   Check, 
   ChevronLeft, 
   ChevronRight, 
-  RefreshCw   
+  RefreshCw, Eye, EyeOff
 } from "lucide-react";
 import toast from "react-hot-toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
@@ -36,8 +36,9 @@ export default function UserManagement() {
     deleteMutation,
     resetForm
   } = useUsersState();
-
+  
   const [searchInput, setSearchInput] = useState(filters.search || "");
+  const [showPassword, setShowPassword] = useState(false);
 
   const debouncedSearch = useDebounce(searchInput, 500);
 
@@ -410,38 +411,54 @@ return (
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {!isEditMode && (
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-semibold text-slate-500">Password *</label>
-                        <input
-                          type="password"
-                          required={!isEditMode}
-                          value={formData.password}
-                          onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                          placeholder="Min. 6 characters"
-                          className="px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-700"
-                        />
-                      </div>
-                    )}
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-slate-500">Phone Number *</label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        required
-                        value={formData.noHp}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            noHp: e.target.value.replace(/\D/g, ""),
-                          }))
-                        }
-                        placeholder="e.g. 08123456789"
-                        className="px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-700"
-                      />
-                    </div>
-                  </div>
+  <div className="flex flex-col gap-1.5">
+    <label className="text-sm font-semibold text-slate-500">
+      {isEditMode ? "New Password (optional)" : "Password *"}
+    </label>
+    <div className="relative">
+      <input
+        type={showPassword ? "text" : "password"}
+        required={!isEditMode}
+        value={formData.password}
+        onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+        placeholder={isEditMode ? "Leave blank to keep current password" : "Min. 6 characters"}
+        className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-md text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-700"
+      />
+      <button
+        type="button"
+        onClick={() => setShowPassword(!showPassword)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 bg-transparent border-none cursor-pointer p-1 rounded flex items-center justify-center"
+      >
+        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    </div>
+    {isEditMode && (
+      <p className="text-xs text-slate-400 mt-1">
+        * Only fill this field if you want to change the password
+      </p>
+    )}
+  </div>
+  
+  {/* Phone Number field */}
+  <div className="flex flex-col gap-1.5">
+    <label className="text-sm font-semibold text-slate-500">Phone Number *</label>
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      required
+      value={formData.noHp}
+      onChange={(e) =>
+        setFormData((prev) => ({
+          ...prev,
+          noHp: e.target.value.replace(/\D/g, ""),
+        }))
+      }
+      placeholder="e.g. 08123456789"
+      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-700"
+    />
+  </div>
+</div>  
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
