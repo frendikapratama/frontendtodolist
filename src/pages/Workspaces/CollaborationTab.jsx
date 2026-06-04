@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState,useContext ,useMemo  } from "react";
 import { useCollaboration } from "../../hook/useCollaboration";
 import { useWorkspace } from "../../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
 import AnimatedPercentage from "../../components/ui/AnimatedPercentage";
 import { useProgressProject } from "../../hook/useProgress";
 import { useProject } from "../../hook/useProject";
+import { useMember } from "../../hook/useMember";
+import { AuthContext } from "../../context/AuthContext"; 
 
 const ProjectCard = ({
   project,
@@ -13,6 +15,7 @@ const ProjectCard = ({
   borderColor,
   badgeColor,
   badgeText,
+  isAuthorized={isAuthorized},
   collaborationInfo,
   ownerInfo,
   onDelete,
@@ -70,7 +73,7 @@ const ProjectCard = ({
       className={`card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 ${borderColor} relative`}
       onClick={handleCardClick}
     >
-      {isOwner && onDelete && (
+      {isOwner && onDelete && isAuthorized && (
         <button
           className="btn btn-error btn-xs absolute top-2 right-2"
           onClick={(e) => {
@@ -81,6 +84,7 @@ const ProjectCard = ({
           Delete
         </button>
       )}
+
       <div className="mt-2 grid grid-cols-2 gap-10 items-center">
         <div className="flex flex-col gap-1">
           {isEditing ? (
@@ -213,6 +217,22 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   const collaboratedFromOthers =
     projectsQuery.data?.collaboratedFromOthers || [];
 
+
+  const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
+  const { user: currentUser } = useContext(AuthContext);
+
+  const isAuthorized = useMemo(() => {
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id
+    );
+    if (!userMembership) return false;
+    const allowedRoles = ["admin", "project_manager", "management"];
+    return allowedRoles.includes(userMembership.role);
+  }, [currentUser, membersWorkspaceQuery.data]);
+
   const handleDragStart = (e, requestId) => {
     e.dataTransfer.setData("text/plain", requestId);
   };
@@ -238,12 +258,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   const closeModalDelete = () => {
     document.getElementById("ConfirmationModal").close();
   };
-  console.log("CollaborationTab received workspaceId:", workspaceId);
-  console.log("CollaborationTab received currentKuarterId:", currentKuarterId);
 
-  // Debug: Check what workspaces are available
-  console.log("All workspaces:", workspacesQuery.data);
-  console.log("Available workspaces after filter:", availableWorkspaces);
   return (
     <div className="space-y-6 h-screen">
       <dialog id="ConfirmationModal" className="modal">
@@ -408,6 +423,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                         project={project}
                         workspaceId={workspaceId}
                         isOwner={true}
+                          isAuthorized={isAuthorized}   
                         borderColor="border-green-500"
                         badgeColor="badge-success"
                         badgeText="Owner"

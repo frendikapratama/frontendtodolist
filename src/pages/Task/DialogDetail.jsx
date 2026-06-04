@@ -22,6 +22,10 @@ import "dayjs/locale/id";
 import { useAttachment } from "../../hook/useAttachment";
 import { useNotifications } from "../../context/NotificationContext";
 import toast from "react-hot-toast" 
+import { useContext, useMemo } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import { useMember } from "../../hook/useMember";
+
 
 dayjs.extend(relativeTime);
 dayjs.locale("id");
@@ -36,7 +40,6 @@ const DialogDetail = ({
 }) => {
   const itemId = isSubtask ? subtaskId : taskId;
 
-  // Conditionally use task or subtask hooks
   const {
     commentQuery,
     createCommentMutation,
@@ -53,7 +56,7 @@ const DialogDetail = ({
     attachmentsQuery,
   } = useAttachment(itemId, isSubtask);
 
-  const serverAttachments = attachmentsQuery.data || [];
+const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
   const dialogRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -78,10 +81,37 @@ const DialogDetail = ({
   });
   const { socket } = useNotifications();
 
+  const { user: currentUser } = useContext(AuthContext);
+
+  const workspaceId = taskData?.workspaceId || taskData?.workspace?._id;
+
+  const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
+
+  const isAuthorized = useMemo(() => {
+  if (!currentUser || !membersWorkspaceQuery.data) return false;
+  
+  const userMembership = membersWorkspaceQuery.data.members?.find(
+    (member) =>
+      member.user?._id === currentUser._id ||
+      member.user?._id === currentUser.id
+  );
+  
+  if (!userMembership) return true;
+  
+  const memberOnlyRoles = ["member"];
+  return !memberOnlyRoles.includes(userMembership.role);
+}, [currentUser, membersWorkspaceQuery.data]);
+
+  const isFileOwner = (fileObj) => {
+    const userId = currentUser?._id || currentUser?.id;
+    const uploaderId = fileObj.uploadedBy?._id || fileObj.uploadedBy; // handle object atau string
+    console.log("uploaderId:", uploaderId, "| userId:", userId);
+    return uploaderId === userId;
+  };
+
   useEffect(() => {
     if (!socket || !itemId) return;
 
-    // Join room (task or subtask)
     const roomEvent = isSubtask ? "subtask:join" : "task:join";
     const leaveEvent = isSubtask ? "subtask:leave" : "task:leave";
     const commentCreatedEvent = isSubtask
@@ -94,28 +124,25 @@ const DialogDetail = ({
     socket.emit(roomEvent, itemId);
     console.log(`Joined ${isSubtask ? "subtask" : "task"} room: ${itemId}`);
 
-    // Listen for new comments
     const handleNewComment = (data) => {
       const dataKey = isSubtask ? data.subtaskId : data.taskId;
       if (dataKey === itemId) {
         console.log("Real-time comment received:", data);
-        commentQuery.refetch(); // Refresh comments
+        commentQuery.refetch(); 
       }
     };
 
-    // Listen for new replies
     const handleNewReply = (data) => {
       const dataKey = isSubtask ? data.subtaskId : data.taskId;
       if (dataKey === itemId) {
         console.log("Real-time reply received:", data);
-        commentQuery.refetch(); // Refresh comments
+        commentQuery.refetch(); 
       }
     };
 
     socket.on(commentCreatedEvent, handleNewComment);
     socket.on(replyCreatedEvent, handleNewReply);
 
-    // Cleanup: leave room when dialog closes
     return () => {
       socket.emit(leaveEvent, itemId);
       socket.off(commentCreatedEvent, handleNewComment);
@@ -180,6 +207,9 @@ const DialogDetail = ({
         });
       }
       setMessage("");
+      if (textareaRef.current) {
+      textareaRef.current.style.height = "40px";
+    }
     }
   };
 
@@ -191,12 +221,10 @@ const DialogDetail = ({
         await uploadAttachmentMutation.mutateAsync(file);
       } catch (error) {
         console.error("Error uploading file:", error);
-        // alert(`Gagal upload ${file.name}`);
         toast.error('Failed to upload file')
       }
     }
 
-    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -206,9 +234,6 @@ const DialogDetail = ({
     try {
       await deleteAttachmentMutation.mutateAsync(attachmentId);
     } catch (error) {
-
-      // console.error("Error deleting file:", error);
-      // alert("Gagal menghapus file");
       toast.error('Only uploader can delete')
     }
   };
@@ -275,10 +300,18 @@ const DialogDetail = ({
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading file:", error);
-      // alert("Gagal mendownload file");
       toast.error('Failed to download file')
     }
   };
+
+  const textareaRef = useRef(null);
+
+useEffect(() => {
+  if (textareaRef.current) {
+    textareaRef.current.style.height = "auto";
+    textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+  }
+}, [message]);
   return (
     <AnimatePresence>
       {show && (
@@ -331,20 +364,17 @@ const DialogDetail = ({
                                 {dayjs(comment.createdAt).fromNow()}
                               </p>
                             </div>
-                            <button
-                              onClick={() =>
-                                setConfirmDelete({
-                                  show: true,
-                                  commentId: comment._id,
-                                })
-                              }
-                              className="text-gray-400 hover:text-red-600 transition-colors"
-                              title="Delete comment"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
+                            {(isAuthorized || comment.user._id === (currentUser?._id || currentUser?.id)) && (
+                              <button
+                                onClick={() => setConfirmDelete({ show: true, commentId: comment._id })}
+                                className="text-gray-400 hover:text-red-600 transition-colors"
+                                title="Delete comment"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-                          <p className="text-gray-700">{comment.text}</p>
+                          <p className="text-gray-700 whitespace-pre-wrap">{comment.text}</p>
                           <button
                             onClick={() => setReplyTo(comment._id)}
                             className="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
@@ -370,22 +400,17 @@ const DialogDetail = ({
                                   {dayjs(reply.createdAt).fromNow()}
                                 </p>
                               </div>
-                              <button
-                                onClick={() =>
-                                  setConfirmDelete({
-                                    show: true,
-                                    commentId: reply._id,
-                                  })
-                                }
-                                className="text-gray-400 hover:text-red-600 transition-colors"
-                                title="Delete reply"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
+                              {(isAuthorized || reply.user._id === (currentUser?._id || currentUser?.id)) && (
+                                <button
+                                  onClick={() => setConfirmDelete({ show: true, commentId: reply._id })}
+                                  className="text-gray-400 hover:text-red-600 transition-colors"
+                                  title="Delete reply"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              )}
                             </div>
-                            <p className="text-sm text-gray-700">
-                              {reply.text}
-                            </p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.text}</p>
                           </div>
                         </div>
                       ))}{" "}
@@ -408,15 +433,20 @@ const DialogDetail = ({
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <input
-                      type="text"
+                    <textarea
+                      ref={textareaRef}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleSendMessage()
-                      }
-                      placeholder="Write a comment..."
-                      className="flex-1 text-black px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      placeholder="Write a comment... (Shift+Enter for new line)"
+                      rows={1}
+                      className="flex-1 text-black px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
+                      style={{ minHeight: "40px", maxHeight: "150px" }}
                     />
                     <button
                       onClick={handleSendMessage}
@@ -463,9 +493,14 @@ const DialogDetail = ({
                     <input
                       type="text"
                       value={meetingLink}
-                      onChange={(e) => handleMeetingLinkChange(e.target.value)}
+                      onChange={(e) => isAuthorized && handleMeetingLinkChange(e.target.value)}
                       placeholder="Link meeting (opsional)"
-                      className="flex-1 text-black px-3 py-1 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      readOnly={!isAuthorized}
+                      className={`flex-1 text-black px-3 py-1 text-sm border rounded-lg focus:outline-none ${
+                        isAuthorized
+                          ? "focus:ring-2 focus:ring-blue-500"
+                          : "bg-gray-50 cursor-default"
+                      }`}
                     />
                   </div>
 
@@ -474,13 +509,14 @@ const DialogDetail = ({
                     <Calendar className="w-4 h-4 text-gray-500" />
                     <input
                       type="date"
-                      value={
-                        meetingDate
-                          ? dayjs(meetingDate).format("YYYY-MM-DD")
-                          : ""
-                      }
-                      onChange={(e) => handleMeetingDateChange(e.target.value)}
-                      className="flex-1 text-black px-3 py-1 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={meetingDate ? dayjs(meetingDate).format("YYYY-MM-DD") : ""}
+                      onChange={(e) => isAuthorized && handleMeetingDateChange(e.target.value)}
+                      disabled={!isAuthorized}
+                      className={`flex-1 text-black px-3 py-1 text-sm border rounded-lg focus:outline-none ${
+                        isAuthorized
+                          ? "focus:ring-2 focus:ring-blue-500"
+                          : "bg-gray-50 cursor-default opacity-70"
+                      }`}
                     />
                   </div>
                 </div>
@@ -493,7 +529,7 @@ const DialogDetail = ({
                     <p className="text-sm font-semibold text-gray-600 mb-2">
                       Task Description:
                     </p>
-                    {editingDescription ? (
+                    {editingDescription && isAuthorized ? (
                       <div className="space-y-2">
                         <textarea
                           className="w-full text-sm text-black border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-10"
@@ -530,13 +566,16 @@ const DialogDetail = ({
                       </div>
                     ) : (
                       <p
-                        className="text-sm text-gray-800 hover:bg-gray-100 px-2 py-1 rounded cursor-text  whitespace-pre-wrap"
+                        className={`text-sm text-gray-800 px-2 py-1 rounded whitespace-pre-wrap ${
+                          isAuthorized ? "hover:bg-gray-100 cursor-text" : "cursor-default"
+                        }`}
                         onClick={() => {
+                          if (!isAuthorized) return;
                           setEditingDescription(true);
                           setEditedDescription(descriptions);
                         }}
                       >
-                        {descriptions || "Click to add description..."}
+                        {descriptions || (isAuthorized ? "Click to add description..." : "-")}
                       </p>
                     )}
                   </div>
@@ -554,6 +593,7 @@ const DialogDetail = ({
                       </span>
                     </p>
                   </div>
+
                   {meetingDate && (
                     <div className="pt-4 border-t">
                       <p className="text-sm text-gray-600">
@@ -640,18 +680,16 @@ const DialogDetail = ({
                                   >
                                     <Download className="w-3.5 h-3.5" />
                                   </button>
-                                  <button
-                                    onClick={() =>
-                                      handleRemoveFile(fileObj._id)
-                                    }
-                                    className="p-1.5 rounded hover:bg-red-100 text-red-600 transition-colors"
-                                    title="Hapus"
-                                    disabled={
-                                      deleteAttachmentMutation.isLoading
-                                    }
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
+                                 {(isAuthorized || isFileOwner(fileObj)) && (
+                                    <button
+                                      onClick={() => handleRemoveFile(fileObj._id)}
+                                      className="p-1.5 rounded hover:bg-red-100 text-red-600 transition-colors"
+                                      title="Hapus"
+                                      disabled={deleteAttachmentMutation.isLoading}
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             </div>

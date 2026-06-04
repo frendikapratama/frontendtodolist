@@ -59,7 +59,7 @@ const PopupSelect = ({ value, options, onChange, onClose, buttonRef }) => {
   return createPortal(
     <div
       ref={popupRef}
-      className="fixed z-[100] bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[150px]"
+      className="fixed z-100 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[150px]"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,

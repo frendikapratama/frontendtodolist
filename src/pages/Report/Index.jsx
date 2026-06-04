@@ -23,7 +23,6 @@ import toast from "react-hot-toast";
 import { getReports } from "../../services/report";
 
 export default function ReportPage() {
-  // FILTER STATES
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWorkspace, setSelectedWorkspace] = useState("");
   const [selectedProject, setSelectedProject] = useState("");
@@ -32,11 +31,9 @@ export default function ReportPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // PAGINATION STATES
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  // DEBOUNCED FILTERS FOR PERFORMANCE
   const [debouncedFilters, setDebouncedFilters] = useState({
     workspaceId: "",
     projectId: "",
@@ -51,15 +48,12 @@ export default function ReportPage() {
 
   const [isExporting, setIsExporting] = useState(false);
 
-  // FETCH WORKSPACES
   const { workspacesQuery } = useWorkspace();
   const workspaces = workspacesQuery.data || [];
 
-  // FIND SELECTED WORKSPACE PROJECTS
   const activeWorkspaceObj = workspaces.find((ws) => ws._id === selectedWorkspace);
   const projects = activeWorkspaceObj?.projects || [];
 
-  // EFFECT TO SYNC DEBOUNCED FILTERS
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedFilters({
@@ -88,7 +82,6 @@ export default function ReportPage() {
     pageSize,
   ]);
 
-  // RESET PAGE WHEN FILTERS CHANGE
   useEffect(() => {
     setCurrentPage(1);
   }, [
@@ -102,7 +95,6 @@ export default function ReportPage() {
     pageSize,
   ]);
 
-  // QUERY REPORT DATA
   const { data: reportResponse, isLoading, isPlaceholderData, refetch } = useReport(debouncedFilters);
   const reports = reportResponse?.data || [];
   const summary = reportResponse?.summary || {
@@ -122,7 +114,6 @@ export default function ReportPage() {
     totalPages: 1,
   };
 
-  // CLEAR ALL FILTERS
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedWorkspace("");
@@ -135,7 +126,6 @@ export default function ReportPage() {
     toast.success("Filters cleared");
   };
 
-  // FORMAT DATE UTILS
   const formatDate = (date) => {
     if (!date) return "-";
     return dayjs(date).format("DD MMM YYYY");
@@ -146,7 +136,6 @@ export default function ReportPage() {
     return `${days} ${days === 1 || days === -1 ? "day" : "days"}`;
   };
 
-  // RENDER BADGES HELPERS
   const getStatusBadge = (status) => {
     switch (status) {
       case "Done":
@@ -265,7 +254,6 @@ export default function ReportPage() {
       );
     }
 
-    // Fallback: tampilkan nilai asli dari DB
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-500/20 text-gray-400 border border-gray-500/30">
         {compStatus}
@@ -274,13 +262,11 @@ export default function ReportPage() {
   };
 
 
-  // EXPORT TO CSV LOGIC
   const handleExportCSV = async () => {
     try {
       setIsExporting(true);
       toast.loading("Preparing CSV file...", { id: "csv-export" });
 
-      // Query full data bypassing pagination
       const fullFilters = {
         workspaceId: selectedWorkspace,
         projectId: selectedProject,
@@ -302,11 +288,11 @@ export default function ReportPage() {
         return;
       }
 
-      // Format CSV Content
       const headers = [
         "Quarter",
         "Departemen",
         "Workspace",
+        "Project Name",
         "Nama Group",
         "Level",
         "Task Name",
@@ -342,6 +328,7 @@ export default function ReportPage() {
           row.kuarter,
           row.departemen,
           row.workspace,
+          row.project,
           row.group,
           row.itemType,
           row.taskName,
@@ -552,7 +539,7 @@ export default function ReportPage() {
               value={selectedWorkspace}
               onChange={(e) => {
                 setSelectedWorkspace(e.target.value);
-                setSelectedProject(""); // reset project when workspace changes
+                setSelectedProject(""); 
               }}
               className="w-full px-3 py-2 bg-white/5 border border-white/10 focus:border-indigo-500 rounded-lg text-sm text-white focus:outline-hidden focus:bg-[#1C3A5A] transition-all"
             >
@@ -661,6 +648,7 @@ export default function ReportPage() {
           <table className="w-full text-left border-collapse table-auto min-w-[1600px]">
             <thead>
               <tr className="bg-white/5 border-b border-white/10 text-[11px] font-bold text-white/60 uppercase tracking-wider">
+                <th className="px-6 py-4 min-w-[140px]">Project Name</th>
                 <th className="px-6 py-4 min-w-[140px]">Group Name</th>
                 <th className="px-6 py-4 min-w-[280px] sticky left-0 bg-[#1f3f62] z-20 shadow-md">Task & Subtask</th>
                 <th className="px-6 py-4 min-w-[150px]">PIC</th>
@@ -707,6 +695,7 @@ export default function ReportPage() {
                       } ${isPlaceholderData ? "opacity-60" : ""}`}
                     >
                       {/* GROUP NAME */}
+                      <td className="px-6 py-3.5 font-medium text-white/70">{row.project}</td>
                       <td className="px-6 py-3.5 font-medium text-white/70">{row.group}</td>
 
                       {/* TASK & SUBTASK STICKY COLUMN */}
