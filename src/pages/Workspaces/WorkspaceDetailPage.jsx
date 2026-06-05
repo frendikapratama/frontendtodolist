@@ -294,7 +294,10 @@ const WorkspaceDetailPage = () => {
               transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            <div
+
+            {/* Chat Toggle Button */}
+            
+            {/* <div
               style={{
                 position: "absolute",
                 top: isChatOpen ? "-40px" : "0",
@@ -341,7 +344,7 @@ const WorkspaceDetailPage = () => {
               >
                 ▼
               </span>
-            </div>
+            </div> */}
 
             {/* Expanded Chat Panel */}
             {isChatOpen && (
