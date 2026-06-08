@@ -72,7 +72,6 @@ const WorkspaceDetailPage = () => {
           setInviteEmail("");
           setInviteRole("member");
           document.getElementById("inviteMemberModal").close();
-          // alert("Member invited successfully!");
           toast.success("Member's Invited!");
         },
         onError: (error) => {
@@ -226,6 +225,7 @@ const WorkspaceDetailPage = () => {
           </form>
         </div>
       </dialog>
+      
       {isChatOpen && (
         <div
           style={{

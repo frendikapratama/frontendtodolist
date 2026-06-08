@@ -20,6 +20,11 @@ export async function deleteComment(id) {
   return res.data.data;
 }
 
+export async function editComment(commentId, data) {
+  const res = await api.put(`/comment/${commentId}`, data);
+  return res.data.data;
+}
+
 // Subtask comment endpoints
 export async function getCommentSubtask(subtaskId) {
   const res = await api.get(`/subtask-comment/${subtaskId}`);
@@ -43,3 +48,9 @@ export async function deleteCommentSubtask(id) {
   const res = await api.delete(`/subtask-comment/${id}`);
   return res.data.data;
 }
+
+export async function editCommentSubtask(commentId, data) {
+  const res = await api.put(`/subtask-comment/${commentId}`, data);
+  return res.data.data;
+}
+

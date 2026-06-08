@@ -25,7 +25,9 @@ import toast from "react-hot-toast"
 import { useContext, useMemo } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useMember } from "../../hook/useMember";
-
+import { FaRegFilePdf,FaRegFileWord ,FaFile } from "react-icons/fa6";
+import { FaRegFileExcel } from "react-icons/fa";
+import { CiImageOn } from "react-icons/ci";
 
 dayjs.extend(relativeTime);
 dayjs.locale("id");
@@ -45,6 +47,7 @@ const DialogDetail = ({
     createCommentMutation,
     replyCommentMutation,
     deleteCommentMutation,
+    editCommentMutation,
   } = useComment(itemId, isSubtask);
   const { updateTaskMutation } = useTask();
   const { updateSubTaskMutation } = useSubTask();
@@ -72,6 +75,11 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
   const [meetingDate, setMeetingDate] = useState("");
   const [zoomImage, setZoomImage] = useState(null);
   const [linkTimer, setLinkTimer] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedCommentText, setEditedCommentText] = useState("");
+  const [editingReplyId, setEditingReplyId] = useState(null);
+  const [editedReplyText, setEditedReplyText] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState(null);
 
   const [editingDescription, setEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
@@ -104,7 +112,7 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
 
   const isFileOwner = (fileObj) => {
     const userId = currentUser?._id || currentUser?.id;
-    const uploaderId = fileObj.uploadedBy?._id || fileObj.uploadedBy; // handle object atau string
+    const uploaderId = fileObj.uploadedBy?._id || fileObj.uploadedBy; 
     console.log("uploaderId:", uploaderId, "| userId:", userId);
     return uploaderId === userId;
   };
@@ -120,6 +128,9 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
     const replyCreatedEvent = isSubtask
       ? "subtask-reply:created"
       : "reply:created";
+    const commentEditedEvent = isSubtask
+      ? "subtask-comment:edited"
+      : "comment:edited";
 
     socket.emit(roomEvent, itemId);
     console.log(`Joined ${isSubtask ? "subtask" : "task"} room: ${itemId}`);
@@ -140,13 +151,23 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
       }
     };
 
+    const handleEditedComment = (data) => {
+      const dataKey = isSubtask ? data.subtaskId : data.taskId;
+      if (dataKey === itemId) {
+        console.log("Real-time comment edited:", data);
+        commentQuery.refetch();
+      }
+    };
+
     socket.on(commentCreatedEvent, handleNewComment);
     socket.on(replyCreatedEvent, handleNewReply);
+    socket.on(commentEditedEvent, handleEditedComment);
 
     return () => {
       socket.emit(leaveEvent, itemId);
       socket.off(commentCreatedEvent, handleNewComment);
       socket.off(replyCreatedEvent, handleNewReply);
+      socket.off(commentEditedEvent, handleEditedComment);
       console.log(`Left ${isSubtask ? "subtask" : "task"} room: ${itemId}`);
     };
   }, [socket, itemId, commentQuery, isSubtask]);
@@ -245,11 +266,11 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
   };
 
   const getFileIcon = (fileType) => {
-    if (!fileType) return "📎";
-    if (fileType.startsWith("image/")) return "🖼️";
-    if (fileType.includes("pdf")) return "📄";
-    if (fileType.includes("sheet") || fileType.includes("excel")) return "📊";
-    if (fileType.includes("word") || fileType.includes("document")) return "📝";
+    if (!fileType) return <FaFile className="text-gray-500" />;
+    if (fileType.startsWith("image/")) return <CiImageOn className="text-lime-300" />;
+    if (fileType.includes("pdf")) return <FaRegFilePdf className="text-red-500" />;
+    if (fileType.includes("sheet") || fileType.includes("excel")) return <FaRegFileExcel className="text-green-500" />;
+    if (fileType.includes("word") || fileType.includes("document")) return <FaRegFileWord className="text-blue-500" />;
     return "📎";
   };
 
@@ -304,6 +325,30 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
     }
   };
 
+  const handleEditComment = (commentText) => {
+    if (editedCommentText.trim()) {
+      editCommentMutation.mutate({
+        commentId: editingCommentId,
+        text: editedCommentText,
+      });
+      setEditingCommentId(null);
+      setEditedCommentText("");
+      setActiveMenuId(null);
+    }
+  };
+
+  const handleEditReply = () => {
+    if (editedReplyText.trim()) {
+      editCommentMutation.mutate({
+        commentId: editingReplyId,
+        text: editedReplyText,
+      });
+      setEditingReplyId(null);
+      setEditedReplyText("");
+      setActiveMenuId(null);
+    }
+  };
+
   const textareaRef = useRef(null);
 
 useEffect(() => {
@@ -347,7 +392,7 @@ useEffect(() => {
               {/* Main Content - Chat Area */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Comments Section */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-6 space-y-4" onClick={() => setActiveMenuId(null)}>
                   {comments.map((comment) => (
                     <div key={comment._id} className="space-y-3">
                       <div className="flex gap-3">
@@ -364,17 +409,76 @@ useEffect(() => {
                                 {dayjs(comment.createdAt).fromNow()}
                               </p>
                             </div>
-                            {(isAuthorized || comment.user._id === (currentUser?._id || currentUser?.id)) && (
-                              <button
-                                onClick={() => setConfirmDelete({ show: true, commentId: comment._id })}
-                                className="text-gray-400 hover:text-red-600 transition-colors"
-                                title="Delete comment"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            )}
+                            <div className="relative">
+                              {(isAuthorized || comment.user._id === (currentUser?._id || currentUser?.id)) && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveMenuId(activeMenuId === comment._id ? null : comment._id);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    title="Menu"
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                  </button>
+                                  {activeMenuId === comment._id && (
+                                    <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                                      <button
+                                        onClick={() => {
+                                          setEditingCommentId(comment._id);
+                                          setEditedCommentText(comment.text);
+                                          setActiveMenuId(null);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setConfirmDelete({ show: true, commentId: comment._id });
+                                          setActiveMenuId(null);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-gray-700 whitespace-pre-wrap">{comment.text}</p>
+                          {editingCommentId === comment._id ? (
+                            <div className="space-y-2">
+                              <textarea
+                                value={editedCommentText}
+                                onChange={(e) => setEditedCommentText(e.target.value)}
+                                className="w-full text-sm text-black border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+                                rows={3}
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEditComment(comment.text)}
+                                  disabled={editCommentMutation.isLoading}
+                                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                  {editCommentMutation.isLoading ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingCommentId(null);
+                                    setEditedCommentText("");
+                                  }}
+                                  className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-gray-700 whitespace-pre-wrap">{comment.text}</p>
+                          )}
                           <button
                             onClick={() => setReplyTo(comment._id)}
                             className="mt-2 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
@@ -400,17 +504,76 @@ useEffect(() => {
                                   {dayjs(reply.createdAt).fromNow()}
                                 </p>
                               </div>
-                              {(isAuthorized || reply.user._id === (currentUser?._id || currentUser?.id)) && (
-                                <button
-                                  onClick={() => setConfirmDelete({ show: true, commentId: reply._id })}
-                                  className="text-gray-400 hover:text-red-600 transition-colors"
-                                  title="Delete reply"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              )}
+                              <div className="relative">
+                                {(isAuthorized || reply.user._id === (currentUser?._id || currentUser?.id)) && (
+                                  <>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveMenuId(activeMenuId === reply._id ? null : reply._id);
+                                      }}
+                                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                                      title="Menu"
+                                    >
+                                      <MoreVertical className="w-3 h-3" />
+                                    </button>
+                                    {activeMenuId === reply._id && (
+                                      <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                          onClick={() => {
+                                            setEditingReplyId(reply._id);
+                                            setEditedReplyText(reply.text);
+                                            setActiveMenuId(null);
+                                          }}
+                                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            setConfirmDelete({ show: true, commentId: reply._id });
+                                            setActiveMenuId(null);
+                                          }}
+                                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.text}</p>
+                            {editingReplyId === reply._id ? (
+                              <div className="space-y-2">
+                                <textarea
+                                  value={editedReplyText}
+                                  onChange={(e) => setEditedReplyText(e.target.value)}
+                                  className="w-full text-sm text-black border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+                                  rows={2}
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={handleEditReply}
+                                    disabled={editCommentMutation.isLoading}
+                                    className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                                  >
+                                    {editCommentMutation.isLoading ? "Saving..." : "Save"}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingReplyId(null);
+                                      setEditedReplyText("");
+                                    }}
+                                    className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.text}</p>
+                            )}
                           </div>
                         </div>
                       ))}{" "}
@@ -438,12 +601,12 @@ useEffect(() => {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
+                        if (e.key === "Enter") {
                           e.preventDefault();
-                          handleSendMessage();
+                          setMessage(message + "\n");
                         }
                       }}
-                      placeholder="Write a comment... (Shift+Enter for new line)"
+                      placeholder="Write a comment..."
                       rows={1}
                       className="flex-1 text-black px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
                       style={{ minHeight: "40px", maxHeight: "150px" }}

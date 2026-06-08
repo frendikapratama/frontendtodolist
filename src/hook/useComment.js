@@ -8,19 +8,20 @@ import {
   replyCommentSubtask,
   deleteComment,
   deleteCommentSubtask,
+  editComment,
+  editCommentSubtask,
 } from "../services/comment";
 import toast from "react-hot-toast";
 
 export const useComment = (itemId, isSubtask = false) => {
   const queryClient = useQueryClient();
 
-  // Select appropriate functions based on type
   const getCommentFn = isSubtask ? getCommentSubtask : getComment;
   const createCommentFn = isSubtask ? createCommentSubtask : createComment;
   const replyCommentFn = isSubtask ? replyCommentSubtask : replyComment;
   const deleteCommentFn = isSubtask ? deleteCommentSubtask : deleteComment;
+  const editCommentFn = isSubtask ? editCommentSubtask : editComment;
 
-  // Use different query keys for task and subtask comments
   const queryKey = isSubtask
     ? ["subtask-comment", itemId]
     : ["task-comment", itemId];
@@ -71,10 +72,22 @@ export const useComment = (itemId, isSubtask = false) => {
     },
   });
 
+  const editCommentMutation = useMutation({
+    mutationFn: (data) => editCommentFn(data.commentId, { text: data.text }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      toast.success("Comment updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update comment");
+    },
+  });
+
   return {
     commentQuery,
     replyCommentMutation,
     createCommentMutation,
     deleteCommentMutation,
+    editCommentMutation,
   };
 };
