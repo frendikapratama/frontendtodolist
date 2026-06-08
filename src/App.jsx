@@ -27,7 +27,6 @@ export default function App() {
     console.debug = () => {};
     console.info = () => {};
   }
-  
   return (
     <AuthProvider>
       <WorkspaceProvider>
