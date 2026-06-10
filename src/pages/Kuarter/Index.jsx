@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import { useKuarter } from "../../hook/useKuarter";
 import { useNavigate } from "react-router-dom";
 import { KuarterForm } from "./KuarterForm";
 import { Dot, Trash2, Eye } from "lucide-react";
 import NotificationBell from "../../components/ui/NotificationBell";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-
+import { AuthContext } from "../../context/AuthContext";
 const Kuarter = () => {
   const { kuarterQuery, updatedKuarterMutation, deleteMutation } = useKuarter();
   const [editing, setEditing] = useState(null);
@@ -13,7 +13,9 @@ const Kuarter = () => {
   const [toDelete, setToDelete] = useState(null);
   const [activeIndex, setActiveIndex] = useState({});
   const navigate = useNavigate(); 
+  const { user } = useContext(AuthContext);
 
+  const isAdmin = user?.isSystemAdmin === true;
   // Warna untuk setiap status
   const STATUS_COLORS = {
     "To Do": "#f59e0b",
@@ -383,6 +385,7 @@ const Kuarter = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
+                         {isAdmin && (
                       <button
                         className="flex-1 px-4 py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-medium rounded-xl transition-all duration-200 border border-red-500/30 flex items-center justify-center gap-2"
                         onClick={() => {
@@ -393,6 +396,7 @@ const Kuarter = () => {
                         <Trash2 className="w-4 h-4" />
                         Delete
                       </button>
+                            )}
                       <button
                         className="flex-1 px-4 py-2.5 bg-primary hover:from-blue-400 hover:shadow-xl text-white font-medium rounded-xl shadow-lg shadow-blue-500/50 transition-all duration-300 flex items-center justify-center gap-2"
                         onClick={() => handleDetailKuarter(kuarter._id)}
