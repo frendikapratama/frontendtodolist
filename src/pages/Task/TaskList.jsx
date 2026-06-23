@@ -59,7 +59,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const { data, isLoading, isError } = taskByGroup;
   const { syncTasktoSubtasks, syncSubtasktoTask } = useStatusSync();
 
-
   const isAuthorized = useMemo(() => {
     if (!currentUser || !membersWorkspaceQuery.data) return false;
     const userMembership = membersWorkspaceQuery.data.members?.find(
@@ -82,17 +81,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     const allowedRoles = ["admin", "project_manager", "member", "management"];
     return allowedRoles.includes(userMembership.role);
   }, [currentUser, membersWorkspaceQuery.data]);
-  const isTaskPIC = useCallback((task) => {
-    if (!currentUser || !task.pic) return false;
-    return task.pic.some(
-      (pic) => pic._id === currentUser._id || pic._id === currentUser.id
-    );
-  }, [currentUser]);
+  const isTaskPIC = useCallback(
+    (task) => {
+      if (!currentUser || !task.pic) return false;
+      return task.pic.some(
+        (pic) => pic._id === currentUser._id || pic._id === currentUser.id,
+      );
+    },
+    [currentUser],
+  );
 
-
-  const canEditStatus = useCallback((task) => {
-  return isAuthorized || isTaskPIC(task);
-}, [isAuthorized, isTaskPIC]);
+  const canEditStatus = useCallback(
+    (task) => {
+      return isAuthorized || isTaskPIC(task);
+    },
+    [isAuthorized, isTaskPIC],
+  );
 
   const [openDialog, setOpenDialog] = useState({ open: false, task: null });
   const [showAddTask, setShowAddTask] = useState(false);
@@ -782,10 +786,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     );
   };
 
-
-  const onlyAuthorized = (fn) => (...args) => {
-  if (isAuthorized) fn(...args);
-  };
+  const onlyAuthorized =
+    (fn) =>
+    (...args) => {
+      if (isAuthorized) fn(...args);
+    };
   return (
     <div
       className="overflow-auto max-h-[90vh]"
@@ -1112,7 +1117,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
                             {isAuthorized && (
                               <button
-                                onClick={() => handleDeletePICTask(task._id, picUser._id)}
+                                onClick={() =>
+                                  handleDeletePICTask(task._id, picUser._id)
+                                }
                                 className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <X size={10} className="text-white" />
@@ -1133,7 +1140,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   {/* Tombol tambah PIC */}
                   <button
                     ref={(el) => (buttonRefs.current[`pic-${task._id}`] = el)}
-                    onClick={onlyAuthorized(() => setPicPopup({ show: true, taskId: task._id }))}
+                    onClick={onlyAuthorized(() =>
+                      setPicPopup({ show: true, taskId: task._id }),
+                    )}
                     className="w-7 h-7 rounded-full border-2 text-gray-500 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
                     title="Assign PIC"
                   >
@@ -1162,7 +1171,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         ? "text-orange-700 bg-orange-200"
                         : "text-cyan-800 bg-cyan-200"
                     }`}
-                    onClick={onlyAuthorized(() => setActivePopup({ taskId: task._id, field: "type" }))}
+                    onClick={onlyAuthorized(() =>
+                      setActivePopup({ taskId: task._id, field: "type" }),
+                    )}
                   >
                     {task.type}
                   </span>
@@ -1227,10 +1238,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     /* Tampilkan status biasa untuk status lainnya */
                     <>
                       <span
-                        ref={(el) => (buttonRefs.current[`status-${task._id}`] = el)}
+                        ref={(el) =>
+                          (buttonRefs.current[`status-${task._id}`] = el)
+                        }
                         className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 
                           ${canEditStatus(task) ? "cursor-pointer hover:bg-indigo-200" : "cursor-default"}`}
-                        onClick={() => canEditStatus(task) && setActivePopup({ taskId: task._id, field: "status" })}
+                        onClick={() =>
+                          canEditStatus(task) &&
+                          setActivePopup({ taskId: task._id, field: "status" })
+                        }
                       >
                         {task.status}
                       </span>
@@ -1268,7 +1284,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                             ? "text-blue-800 bg-blue-200"
                             : "text-gray-800 bg-gray-200"
                     }`}
-                    onClick={onlyAuthorized(() => setActivePopup({ taskId: task._id, field: "priority" }))}
+                    onClick={onlyAuthorized(() =>
+                      setActivePopup({ taskId: task._id, field: "priority" }),
+                    )}
                   >
                     {task.priority || "Low"}
                   </span>
@@ -1301,7 +1319,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         ? scaleInput[task._id]
                         : task.scale || ""
                     }
-                    onChange={onlyAuthorized((e) => handleScaleChange(task._id, e))}
+                    onChange={onlyAuthorized((e) =>
+                      handleScaleChange(task._id, e),
+                    )}
                     onBlur={onlyAuthorized(() => handleScaleBlur(task._id))}
                   />
                 </div>
@@ -1314,7 +1334,12 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       (buttonRefs.current[`meeting_date-${task._id}`] = el)
                     }
                     className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-                    onClick={onlyAuthorized(() => setActivePopup({ taskId: task._id, field: "meeting_date" }))}
+                    onClick={onlyAuthorized(() =>
+                      setActivePopup({
+                        taskId: task._id,
+                        field: "meeting_date",
+                      }),
+                    )}
                   >
                     {task.meeting_date
                       ? new Date(task.meeting_date).toLocaleString("id-ID", {
@@ -1390,7 +1415,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       (buttonRefs.current[`due_date-${task._id}`] = el)
                     }
                     className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-                    onClick={onlyAuthorized(() => setActivePopup({ taskId: task._id, field: "due_date" }))}
+                    onClick={onlyAuthorized(() =>
+                      setActivePopup({ taskId: task._id, field: "due_date" }),
+                    )}
                   >
                     {task.due_date
                       ? new Date(task.due_date).toLocaleString("id-ID", {

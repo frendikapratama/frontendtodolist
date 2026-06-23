@@ -20,6 +20,9 @@ import { NotificationProvider } from "./context/NotificationContext";
 import MajorTask from "./pages/MajorTask/Index";
 import ReportPage from "./pages/Report/Index";
 import UserManagement from "./pages/UserManagement/UserManagement";
+import IndexFacilities from "./pages/BookingMeeting/Facilities/Index";
+import IndexRooms from "./pages/BookingMeeting/Rooms/Index";
+import IndexBooking from "./pages/BookingMeeting/Booking/Index";
 
 export default function App() {
   if (import.meta.env.MODE === "development") {
@@ -49,7 +52,10 @@ export default function App() {
 
                 <Route element={<ProtectedRoute />}>
                   <Route element={<Layout />}>
-                    <Route path="/user-management" element={<UserManagement />} />
+                    <Route
+                      path="/user-management"
+                      element={<UserManagement />}
+                    />
                     <Route path="/major-task" element={<MajorTask />} />
                     <Route path="/reports" element={<ReportPage />} />
                     <Route path="/dashboard" element={<Dashboard />} />
@@ -64,6 +70,12 @@ export default function App() {
                       path="/project/:id"
                       element={<ProjectDetailPage />}
                     />
+                    <Route
+                      path="/master-data/facilities"
+                      element={<IndexFacilities />}
+                    />
+                    <Route path="/master-data/rooms" element={<IndexRooms />} />
+                    <Route path="/booking-room" element={<IndexBooking />} />
                   </Route>
                 </Route>
               </Routes>

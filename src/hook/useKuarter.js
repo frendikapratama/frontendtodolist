@@ -19,7 +19,7 @@ export const useKuarter = () => {
 
   const initialFormData = {
     nama: "",
-    departemen: ""
+    departemen: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);

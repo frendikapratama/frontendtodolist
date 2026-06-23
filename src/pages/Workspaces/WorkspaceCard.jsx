@@ -432,14 +432,14 @@ const WorkspaceCard = ({
 
             {/* Delete & Detail buttons */}
             <div className="card-actions justify-end flex flex-row items-center mt-2">
-                    {isAdmin && (
-              <button
-                className="btn btn-sm w-14 btn-warning text-orange-900"
-                onClick={() => handleDelete(workspace._id, workspace.nama)}
-              >
-                Delete
-              </button>
-                   )}
+              {isAdmin && (
+                <button
+                  className="btn btn-sm w-14 btn-warning text-orange-900"
+                  onClick={() => handleDelete(workspace._id, workspace.nama)}
+                >
+                  Delete
+                </button>
+              )}
               <button
                 className="btn btn-primary btn-sm w-14"
                 onClick={(e) => {

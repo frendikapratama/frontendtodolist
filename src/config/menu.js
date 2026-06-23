@@ -37,3 +37,32 @@ export const menuItems = [
     requireAdmin: true,
   },
 ];
+
+// menu.js
+export const menuBooking = [
+  {
+    id: "booking-room-meeting",
+    label: "Booking Room Meeting",
+    path: "/booking-room",
+    icon: "Calendar",
+  },
+  {
+    id: "master-data",
+    label: "Master Data",
+    icon: "Database",
+    children: [
+      {
+        id: "facilities",
+        label: "Facilities",
+        path: "/master-data/facilities",
+        icon: "Building",
+      },
+      {
+        id: "rooms",
+        label: "Rooms",
+        path: "/master-data/rooms",
+        icon: "House",
+      },
+    ],
+  },
+];

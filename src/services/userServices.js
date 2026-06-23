@@ -1,6 +1,5 @@
 import api from "../api/axios";
 
-
 export const getUsers = async (filters = {}) => {
   const params = new URLSearchParams();
   if (filters.page) params.append("page", filters.page);
@@ -34,12 +33,10 @@ export const createUser = async (userData) => {
 };
 
 export const updateUser = async (id, userData) => {
-  // Check if there is a file in the data, in which case we might need multipart,
-  // but typically updating from admin is JSON unless uploading a photo.
-  // The backend controller allowedFields has photo handled if req.file is present.
-  const config = userData instanceof FormData 
-    ? { headers: { "Content-Type": "multipart/form-data" } }
-    : {};
+  const config =
+    userData instanceof FormData
+      ? { headers: { "Content-Type": "multipart/form-data" } }
+      : {};
   const response = await api.put(`/users/${id}`, userData, config);
   return response.data;
 };
@@ -50,16 +47,24 @@ export const deleteUser = async (id) => {
 };
 
 export const addUserToWorkspace = async (userId, workspaceId, role) => {
-  const response = await api.post(`/users/${userId}/workspaces`, { workspaceId, role });
+  const response = await api.post(`/users/${userId}/workspaces`, {
+    workspaceId,
+    role,
+  });
   return response.data;
 };
 
 export const removeUserFromWorkspace = async (userId, workspaceId) => {
-  const response = await api.delete(`/users/${userId}/workspaces/${workspaceId}`);
+  const response = await api.delete(
+    `/users/${userId}/workspaces/${workspaceId}`,
+  );
   return response.data;
 };
 
 export const updateUserWorkspaceRole = async (userId, workspaceId, role) => {
-  const response = await api.put(`/users/${userId}/workspaces/${workspaceId}/role`, { role });
+  const response = await api.put(
+    `/users/${userId}/workspaces/${workspaceId}/role`,
+    { role },
+  );
   return response.data;
 };

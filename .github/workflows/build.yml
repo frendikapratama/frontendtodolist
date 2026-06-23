@@ -2,7 +2,7 @@ name: Build & Push Frontend Planify
 
 on:
   push:
-    branches: [Pre-Development]
+    branches: [Pre]
 
 permissions:
   contents: read
