@@ -2,7 +2,7 @@ import { useState } from "react";
 import useRooms from "../../../hook/BookingMeeting/useRooms";
 import { RoomForm } from "./Form";
 import { SOCKET_URL } from "../../../api/axios";
-
+import { Edit, Trash2, Plus, Hotel } from "lucide-react";
 const BASE_URL = SOCKET_URL;
 
 const IndexRooms = () => {
@@ -66,37 +66,38 @@ const IndexRooms = () => {
   return (
     <div>
       {/* ── Header ── */}
-      <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-white/10 -mx-4 px-4 py-4 mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Room Management
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Manage meeting rooms and facilities.
-            </p>
+      <div className="sticky top-0 z-40 bg-linear-to-b from-slate-900/80 to-slate-900/95 backdrop-blur-md rounded-xl border border-white/10 p-5 transition-all duration-300 shadow-xl shadow-black/20 overflow-hidden mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          {/* Sisi Kiri: Info Judul & Badge Total */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-inner shrink-0">
+              <Hotel />
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold tracking-tight text-white">
+                  Room Management
+                </h1>
+                <span className="px-2.5 py-0.5 text-xs font-semibold bg-white/10 text-slate-300 rounded-full border border-white/5">
+                  {totalRooms || 0} Rooms
+                </span>
+              </div>
+              <p className="text-sm text-slate-400 mt-0.5">
+                Manage meeting rooms, schedules, and capacities.
+              </p>
+            </div>
           </div>
 
-          <button
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold text-sm transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 whitespace-nowrap"
-            onClick={openCreateModal}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-4 h-4"
+          {/* Sisi Kanan: Action Button */}
+          <div className="w-full md:w-auto flex justify-end">
+            <button
+              className="w-full md:w-auto px-4 py-2.5 rounded-xl bg-blue-600/30 hover:bg-blue-500/50 font-semibold text-sm text-white transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 whitespace-nowrap"
+              onClick={openCreateModal}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-            Add Room
-          </button>
+              <Plus size={18} />
+              Add Room
+            </button>
+          </div>
         </div>
       </div>
 
@@ -121,102 +122,6 @@ const IndexRooms = () => {
       </dialog>
 
       {/* ── Total Rooms + Search ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        {/* Total Rooms */}
-        <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
-              />
-            </svg>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-white">{totalRooms}</p>
-            <p className="text-xs text-slate-400">Total Rooms</p>
-          </div>
-        </div>
-
-        {/* Search by Nama */}
-        <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 flex items-center gap-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5 text-slate-400 shrink-0"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-            />
-          </svg>
-          <input
-            type="text"
-            value={searchNama}
-            onChange={(e) => setSearchNama(e.target.value)}
-            placeholder="Search by room name..."
-            className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 outline-none"
-          />
-          {searchNama && (
-            <button
-              onClick={() => setSearchNama("")}
-              className="text-slate-500 hover:text-white text-xs shrink-0"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* Search by Lokasi */}
-        <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 flex items-center gap-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5 text-slate-400 shrink-0"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-            />
-          </svg>
-          <input
-            type="text"
-            value={searchLokasi}
-            onChange={(e) => setSearchLokasi(e.target.value)}
-            placeholder="Search by location..."
-            className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 outline-none"
-          />
-          {searchLokasi && (
-            <button
-              onClick={() => setSearchLokasi("")}
-              className="text-slate-500 hover:text-white text-xs shrink-0"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* ── Room Grid / Empty State ── */}
       {rooms.length === 0 ? (
@@ -338,16 +243,18 @@ const IndexRooms = () => {
                   <div className="flex gap-1.5 shrink-0">
                     <button
                       onClick={() => openEditModal(room)}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 text-xs font-medium transition-all"
+                      className="btn btn-sm btn-square btn-ghost text-blue-400 hover:bg-blue-500/10 disabled:opacity-30"
+                      title="Edit Room Meeting "
                     >
-                      Edit
+                      <Edit size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(room._id)}
                       disabled={deleteMutation.isPending}
-                      className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30 text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn btn-sm btn-square btn-ghost text-error hover:bg-error/10 disabled:opacity-30"
+                      title="Deletes Room"
                     >
-                      Delete
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>

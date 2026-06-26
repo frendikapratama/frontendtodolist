@@ -46,6 +46,7 @@ export const menuBooking = [
     path: "/booking-room",
     icon: "Calendar",
   },
+
   {
     id: "master-data",
     label: "Master Data",

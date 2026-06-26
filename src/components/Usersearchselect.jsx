@@ -7,6 +7,7 @@ const UserSearchSelect = ({
   fetchUsers,
   placeholder = "Search users…",
   maxHeight = "200px",
+  initialUsers = [],
 }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -15,6 +16,16 @@ const UserSearchSelect = ({
   const [loading, setLoading] = useState(false);
   const containerRef = useRef(null);
   const debounceRef = useRef(null);
+
+  useEffect(() => {
+    if (initialUsers.length > 0) {
+      setAllUsers((prev) => {
+        const map = new Map(prev.map((u) => [u._id, u]));
+        initialUsers.forEach((u) => map.set(u._id, u));
+        return Array.from(map.values());
+      });
+    }
+  }, [initialUsers]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -52,12 +63,12 @@ const UserSearchSelect = ({
     const next = selectedIds.includes(user._id)
       ? selectedIds.filter((id) => id !== user._id)
       : [...selectedIds, user._id];
-    onChange(next);
-    setAllUsers((prev) => {
-      const map = new Map(prev.map((u) => [u._id, u]));
-      map.set(user._id, user);
-      return Array.from(map.values());
-    });
+
+    const nextUsers = next
+      .map((id) => allUsers.find((u) => u._id === id))
+      .filter(Boolean);
+
+    onChange(next, nextUsers);
   };
 
   const remove = (id) => onChange(selectedIds.filter((s) => s !== id));
