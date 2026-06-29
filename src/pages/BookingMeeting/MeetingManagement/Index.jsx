@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import useRooms from "../../../hook/BookingMeeting/useRooms";
-import { SOCKET_URL } from "../../../api/axios";
 import { API_URL } from "../../../api/axios";
 
 import {

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import useRooms from "../../../hook/BookingMeeting/useRooms";
 import { RoomForm } from "./Form";
-import { SOCKET_URL } from "../../../api/axios";
+import { API_URL } from "../../../api/axios";
 import { Edit, Trash2, Plus, Hotel } from "lucide-react";
 
 const IndexRooms = () => {
-  const BASE_URL = SOCKET_URL;
+  const BASE_URL = API_URL;
   const { roomsQuery, createMutation, updateMutation, deleteMutation } =
     useRooms();
   const [selectedRoom, setSelectedRoom] = useState(null);
