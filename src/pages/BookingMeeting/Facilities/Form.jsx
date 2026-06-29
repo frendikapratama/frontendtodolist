@@ -65,7 +65,7 @@ export const FacilitiesForm = ({
           name="nama"
           value={formData.nama}
           onChange={handleChange}
-          className="input input-bordered w-full bg-black/60 text-white"
+          className="input input-bordered w-full bg-black/60 text-white uppercase"
           required
         />
       </div>

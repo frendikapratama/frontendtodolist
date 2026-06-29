@@ -215,7 +215,7 @@ const IndexFacilities = () => {
                       <td className="px-6 py-4 font-medium text-white/60">
                         {number}
                       </td>
-                      <td className="px-6 py-4 font-medium text-white">
+                      <td className="px-6 py-4 font-medium text-white uppercase">
                         {facility.nama}
                       </td>
                       <td className="px-6 py-4">

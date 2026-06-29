@@ -298,7 +298,7 @@ const IndexRooms = () => {
                       {room.facilities.map((facility, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs uppercase"
                         >
                           {facility.facilityId?.nama}
                           <span className="bg-blue-500/30 text-blue-200 rounded px-1 text-[10px] font-bold">

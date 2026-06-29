@@ -60,7 +60,7 @@ const FacilityDetailModal = ({ room, onClose }) => {
         <div className="p-6 border-b border-white/10 flex justify-between items-center">
           <div>
             <h3 className="font-bold text-xl text-white">Facility Details</h3>
-            <p className="text-sm text-slate-400 mt-1">{room.nama}</p>
+            <p className="text-sm text-slate-400 mt-1 up">{room.nama}</p>
           </div>
           <button
             onClick={onClose}
@@ -103,7 +103,7 @@ const FacilityDetailModal = ({ room, onClose }) => {
                     className="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5"
                   >
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-white uppercase">
                         {facility.facilityId?.nama || "Unnamed Facility"}
                       </p>
                       {facility.facilityId?.deskripsi && (
@@ -276,16 +276,17 @@ const IndexBooking = () => {
                     <span className="text-slate-600 text-xs">No photo</span>
                   </div>
                 )}
-
                 <div className="absolute top-2 right-2">
                   {room.computedStatus === "Available" ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 backdrop-blur-md">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/90 text-white border border-emerald-400/20 backdrop-blur-md shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping absolute inline-flex opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
                       Available
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-warning/20 text-warning border border-warning/30 backdrop-blur-md">
-                      <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500 text-slate-950 border border-amber-400/20 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping absolute inline-flex opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-slate-950"></span>
                       In Progress
                     </span>
                   )}

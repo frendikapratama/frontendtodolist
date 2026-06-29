@@ -47,10 +47,23 @@ const RescheduleMeetingForm = ({ meeting, onClose }) => {
     setAvailability(null);
   };
 
+  const getTimezoneOffset = () => {
+    const offset = -new Date().getTimezoneOffset();
+    const sign = offset >= 0 ? "+" : "-";
+    const h = pad(Math.floor(Math.abs(offset) / 60));
+    const m = pad(Math.abs(offset) % 60);
+    return `${sign}${h}:${m}`;
+  };
+
   const getStartTime = () =>
-    form.date && form.startTime ? `${form.date}T${form.startTime}:00` : null;
+    form.date && form.startTime
+      ? `${form.date}T${form.startTime}:00${getTimezoneOffset()}`
+      : null;
+
   const getEndTime = () =>
-    form.date && form.endTime ? `${form.date}T${form.endTime}:00` : null;
+    form.date && form.endTime
+      ? `${form.date}T${form.endTime}:00${getTimezoneOffset()}`
+      : null;
 
   const validateBasics = () => {
     if (!form.roomId) return "Please select a room";

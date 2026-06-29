@@ -385,7 +385,7 @@ export const RoomForm = ({ onClose, onSubmit, initialData, isPending }) => {
         </div>
 
         {formData.facilities.map((facility, index) => (
-          <div key={index} className="flex gap-2 mb-3 items-center">
+          <div key={index} className="flex gap-2 mb-3 items-center uppercase">
             <div className="flex-1">
               <Select
                 options={facilities.map((fac) => ({

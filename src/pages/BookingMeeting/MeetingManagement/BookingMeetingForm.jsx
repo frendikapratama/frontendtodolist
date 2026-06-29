@@ -53,7 +53,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
   });
 
   const [participantIds, setParticipantIds] = useState([]);
-  const [selectedParticipants, setSelectedParticipants] = useState([]); // store full user objects
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [checked, setChecked] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -91,11 +91,23 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     setPreviewData(null);
   };
 
+  const getTimezoneOffset = () => {
+    const offset = -new Date().getTimezoneOffset();
+    const sign = offset >= 0 ? "+" : "-";
+    const h = pad(Math.floor(Math.abs(offset) / 60));
+    const m = pad(Math.abs(offset) % 60);
+    return `${sign}${h}:${m}`;
+  };
+
   const getStartTime = () =>
-    form.date && form.startTime ? `${form.date}T${form.startTime}:00` : null;
+    form.date && form.startTime
+      ? `${form.date}T${form.startTime}:00${getTimezoneOffset()}`
+      : null;
 
   const getEndTime = () =>
-    form.date && form.endTime ? `${form.date}T${form.endTime}:00` : null;
+    form.date && form.endTime
+      ? `${form.date}T${form.endTime}:00${getTimezoneOffset()}`
+      : null;
 
   const getDurationLabel = () => {
     if (!form.startTime || !form.endTime) return null;
