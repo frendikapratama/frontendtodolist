@@ -8,11 +8,17 @@ import {
   RotateCcw,
   XCircle,
   Search,
+  FileText,
+  Upload,
+  Download,
+  Trash2,
 } from "lucide-react";
 import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import UpdateMeetingForm from "./UpdateMeetingForm";
 import RescheduleMeetingForm from "./RescheduleMeetingForm";
 import CancelMeetingDialog from "./CancelMeetingDialog";
+import MeetingResultsModal from "./MeetingResultsModal";
+import dayjs from "dayjs";
 
 const TableMeeting = () => {
   const [page, setPage] = useState(1);
@@ -33,6 +39,16 @@ const TableMeeting = () => {
     setSelectedMeeting(null);
     setModalType(null);
     document.getElementById("meetingManagementModal").close();
+  };
+
+  const openResultsModal = (meeting) => {
+    setSelectedMeeting(meeting);
+    document.getElementById("meetingResultsModal").showModal();
+  };
+
+  const closeResultsModal = () => {
+    setSelectedMeeting(null);
+    document.getElementById("meetingResultsModal").close();
   };
 
   if (isLoading) {
@@ -95,7 +111,7 @@ const TableMeeting = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Baru - Lebih Profesional & Bersih */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center pb-2">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-inner">
@@ -117,7 +133,7 @@ const TableMeeting = () => {
         </div>
       </div>
 
-      {/* Container Table (Menghapus class table-zebra) */}
+      {/* Container Table */}
       <div className="bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="table w-full text-sm">
@@ -142,8 +158,9 @@ const TableMeeting = () => {
                 </tr>
               ) : (
                 meetings.map((meeting) => {
-                  const isCancelled = meeting.status === "cancelled";
-                  const isCompleted = meeting.status === "completed";
+                  const computedStatus = meeting.status;
+                  const isCancelled = computedStatus === "cancelled";
+                  const isCompleted = computedStatus === "completed";
                   const disabledActions = isCancelled || isCompleted;
 
                   return (
@@ -191,9 +208,18 @@ const TableMeeting = () => {
                       <td className="text-slate-300 py-4">
                         {meeting.organizerId?.username || "-"}
                       </td>
-                      <td className="py-4">{getStatusBadge(meeting.status)}</td>
+                      <td className="py-4">{getStatusBadge(computedStatus)}</td>
                       <td className="py-4">
                         <div className="flex items-center justify-center gap-1">
+                          {/* TAMBAHAN: Tombol View Results */}
+                          <button
+                            onClick={() => openResultsModal(meeting)}
+                            className="btn btn-sm btn-square btn-ghost text-emerald-400 hover:bg-emerald-500/10"
+                            title="View Meeting Results"
+                          >
+                            <FileText size={16} />
+                          </button>
+
                           <button
                             onClick={() => openModal("edit", meeting)}
                             className="btn btn-sm btn-square btn-ghost text-blue-400 hover:bg-blue-500/10 disabled:opacity-30"
@@ -259,7 +285,7 @@ const TableMeeting = () => {
         )}
       </div>
 
-      {/* Main Modal */}
+      {/* Main Modal untuk Edit/Reschedule/Cancel */}
       <dialog id="meetingManagementModal" className="modal">
         <div className="modal-box w-11/12 max-w-xl bg-slate-900 text-white rounded-2xl shadow-2xl border border-white/10">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
@@ -297,6 +323,21 @@ const TableMeeting = () => {
 
         <form method="dialog" className="modal-backdrop">
           <button onClick={closeModal}>close</button>
+        </form>
+      </dialog>
+
+      {/* TAMBAHAN: Modal untuk Meeting Results */}
+      <dialog id="meetingResultsModal" className="modal">
+        <div className="modal-box w-11/12 max-w-2xl bg-slate-900 text-white rounded-2xl shadow-2xl border border-white/10 p-0 overflow-hidden">
+          {selectedMeeting && (
+            <MeetingResultsModal
+              meeting={selectedMeeting}
+              onClose={closeResultsModal}
+            />
+          )}
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={closeResultsModal}>close</button>
         </form>
       </dialog>
     </div>

@@ -23,7 +23,7 @@ import UserManagement from "./pages/UserManagement/UserManagement";
 import IndexFacilities from "./pages/BookingMeeting/Facilities/Index";
 import IndexRooms from "./pages/BookingMeeting/Rooms/Index";
 import IndexBooking from "./pages/BookingMeeting/MeetingManagement/Index";
-// import MeetingManagement from "./pages/BookingMeeting/MeetingManagement/Index";
+import MeetingDashboard from "./pages/BookingMeeting/MeetingDashboard";
 
 export default function App() {
   if (import.meta.env.MODE === "development") {
@@ -77,10 +77,10 @@ export default function App() {
                     />
                     <Route path="/master-data/rooms" element={<IndexRooms />} />
                     <Route path="/booking-room" element={<IndexBooking />} />
-                    {/* <Route
-                      path="/meeting-management"
-                      element={<MeetingManagement />}
-                    /> */}
+                    <Route
+                      path="/meeting-dashboard"
+                      element={<MeetingDashboard />}
+                    />
                   </Route>
                 </Route>
               </Routes>
