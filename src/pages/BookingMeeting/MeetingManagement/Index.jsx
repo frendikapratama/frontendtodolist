@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import useRooms from "../../../hook/BookingMeeting/useRooms";
 import { SOCKET_URL } from "../../../api/axios";
+import { API_URL } from "../../../api/axios";
+
 import {
   Image,
   MapPin,
@@ -19,7 +21,7 @@ import TableMeeting from "./TableMeeting";
 import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import dayjs from "dayjs";
 import RoomSchedule from "./RoomSchedule";
-const BASE_URL = SOCKET_URL;
+const BASE_URL = API_URL;
 
 // Stat Card Component
 const StatCard = ({ icon: Icon, label, value, color, iconColor, subtitle }) => (
