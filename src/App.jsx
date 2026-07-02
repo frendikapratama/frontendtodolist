@@ -24,6 +24,7 @@ import IndexFacilities from "./pages/BookingMeeting/Facilities/Index";
 import IndexRooms from "./pages/BookingMeeting/Rooms/Index";
 import IndexBooking from "./pages/BookingMeeting/MeetingManagement/Index";
 import MeetingDashboard from "./pages/BookingMeeting/MeetingDashboard";
+import IndexMySchedule from "./pages/BookingMeeting/MySchedule/Index";
 
 export default function App() {
   if (import.meta.env.MODE === "development") {
@@ -80,6 +81,10 @@ export default function App() {
                     <Route
                       path="/meeting-dashboard"
                       element={<MeetingDashboard />}
+                    />
+                    <Route
+                      path="/schedule-meeting"
+                      element={<IndexMySchedule />}
                     />
                   </Route>
                 </Route>

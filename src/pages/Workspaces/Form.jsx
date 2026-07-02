@@ -19,7 +19,7 @@ export const WorkspaceForm = ({ onClose, kuarterId = null }) => {
         onSuccess: () => {
           onClose();
         },
-      }
+      },
     );
   };
 
@@ -63,6 +63,10 @@ export const WorkspaceForm = ({ onClose, kuarterId = null }) => {
           <option value="GA">GA</option>
           <option value="Finance">Finance</option>
           <option value="Management Trainee">Management Trainee</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Raw Material">Raw Material</option>
+          <option value="Material Support">Material Support</option>
+          <option value="Finished Goods">Finished Goods</option>
         </select>
       </div>
 

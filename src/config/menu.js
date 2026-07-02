@@ -46,6 +46,12 @@ export const menuBooking = [
     path: "/booking-room",
     icon: "Calendar",
   },
+  {
+    id: "schedule-meeting",
+    label: "Schedule Meeting",
+    path: "/schedule-meeting",
+    icon: "Calendar",
+  },
 
   {
     id: "master-data",
