@@ -44,7 +44,7 @@ export const menuBooking = [
     id: "booking-room-meeting",
     label: "Booking Room Meeting",
     path: "/booking-room",
-    icon: "Calendar",
+    icon: "Warehouse",
   },
   {
     id: "schedule-meeting",

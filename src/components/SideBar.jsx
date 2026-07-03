@@ -28,6 +28,7 @@ import {
   Database,
   Building,
   House,
+  Warehouse,
 } from "lucide-react";
 import ProfileDialog from "./ui/ProfileDialog";
 
@@ -46,6 +47,7 @@ const iconMap = {
   Database: Database,
   Building: Building,
   House: House,
+  Warehouse: Warehouse,
 };
 
 export default function Sidebar() {

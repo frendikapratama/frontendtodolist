@@ -17,7 +17,7 @@ import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import UpdateMeetingForm from "./UpdateMeetingForm";
 import RescheduleMeetingForm from "./RescheduleMeetingForm";
 import CancelMeetingDialog from "./CancelMeetingDialog";
-import MeetingResultsModal from "./MeetingResultsModal";
+// import MeetingResultsModal from "./MeetingResultsModal";
 import dayjs from "dayjs";
 
 const TableMeeting = () => {
@@ -144,9 +144,9 @@ const TableMeeting = () => {
                 <th className="py-4 font-semibold tracking-wider">Time</th>
                 <th className="py-4 font-semibold tracking-wider">Organizer</th>
                 <th className="py-4 font-semibold tracking-wider">Status</th>
-                <th className="py-4 font-semibold tracking-wider text-center">
+                {/* <th className="py-4 font-semibold tracking-wider text-center">
                   Actions
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -209,9 +209,8 @@ const TableMeeting = () => {
                         {meeting.organizerId?.username || "-"}
                       </td>
                       <td className="py-4">{getStatusBadge(computedStatus)}</td>
-                      <td className="py-4">
+                      {/* <td className="py-4">
                         <div className="flex items-center justify-center gap-1">
-                          {/* TAMBAHAN: Tombol View Results */}
                           <button
                             onClick={() => openResultsModal(meeting)}
                             className="btn btn-sm btn-square btn-ghost text-emerald-400 hover:bg-emerald-500/10"
@@ -245,7 +244,7 @@ const TableMeeting = () => {
                             <XCircle size={16} />
                           </button>
                         </div>
-                      </td>
+                      </td> */}
                     </tr>
                   );
                 })
@@ -327,7 +326,7 @@ const TableMeeting = () => {
       </dialog>
 
       {/* TAMBAHAN: Modal untuk Meeting Results */}
-      <dialog id="meetingResultsModal" className="modal">
+      {/* <dialog id="meetingResultsModal" className="modal">
         <div className="modal-box w-11/12 max-w-2xl bg-slate-900 text-white rounded-2xl shadow-2xl border border-white/10 p-0 overflow-hidden">
           {selectedMeeting && (
             <MeetingResultsModal
@@ -339,7 +338,7 @@ const TableMeeting = () => {
         <form method="dialog" className="modal-backdrop">
           <button onClick={closeResultsModal}>close</button>
         </form>
-      </dialog>
+      </dialog> */}
     </div>
   );
 };
