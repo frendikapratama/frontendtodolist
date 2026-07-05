@@ -1,8 +1,9 @@
-import { mySchedule } from "../../services/BookingMeeting/mySchedule";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { mySchedule, endMeeting } from "../../services/BookingMeeting/mySchedule";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { getSocket } from "../../config/socket";
+import toast from "react-hot-toast";
 
 export const useMySchedule = () => {
   const [page, setPage] = useState(1);
@@ -63,6 +64,17 @@ export const useMySchedule = () => {
     }
   };
 
+  const endMeetingMutation = useMutation({
+    mutationFn: ({ id, payload }) => endMeeting(id, payload),
+    onSuccess: () => {
+      toast.success("Meeting ended successfully");
+      resetAndRefetch();
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to end meeting");
+    },
+  });
+
   return {
     myScheduleQuery,
     items,
@@ -71,5 +83,6 @@ export const useMySchedule = () => {
     loadMore,
     isFetchingMore: myScheduleQuery.isFetching && page > 1,
     isInitialLoading: myScheduleQuery.isLoading && page === 1,
+    endMeetingMutation,
   };
 };

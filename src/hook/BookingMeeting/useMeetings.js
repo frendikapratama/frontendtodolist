@@ -84,14 +84,40 @@ const useMeetings = () => {
 
   const checkAvailabilityMutation = useMutation({
     mutationFn: meetingService.checkAvailability,
+    onSuccess: (data) => {
+      // roomMessage sudah dibedakan backend: overlap asli vs buffer pembersihan
+      if (!data.roomAvailable) {
+        toast.error(
+          data.roomMessage ||
+            "This room is already booked at that time. Please choose a different time or room.",
+        );
+      }
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || "Failed to check availability",
+      );
+    },
   });
 
   const createMeetingMutation = useMutation({
     mutationFn: meetingService.createMeeting,
+    onSuccess: () => {
+      toast.success("Meeting booked successfully!");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to book meeting");
+    },
   });
 
   const updateMeetingMutation = useMutation({
     mutationFn: ({ id, payload }) => meetingService.updateMeeting(id, payload),
+    onSuccess: () => {
+      toast.success("Meeting updated successfully");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to update meeting");
+    },
   });
 
   const rescheduleMeetingMutation = useMutation({

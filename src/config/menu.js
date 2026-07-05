@@ -52,6 +52,12 @@ export const menuBooking = [
     path: "/schedule-meeting",
     icon: "Calendar",
   },
+  {
+    id: "meeting-recap",
+    label: "Meeting Recap",
+    path: "/meeting-recap",
+    icon: "ListCheck",
+  },
 
   {
     id: "master-data",

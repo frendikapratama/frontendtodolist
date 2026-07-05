@@ -161,13 +161,12 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         organizerId,
       });
 
-      toast.success("Meeting booked successfully!");
       handleCancel();
       onSuccess?.();
       onClose?.();
     } catch (error) {
+      // toast sudah ditangani di useMeetings (createMeetingMutation.onError)
       console.error("Booking failed:", error);
-      toast.error(error?.response?.data?.message || "Failed to book meeting");
     } finally {
       setIsSubmitting(false);
     }
@@ -185,16 +184,11 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     setShowPreview(false);
     setPreviewData(null);
 
-    // Check availability on submit
     const result = await checkAvailabilityMutation.mutateAsync(buildPayload());
     setAvailability(result);
     setChecked(true);
 
-    // Room not available → block
     if (!result.roomAvailable) {
-      toast.error(
-        "The room is already booked at that time. Please choose a different time or room.",
-      );
       return;
     }
 
@@ -686,8 +680,8 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
               <AlertTriangle size={13} /> Room Conflict
             </p>
             <p className="text-[11px] text-red-300/80 mt-1">
-              This room is already booked at that time. Please choose a
-              different time or room.
+              {availability.roomMessage ||
+                "This room is already booked at that time. Please choose a different time or room."}
             </p>
           </div>
         )}

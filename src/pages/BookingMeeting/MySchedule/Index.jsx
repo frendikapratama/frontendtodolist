@@ -29,6 +29,7 @@ const IndexMySchedule = () => {
     loadMore,
     isFetchingMore,
     isInitialLoading,
+    endMeetingMutation,
   } = useMySchedule();
   const { user } = useContext(AuthContext);
 
@@ -45,6 +46,18 @@ const IndexMySchedule = () => {
     setSelectedMeeting(null);
     setModalType(null);
     document.getElementById("meetingManagementModal").close();
+  };
+
+  const handleEndMeeting = (meeting) => {
+    if (window.confirm("Are you sure you want to end this meeting early?")) {
+      endMeetingMutation.mutate({
+        id: meeting._id,
+        payload: {
+          endTime: new Date().toISOString(),
+          endedBy: user?._id || user?.id,
+        },
+      });
+    }
   };
 
   const openResultsModal = (meeting) => {
@@ -286,6 +299,22 @@ const IndexMySchedule = () => {
                       >
                         <XCircle size={15} />
                       </button>
+
+                      {isProgress && isOwner && (
+                        <button
+                          onClick={() => handleEndMeeting(item)}
+                          className="col-span-4 flex items-center justify-center gap-2 p-2 mt-1 rounded-lg text-white bg-red-600 hover:bg-red-500 transition-all cursor-pointer shadow-lg shadow-red-600/20"
+                          title="End Meeting Now"
+                          disabled={endMeetingMutation.isPending}
+                        >
+                          {endMeetingMutation.isPending && selectedMeeting?._id === item._id ? (
+                            <span className="loading loading-spinner loading-xs"></span>
+                          ) : (
+                            <CircleStop size={15} />
+                          )}
+                          <span className="text-xs font-semibold">End Meeting</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

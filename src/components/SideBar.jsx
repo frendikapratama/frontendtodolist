@@ -29,6 +29,7 @@ import {
   Building,
   House,
   Warehouse,
+  ListCheck,
 } from "lucide-react";
 import ProfileDialog from "./ui/ProfileDialog";
 
@@ -48,6 +49,7 @@ const iconMap = {
   Building: Building,
   House: House,
   Warehouse: Warehouse,
+  ListCheck: ListCheck,
 };
 
 export default function Sidebar() {

@@ -9,3 +9,8 @@ export async function mySchedule(page = 1, limit = 6, search = "") {
     pagination: res.data.pagination,
   };
 }
+
+export async function endMeeting(id, payload) {
+  const { data } = await api.patch(`/meeting/${id}/end`, payload);
+  return data;
+}
