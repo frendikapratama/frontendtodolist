@@ -252,11 +252,7 @@ const MeetingRecapPage = () => {
         "Jam Selesai",
         "Tipe",
         "Status",
-        "Jenis Hasil",
         "Catatan / Isi",
-        "Nama File Lampiran",
-        "Diupload Oleh",
-        "Waktu Upload",
       ];
       const headerRow = sheet.addRow(headers);
       headerRow.font = { bold: true };
@@ -288,21 +284,7 @@ const MeetingRecapPage = () => {
             dayjs(meeting.endTime).format("HH:mm"),
             meeting.meetingType || "-",
             STATUS_LABEL[meeting.status] || meeting.status,
-            result
-              ? result.fileName
-                ? "Catatan + Lampiran"
-                : "Catatan Teks"
-              : "-",
             result?.content || "-",
-            result?.originalName || "-",
-            result?.uploadedBy
-              ? displayName(result.uploadedBy) ||
-                result.uploadedBy?.email ||
-                "-"
-              : "-",
-            result?.uploadedAt
-              ? dayjs(result.uploadedAt).format("DD MMM YYYY, HH:mm")
-              : "-",
           ]);
         });
       });

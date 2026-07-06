@@ -236,9 +236,6 @@ const IndexMySchedule = () => {
                           Time Slot
                         </span>
                         <div className="flex flex-row items-center gap-1 justify-end">
-                          {isProgress && (
-                            <CircleStop size={12} className="text-red-600" />
-                          )}
                           <span className="inline-flex items-center text-[11px] font-semibold text-slate-300 bg-white/5 border border-white/5 px-2 py-0.5 rounded font-mono">
                             {formatTimeOnly(item.startTime)} -{" "}
                             {formatTimeOnly(item.endTime)}
@@ -307,12 +304,15 @@ const IndexMySchedule = () => {
                           title="End Meeting Now"
                           disabled={endMeetingMutation.isPending}
                         >
-                          {endMeetingMutation.isPending && selectedMeeting?._id === item._id ? (
+                          {endMeetingMutation.isPending &&
+                          selectedMeeting?._id === item._id ? (
                             <span className="loading loading-spinner loading-xs"></span>
                           ) : (
                             <CircleStop size={15} />
                           )}
-                          <span className="text-xs font-semibold">End Meeting</span>
+                          <span className="text-xs font-semibold">
+                            End Meeting
+                          </span>
                         </button>
                       )}
                     </div>
