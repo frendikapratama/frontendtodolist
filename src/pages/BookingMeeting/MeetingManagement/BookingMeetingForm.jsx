@@ -46,6 +46,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
   const [form, setForm] = useState({
     title: "",
     description: "",
+    meetingLink: "",
     roomId: defaultRoomId,
     date: "",
     startTime: "",
@@ -158,6 +159,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         ...buildPayload(),
         title: form.title,
         description: form.description,
+        meetingLink: form.meetingLink,
         organizerId,
       });
 
@@ -200,6 +202,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         ...buildPayload(),
         title: form.title,
         description: form.description,
+        meetingLink: form.meetingLink,
         conflicts: result.participantConflicts,
         roomAvailable: result.roomAvailable,
         room: selectedRoom,
@@ -219,6 +222,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
       ...buildPayload(),
       title: form.title,
       description: form.description,
+      meetingLink: form.meetingLink,
       conflicts: [],
       roomAvailable: true,
       room: selectedRoom,
@@ -241,6 +245,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     setForm({
       title: "",
       description: "",
+      meetingLink: "",
       roomId: "",
       date: "",
       startTime: "",
@@ -304,6 +309,24 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                     </span>
                     <span className="text-gray-300 text-sm">
                       {previewData.description}
+                    </span>
+                  </div>
+                )}
+
+                {previewData.meetingLink && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-gray-400 text-sm min-w-[100px]">
+                      Meeting Link
+                    </span>
+
+                    <span className="text-blue-400 underline">
+                      <a
+                        href={previewData.meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {previewData.meetingLink}
+                      </a>
                     </span>
                   </div>
                 )}
@@ -578,6 +601,21 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             rows={2}
             placeholder="Additional notes about this meeting"
             className="textarea textarea-bordered w-full bg-black/60 text-white resize-none"
+          />
+        </div>
+
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text mb-2 text-white">Meeting Link</span>
+          </label>
+          <input
+            type="text"
+            name="meetingLink"
+            value={form.meetingLink}
+            onChange={handleChange}
+            placeholder="e.g. https://zoom.us/j/123456789"
+            className="input input-bordered w-full bg-black/60 text-white"
+            required
           />
         </div>
 

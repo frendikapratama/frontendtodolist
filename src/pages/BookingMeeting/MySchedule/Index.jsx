@@ -207,6 +207,20 @@ const IndexMySchedule = () => {
                     </p>
                   </div>
 
+                  <div className="flex flex-row justify-between items-center gap-2 mb-3">
+                    <span className="text-blue-300 text-sm">
+                      {item.meetingLink}
+                    </span>
+                    <span className="text-blue-400 px-2 py-1 text-xs font-semibold bg-blue-500/10 border border-blue-500/15 rounded">
+                      <a
+                        href={item.meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        join meeting
+                      </a>
+                    </span>
+                  </div>
                   {/* Bottom Content (Metadata & Actions) */}
                   <div className="mt-auto space-y-3">
                     <div className="border-t border-white/5 pt-3" />
