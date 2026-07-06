@@ -68,10 +68,19 @@ const UserSearchSelect = ({
       .map((id) => allUsers.find((u) => u._id === id))
       .filter(Boolean);
 
+    setQuery("");
+    setOpen(false);
     onChange(next, nextUsers);
   };
 
-  const remove = (id) => onChange(selectedIds.filter((s) => s !== id));
+  const remove = (id) => {
+    const next = selectedIds.filter((s) => s !== id);
+    const nextUsers = next
+      .map((selectedId) => allUsers.find((u) => u._id === selectedId))
+      .filter(Boolean);
+
+    onChange(next, nextUsers);
+  };
 
   const resolveUser = (id) => allUsers.find((u) => u._id === id);
 
