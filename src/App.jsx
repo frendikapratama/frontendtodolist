@@ -23,7 +23,6 @@ import UserManagement from "./pages/UserManagement/UserManagement";
 import IndexFacilities from "./pages/BookingMeeting/Facilities/Index";
 import IndexRooms from "./pages/BookingMeeting/Rooms/Index";
 import IndexBooking from "./pages/BookingMeeting/MeetingManagement/Index";
-import MeetingDashboard from "./pages/BookingMeeting/MeetingDashboard";
 import IndexMySchedule from "./pages/BookingMeeting/MySchedule/Index";
 import MeetingRecapPage from "./pages/BookingMeeting/MeetingRecap/Index";
 
@@ -79,10 +78,6 @@ export default function App() {
                     />
                     <Route path="/master-data/rooms" element={<IndexRooms />} />
                     <Route path="/booking-room" element={<IndexBooking />} />
-                    <Route
-                      path="/meeting-dashboard"
-                      element={<MeetingDashboard />}
-                    />
                     <Route
                       path="/schedule-meeting"
                       element={<IndexMySchedule />}

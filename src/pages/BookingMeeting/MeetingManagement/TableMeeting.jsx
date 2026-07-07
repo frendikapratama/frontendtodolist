@@ -22,7 +22,7 @@ import dayjs from "dayjs";
 
 const TableMeeting = () => {
   const [page, setPage] = useState(1);
-  const limit = 15;
+  const limit = 25;
   const { meetingsQuery } = useMeetings();
   const { data, isLoading } = meetingsQuery(page, limit);
 

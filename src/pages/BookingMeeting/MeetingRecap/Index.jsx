@@ -145,7 +145,7 @@ const MeetingRecapPage = () => {
   const resultsQ = meetingResultsListQuery({
     ...appliedFilters,
     page,
-    limit: 10,
+    limit: 25,
     onlyWithResults: appliedFilters.onlyWithResults ? "true" : undefined,
   });
 
@@ -642,34 +642,27 @@ const MeetingRecapPage = () => {
 
         {/* Pagination Panel */}
         {pagination.totalPages > 1 && (
-          <div className="px-5 py-4 border-t border-white/10 bg-white/1 flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-400">
-              Showing page{" "}
-              <span className="text-white font-semibold">
-                {pagination.page}
-              </span>{" "}
-              of{" "}
-              <span className="text-white font-semibold">
-                {pagination.totalPages}
-              </span>{" "}
-              pages
-            </p>
-            <div className="flex gap-2">
+          <div className="flex items-center justify-between p-4 border-t border-white/10 bg-white/1">
+            <span className="text-xs text-slate-400">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+            <div className="join">
               <button
-                disabled={page <= 1}
+                className="join-item btn btn-sm bg-slate-800 text-white border-white/10 hover:bg-slate-700"
                 onClick={() => setPage((p) => p - 1)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-xs font-semibold text-slate-300 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition-all"
+                disabled={page <= 1}
               >
-                <ChevronLeft size={14} />
-                Previous
+                «
+              </button>
+              <button className="join-item btn btn-sm bg-slate-800 text-white border-white/10 cursor-default">
+                {pagination.page}
               </button>
               <button
-                disabled={page >= (pagination.totalPages || 1)}
+                className="join-item btn btn-sm bg-slate-800 text-white border-white/10 hover:bg-slate-700"
                 onClick={() => setPage((p) => p + 1)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-xs font-semibold text-slate-300 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition-all"
+                disabled={page >= pagination.totalPages}
               >
-                Next
-                <ChevronRight size={14} />
+                »
               </button>
             </div>
           </div>

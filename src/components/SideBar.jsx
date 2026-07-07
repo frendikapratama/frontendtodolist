@@ -73,6 +73,51 @@ export default function Sidebar() {
   const { kuarterQuery } = useKuarter();
   const { data: kuarters = [] } = kuarterQuery;
 
+  const hasAccessBokingMenu = (item) => {
+    if (!item.accessControl) return true;
+    if (!user) return false;
+
+    const { allowedDivisions, allowedUserIds } = item.accessControl;
+
+    if (allowedUserIds?.includes(user._id)) {
+      return true;
+    }
+
+    if (allowedDivisions && user.divisi) {
+      const divisiList = Array.isArray(user.divisi)
+        ? user.divisi
+        : [user.divisi];
+      return divisiList.some((div) =>
+        allowedDivisions.some((pattern) => pattern.test(div)),
+      );
+    }
+
+    return false;
+  };
+
+  const filteredMenuBooking = menuBooking
+    .map((item) => {
+      if (item.children) {
+        if (!hasAccessBokingMenu(item)) {
+          return { ...item, children: [] };
+        }
+        const filteredChildren = item.children.filter((child) =>
+          hasAccessBokingMenu(child),
+        );
+        return {
+          ...item,
+          children: filteredChildren,
+        };
+      }
+      return item;
+    })
+    .filter((item) => {
+      if (item.children) {
+        return item.children.length > 0;
+      }
+      return hasAccessBokingMenu(item);
+    });
+
   useEffect(() => {
     menuItems.forEach((item) => {
       if (item.children?.some((child) => child.path === location.pathname)) {
@@ -516,7 +561,7 @@ export default function Sidebar() {
                 </div>
               )}
               <div className="flex text-xs justify-start flex-col border-t border-gray-300 mt-2 pt-2">
-                {menuBooking
+                {filteredMenuBooking
                   .filter((item) => !item.requireAdmin || user?.isSystemAdmin)
                   .map((item) => renderMenuItem(item))}
               </div>

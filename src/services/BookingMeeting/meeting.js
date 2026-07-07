@@ -16,7 +16,7 @@ const meetingService = {
     return data;
   },
 
-  getMeetings: async (page = 1, limit = 15) => {
+  getMeetings: async (page = 1, limit = 25) => {
     const { data } = await api.get(`/meeting?page=${page}&limit=${limit}`);
     return data;
   },

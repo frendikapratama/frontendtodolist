@@ -38,7 +38,6 @@ export const menuItems = [
   },
 ];
 
-// menu.js
 export const menuBooking = [
   {
     id: "booking-room-meeting",
@@ -58,11 +57,18 @@ export const menuBooking = [
     path: "/meeting-recap",
     icon: "ListCheck",
   },
-
   {
     id: "master-data",
     label: "Master Data",
     icon: "Database",
+    //  akses control
+    accessControl: {
+      allowedDivisions: [/^it$/i], // Regex untuk case insensitive
+      allowedUserIds: [
+        "6a20de5c50ad9c30e06b9641", // hadi
+        "6a1f97c04cf5cd6b3c82a2f4", // mia
+      ],
+    },
     children: [
       {
         id: "facilities",

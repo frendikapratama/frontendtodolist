@@ -35,6 +35,18 @@ const IndexFacilities = () => {
     document.getElementById("facilityModal").close();
   };
 
+  const openDeleteModal = (facility) => {
+    setSelectedFacility(facility);
+    document.getElementById("deleteFacilityModal").showModal();
+  };
+
+  const closeDeleteModal = () => {
+    document.getElementById("deleteFacilityModal").close();
+    setTimeout(() => {
+      setSelectedFacility(null);
+    }, 150);
+  };
+
   const handleSubmit = async (data) => {
     if (selectedFacility) {
       return updateMutation.mutateAsync({
@@ -192,6 +204,63 @@ const IndexFacilities = () => {
         </form>
       </dialog>
 
+      <dialog id="deleteFacilityModal" className="modal">
+        <div className="modal-box w-11/12 max-w-md bg-slate-900 text-white rounded-2xl border border-white/10">
+          <div className="flex items-center gap-3 mb-5">
+            <div>
+              <h3 className="text-lg font-bold">Delete Facility</h3>
+              <p className="text-xs text-slate-400">
+                This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 ">
+            <p className="text-sm text-slate-300">
+              Are you sure you want to permanently delete this facility?
+            </p>
+
+            <p className="mt-3 text-lg font-semibold text-white uppercase">
+              {selectedFacility?.nama}
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <button className="btn btn-ghost" onClick={closeDeleteModal}>
+              Cancel
+            </button>
+
+            <button
+              className="btn btn-error"
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                deleteMutation.mutate(selectedFacility._id, {
+                  onSuccess: () => {
+                    closeDeleteModal();
+                  },
+                });
+              }}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 size={16} />
+                  Delete
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={closeDeleteModal}>close</button>
+        </form>
+      </dialog>
+
       {/* Table Container - Tema Clean & Hover (Tanpa Zebra) */}
       <div className="bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto max-h-[500px] overflow-y-auto relative">
@@ -228,7 +297,7 @@ const IndexFacilities = () => {
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => handleDelete(facility._id)}
+                            onClick={() => openDeleteModal(facility)}
                             disabled={deleteMutation.isPending}
                             className="btn btn-sm btn-square btn-ghost text-error hover:bg-error/10 disabled:opacity-30"
                             title="Delete Facility"

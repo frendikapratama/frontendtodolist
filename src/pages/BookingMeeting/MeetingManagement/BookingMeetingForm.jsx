@@ -615,7 +615,6 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             onChange={handleChange}
             placeholder="e.g. https://zoom.us/j/123456789"
             className="input input-bordered w-full bg-black/60 text-white"
-            required
           />
         </div>
 

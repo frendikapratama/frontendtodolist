@@ -27,19 +27,23 @@ const IndexRooms = () => {
     document.getElementById("roomModal").close();
   };
 
+  const openDeleteModal = (room) => {
+    setSelectedRoom(room);
+    document.getElementById("deleteRoomModal").showModal();
+  };
+
+  const closeDeleteModal = () => {
+    document.getElementById("deleteRoomModal").close();
+    setTimeout(() => {
+      setSelectedRoom(null);
+    }, 150);
+  };
+
   const handleSubmit = async (data) => {
     if (selectedRoom) {
       return updateMutation.mutateAsync({ id: selectedRoom._id, data });
     }
     return createMutation.mutateAsync(data);
-  };
-
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this room?",
-    );
-    if (!confirmDelete) return;
-    deleteMutation.mutate(id);
   };
 
   if (roomsQuery.isLoading) {
@@ -121,7 +125,62 @@ const IndexRooms = () => {
         </form>
       </dialog>
 
-      {/* ── Total Rooms + Search ── */}
+      <dialog id="deleteRoomModal" className="modal">
+        <div className="modal-box w-11/12 max-w-md bg-slate-900 text-white rounded-2xl border border-white/10">
+          <div className="flex items-center gap-3 mb-5">
+            <div>
+              <h3 className="text-lg font-bold">Delete Room</h3>
+              <p className="text-xs text-slate-400">
+                This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 ">
+            <p className="text-sm text-slate-300">
+              Are you sure you want to permanently delete this room?
+            </p>
+
+            <p className="mt-3 text-lg font-semibold text-white uppercase">
+              {selectedRoom?.nama}
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <button className="btn btn-ghost" onClick={closeDeleteModal}>
+              Cancel
+            </button>
+
+            <button
+              className="btn btn-error"
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                deleteMutation.mutate(selectedRoom._id, {
+                  onSuccess: () => {
+                    closeDeleteModal();
+                  },
+                });
+              }}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 size={16} />
+                  Delete
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={closeDeleteModal}>close</button>
+        </form>
+      </dialog>
 
       {/* ── Room Grid / Empty State ── */}
       {rooms.length === 0 ? (
@@ -249,7 +308,7 @@ const IndexRooms = () => {
                       <Edit size={16} />
                     </button>
                     <button
-                      onClick={() => handleDelete(room._id)}
+                      onClick={() => openDeleteModal(room)}
                       disabled={deleteMutation.isPending}
                       className="btn btn-sm btn-square btn-ghost text-error hover:bg-error/10 disabled:opacity-30"
                       title="Deletes Room"

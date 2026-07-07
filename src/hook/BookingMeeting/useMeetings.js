@@ -55,7 +55,7 @@ const useMeetings = () => {
     };
   }, [socket, queryClient]);
 
-  const meetingsQuery = (page = 1, limit = 15) =>
+  const meetingsQuery = (page = 1, limit = 25) =>
     useQuery({
       queryKey: ["meetings", page, limit],
       queryFn: () => meetingService.getMeetings(page, limit),

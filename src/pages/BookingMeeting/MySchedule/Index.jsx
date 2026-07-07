@@ -35,6 +35,7 @@ const IndexMySchedule = () => {
 
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [modalType, setModalType] = useState(null);
+  const [toDelete, setToDelete] = useState(null);
 
   const openModal = (type, meeting) => {
     setSelectedMeeting(meeting);
@@ -48,16 +49,8 @@ const IndexMySchedule = () => {
     document.getElementById("meetingManagementModal").close();
   };
 
-  const handleEndMeeting = (meeting) => {
-    if (window.confirm("Are you sure you want to end this meeting early?")) {
-      endMeetingMutation.mutate({
-        id: meeting._id,
-        payload: {
-          endTime: new Date().toISOString(),
-          endedBy: user?._id || user?.id,
-        },
-      });
-    }
+  const ConfirmationModal = () => {
+    document.getElementById("ConfirmationModal").showModal();
   };
 
   const openResultsModal = (meeting) => {
@@ -313,7 +306,7 @@ const IndexMySchedule = () => {
 
                       {isProgress && isOwner && (
                         <button
-                          onClick={() => handleEndMeeting(item)}
+                          onClick={() => openModal("end", item)}
                           className="col-span-4 flex items-center justify-center gap-2 p-2 mt-1 rounded-lg text-white bg-red-600 hover:bg-red-500 transition-all cursor-pointer shadow-lg shadow-red-600/20"
                           title="End Meeting Now"
                           disabled={endMeetingMutation.isPending}
@@ -388,6 +381,7 @@ const IndexMySchedule = () => {
         <div className="modal-box w-11/12 max-w-xl bg-slate-900 text-white rounded-2xl shadow-2xl border border-white/10">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
             <h3 className="font-bold text-xl">
+              {modalType === "end" && "End Meeting"}
               {modalType === "edit" && "Update Meeting"}
               {modalType === "reschedule" && "Reschedule Meeting"}
               {modalType === "cancel" && "Cancel Meeting"}
@@ -416,6 +410,67 @@ const IndexMySchedule = () => {
               meeting={selectedMeeting}
               onClose={closeModal}
             />
+          )}
+
+          {selectedMeeting && modalType === "end" && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4">
+                <h4 className="text-lg font-semibold text-red-400">
+                  End Meeting?
+                </h4>
+
+                <p className="mt-2 text-sm text-slate-300">
+                  Are you sure you want to end this meeting now? This action
+                  will mark the meeting as completed and update its end time.
+                </p>
+
+                <p className="mt-4 text-sm">
+                  Meeting:
+                  <span className="ml-1 font-semibold text-white">
+                    {selectedMeeting.title}
+                  </span>
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button className="btn btn-ghost" onClick={closeModal}>
+                  Cancel
+                </button>
+
+                <button
+                  className="btn btn-error"
+                  disabled={endMeetingMutation.isPending}
+                  onClick={() => {
+                    endMeetingMutation.mutate(
+                      {
+                        id: selectedMeeting._id,
+                        payload: {
+                          endTime: new Date().toISOString(),
+                          endedBy: user?._id || user?.id,
+                        },
+                      },
+                      {
+                        onSuccess: () => {
+                          closeModal();
+                        },
+                      },
+                    );
+                  }}
+                >
+                  {endMeetingMutation.isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Ending...
+                    </>
+                  ) : (
+                    <>
+                      <CircleStop size={16} />
+                      End Meeting
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           )}
         </div>
 

@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         onlineUserId,
         allUser,
-        socket, // ← expose socket agar bisa dipakai di hook lain
+        socket,
       }}
     >
       {children}

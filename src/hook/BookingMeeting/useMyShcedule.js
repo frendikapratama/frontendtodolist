@@ -1,4 +1,7 @@
-import { mySchedule, endMeeting } from "../../services/BookingMeeting/mySchedule";
+import {
+  mySchedule,
+  endMeeting,
+} from "../../services/BookingMeeting/mySchedule";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
@@ -7,7 +10,7 @@ import toast from "react-hot-toast";
 
 export const useMySchedule = () => {
   const [page, setPage] = useState(1);
-  const [limit] = useState(6);
+  const [limit] = useState(12);
   const [items, setItems] = useState([]);
   const queryClient = useQueryClient();
   const { socket } = useContext(AuthContext);
