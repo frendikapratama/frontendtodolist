@@ -18,18 +18,6 @@ import toast from "react-hot-toast";
 export const useTask = (groupId, filters = {} /*searchQuery = */) => {
   const queryClient = useQueryClient();
 
-  // const taskByGroup = useQuery({
-  //   queryKey: ["task", groupId],
-  //   queryFn: () => getByGroup(groupId),
-  //   enabled: !!groupId,
-  // });
-
-  // const taskByGroup = useQuery({
-  //   queryKey: ["task", groupId, searchQuery],
-  //   queryFn: () => getByGroup(groupId, searchQuery),
-  //   enabled: !!groupId,
-  // });
-
   const taskByGroup = useQuery({
     queryKey: ["task", groupId, filters], // Include all filters in queryKey
     queryFn: () => getByGroup(groupId, filters),

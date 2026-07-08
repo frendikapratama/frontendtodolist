@@ -25,12 +25,16 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
   const [form, setForm] = useState({
     title: meeting.title || "",
     description: meeting.description || "",
+    meetingType: meeting.meetingType || "internal",
+    snackRequest: Array.isArray(meeting.snackRequest)
+      ? meeting.snackRequest
+      : [],
+    meetingLink: meeting.meetingLink || "",
   });
 
   const [participantIds, setParticipantIds] = useState([]);
   const [selectedParticipants, setSelectedParticipants] = useState([]);
 
-  // State untuk conflict preview
   const [conflicts, setConflicts] = useState([]);
   const [checked, setChecked] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -78,6 +82,28 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
     setConflicts([]);
   };
 
+  const handleMeetingTypeChange = (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({
+      ...prev,
+      meetingType: value,
+      // reset snackRequest saat balik ke internal
+      snackRequest: value === "internal" ? [] : prev.snackRequest,
+    }));
+  };
+
+  const handleSnackRequestToggle = (option) => {
+    setForm((prev) => {
+      const exists = prev.snackRequest.includes(option);
+      return {
+        ...prev,
+        snackRequest: exists
+          ? prev.snackRequest.filter((s) => s !== option)
+          : [...prev.snackRequest, option],
+      };
+    });
+  };
+
   const doUpdate = async () => {
     await updateMeetingMutation.mutateAsync({
       id: meeting._id,
@@ -86,9 +112,12 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
         description: form.description,
         organizerId: meeting.organizerId?._id || meeting.organizerId,
         participantIds,
+        meetingType: form.meetingType,
+        snackRequest: form.snackRequest || null,
+        meetingLink: form.meetingLink || null,
       },
     });
-    toast.success("Meeting updated successfully");
+
     onClose();
   };
 
@@ -96,13 +125,13 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
     e.preventDefault();
     if (!form.title.trim()) return;
 
-    // Check availability menggunakan waktu meeting yang sudah ada
     try {
       const result = await checkAvailabilityMutation.mutateAsync({
         roomId: meeting.roomId?._id || meeting.roomId,
         participantIds,
         startTime: meeting.startTime,
         endTime: meeting.endTime,
+        excludeMeetingId: meeting._id,
       });
 
       setChecked(true);
@@ -116,15 +145,18 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
         (id) => !existingIds.includes(id),
       );
 
-      const relevantConflicts = result.participantConflicts.filter((c) => {
-        const uid = typeof c.userId === "string" ? c.userId : c.userId?._id;
-        return newParticipantIds.includes(uid);
-      });
+      const relevantConflicts = (result.participantConflicts || []).filter(
+        (c) => {
+          const uid = typeof c.userId === "string" ? c.userId : c.userId?._id;
+          return newParticipantIds.includes(uid);
+        },
+      );
 
+      // Room conflict diabaikan secara sengaja pada update ini
       setConflicts(relevantConflicts);
 
       if (relevantConflicts.length > 0) {
-        // Ada konflik → tampilkan modal konfirmasi
+        // Ada konflik participant → tampilkan modal konfirmasi
         setShowConfirmModal(true);
         return;
       }
@@ -271,6 +303,49 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
 
         <div className="form-control w-full">
           <label className="label">
+            <span className="label-text mb-2 text-white">Meeting Type</span>
+          </label>
+          <select
+            name="meetingType"
+            value={form.meetingType}
+            onChange={handleMeetingTypeChange}
+            className="select select-bordered w-full bg-black/60 text-white"
+          >
+            <option value="internal">Internal</option>
+            <option value="external">External</option>
+          </select>
+        </div>
+
+        {form.meetingType === "external" && (
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text mb-2 text-white">Snack Request</span>
+            </label>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={form.snackRequest.includes("makanan-ringan")}
+                  onChange={() => handleSnackRequestToggle("makanan-ringan")}
+                />
+                Makanan Ringan
+              </label>
+              <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={form.snackRequest.includes("makanan-berat")}
+                  onChange={() => handleSnackRequestToggle("makanan-berat")}
+                />
+                Makanan Berat
+              </label>
+            </div>
+          </div>
+        )}
+
+        <div className="form-control w-full">
+          <label className="label">
             <span className="label-text mb-2 text-white">Description</span>
           </label>
           <textarea
@@ -300,7 +375,6 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
             />
           )}
         </div>
-
         <div className="flex justify-end gap-2 mt-6">
           <button
             type="button"

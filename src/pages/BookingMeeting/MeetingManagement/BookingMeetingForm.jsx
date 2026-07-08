@@ -23,6 +23,7 @@ import { AuthContext } from "../../../context/AuthContext";
 import { getUsers } from "../../../services/userServices";
 import UserSearchSelect from "../../../components/Usersearchselect";
 import TimeWheelPicker from "../../../components/ui/TimeWheelPicker";
+import { createPortal } from "react-dom";
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -51,6 +52,8 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     date: "",
     startTime: "",
     endTime: "",
+    meetingType: "internal",
+    snackRequest: [],
   });
 
   const [participantIds, setParticipantIds] = useState([]);
@@ -60,6 +63,36 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+
+  const formWrapperRef = useRef(null);
+  const scrollPosRef = useRef(0);
+
+  useEffect(() => {
+    const modalBox = formWrapperRef.current?.closest(".modal-box");
+
+    if (showPreview) {
+      if (modalBox) {
+        scrollPosRef.current = modalBox.scrollTop;
+        modalBox.style.overflow = "hidden";
+      }
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      if (modalBox) {
+        modalBox.style.overflow = "";
+        // restore posisi setelah reflow
+        requestAnimationFrame(() => {
+          modalBox.scrollTop = scrollPosRef.current;
+        });
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+      if (modalBox) modalBox.style.overflow = "";
+    };
+  }, [showPreview]);
 
   const fetchUsers = useCallback(async (query) => {
     if (!query) return [];
@@ -90,6 +123,31 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     setAvailability(null);
     setShowPreview(false);
     setPreviewData(null);
+  };
+
+  const handleMeetingTypeChange = (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({
+      ...prev,
+      meetingType: value,
+      snackRequest: value === "internal" ? [] : prev.snackRequest,
+    }));
+    setChecked(false);
+    setAvailability(null);
+    setShowPreview(false);
+    setPreviewData(null);
+  };
+
+  const handleSnackRequestToggle = (option) => {
+    setForm((prev) => {
+      const exists = prev.snackRequest.includes(option);
+      return {
+        ...prev,
+        snackRequest: exists
+          ? prev.snackRequest.filter((s) => s !== option)
+          : [...prev.snackRequest, option],
+      };
+    });
   };
 
   const getTimezoneOffset = () => {
@@ -130,6 +188,8 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     participantIds,
     startTime: getStartTime(),
     endTime: getEndTime(),
+    meetingType: form.meetingType,
+    snackRequest: form.meetingType === "internal" ? [] : form.snackRequest,
   });
 
   const validateBasics = () => {
@@ -183,48 +243,23 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
       return;
     }
 
-    setShowPreview(false);
-    setPreviewData(null);
+    // Sembunyikan form
+    setShowForm(false);
 
     const result = await checkAvailabilityMutation.mutateAsync(buildPayload());
     setAvailability(result);
     setChecked(true);
 
-    if (!result.roomAvailable) {
-      return;
-    }
-
-    // Participant conflicts → show preview
-    if (result.participantConflicts.length > 0) {
-      const selectedRoom = rooms.find((r) => r._id === form.roomId);
-
-      setPreviewData({
-        ...buildPayload(),
-        title: form.title,
-        description: form.description,
-        meetingLink: form.meetingLink,
-        conflicts: result.participantConflicts,
-        roomAvailable: result.roomAvailable,
-        room: selectedRoom,
-        duration: durationLabel,
-        date: form.date,
-        startTime: form.startTime,
-        endTime: form.endTime,
-        participants: selectedParticipants,
-      });
-      setShowPreview(true);
-      return;
-    }
-
-    // All good → show preview before final booking
     const selectedRoom = rooms.find((r) => r._id === form.roomId);
+
     setPreviewData({
       ...buildPayload(),
       title: form.title,
       description: form.description,
       meetingLink: form.meetingLink,
-      conflicts: [],
-      roomAvailable: true,
+      conflicts: result.participantConflicts || [],
+      roomAvailable: result.roomAvailable,
+      roomMessage: result.roomMessage,
       room: selectedRoom,
       duration: durationLabel,
       date: form.date,
@@ -238,6 +273,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
   const handlePreviewSubmit = async () => {
     await bookMeeting();
     setShowPreview(false);
+    setShowForm(true); // Opsional: tampilkan form kembali atau tutup modal
     setPreviewData(null);
   };
 
@@ -250,6 +286,8 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
       date: "",
       startTime: "",
       endTime: "",
+      meetingType: "internal",
+      snackRequest: [],
     });
     setParticipantIds([]);
     setSelectedParticipants([]);
@@ -258,17 +296,18 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     setShowPreview(false);
     setPreviewData(null);
     setIsSubmitting(false);
+    setShowForm(true); // Tampilkan form kembali
     onClose?.();
   };
 
   // Modal Preview
   const renderPreviewModal = () => {
     if (!showPreview || !previewData) return null;
-
-    return (
-      // SESUDAH
+    const dialogEl = document.getElementById("bookingModal");
+    const portalTarget = dialogEl || document.body;
+    return createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-        <div className="bg-gray-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+        <div className="bg-gray-900 rounded-2xl max-w-2xl w-full h-[90vh] max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
           {/* Header */}
           <div className="sticky top-0 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700 p-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -301,6 +340,27 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                     {previewData.title}
                   </span>
                 </div>
+
+                <div className="flex items-start gap-2">
+                  <span className="text-gray-400 text-sm min-w-[100px]">
+                    Meeting Type
+                  </span>
+                  <span className="text-white capitalize">
+                    {previewData.meetingType}
+                  </span>
+                </div>
+
+                {previewData.meetingType === "external" &&
+                  previewData.snackRequest?.length > 0 && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-gray-400 text-sm min-w-[100px]">
+                        Snack Request
+                      </span>
+                      <span className="text-white capitalize">
+                        {previewData.snackRequest.join(", ")}
+                      </span>
+                    </div>
+                  )}
 
                 {previewData.description && (
                   <div className="flex items-start gap-2">
@@ -366,6 +426,27 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
               </div>
             </div>
 
+            {/* Room Conflict Warning */}
+            {previewData.roomAvailable === false && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle
+                    className="text-red-400 shrink-0 mt-0.5"
+                    size={20}
+                  />
+                  <div className="flex-1">
+                    <h5 className="text-sm font-semibold text-red-400 mb-1">
+                      Room Conflict
+                    </h5>
+                    <p className="text-xs text-red-300/80">
+                      {previewData.roomMessage ||
+                        "This room is already booked at that time. Please choose a different time or room."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Participants List */}
             {previewData.participants &&
               previewData.participants.length > 0 && (
@@ -421,7 +502,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                 </div>
               )}
 
-            {/* Conflict Warning */}
+            {/* Participant Conflict Warning */}
             {previewData.conflicts && previewData.conflicts.length > 0 && (
               <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
                 <div className="flex items-start gap-3">
@@ -526,14 +607,16 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             )}
 
             {/* All clear */}
-            {previewData.conflicts && previewData.conflicts.length === 0 && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-2">
-                <CheckCircle size={16} className="text-emerald-400" />
-                <p className="text-sm text-emerald-300 font-medium">
-                  Room and all participants are available
-                </p>
-              </div>
-            )}
+            {previewData.roomAvailable !== false &&
+              previewData.conflicts &&
+              previewData.conflicts.length === 0 && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-2">
+                  <CheckCircle size={16} className="text-emerald-400" />
+                  <p className="text-sm text-emerald-300 font-medium">
+                    Room and all participants are available
+                  </p>
+                </div>
+              )}
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
@@ -549,7 +632,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                 type="button"
                 onClick={handlePreviewSubmit}
                 className="btn btn-primary"
-                disabled={isSubmitting}
+                disabled={isSubmitting || previewData.roomAvailable === false}
               >
                 {isSubmitting ? (
                   <>
@@ -566,13 +649,18 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             </div>
           </div>
         </div>
-      </div>
+      </div>,
+      portalTarget,
     );
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="" ref={formWrapperRef}>
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        inert={showPreview ? "" : undefined}
+      >
         {/* Title */}
         <div className="form-control w-full">
           <label className="label">
@@ -604,6 +692,65 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
           />
         </div>
 
+        {/* Meeting Type */}
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text mb-2 text-white font-medium">
+              Meeting Type
+            </span>
+          </label>
+          {/* Menambahkan h-12 atau py-2 serta appearance-none untuk menormalisasi select di Edge */}
+          <select
+            name="meetingType"
+            value={form.meetingType}
+            onChange={handleMeetingTypeChange}
+            className="select select-bordered w-full h-12 bg-black/60 text-white focus:outline-none"
+          >
+            <option value="internal" className="bg-gray-950 text-white">
+              Internal Divisi
+            </option>
+            <option value="external" className="bg-gray-950 text-white">
+              External
+            </option>
+          </select>
+        </div>
+
+        {/* Snack Request — hanya muncul jika external */}
+        {form.meetingType === "external" && (
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text mb-2 text-white font-medium">
+                Snack Request
+              </span>
+            </label>
+            {/* Mengubah gap menjadi gap-4 atau gap-6 agar tidak berhimpitan, dan ditambahkan items-center */}
+            <div className="flex flex-wrap items-center gap-6 p-2 rounded-lg bg-black/30 border border-gray-800">
+              <label className="flex items-center gap-2.5 text-white text-sm cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm checkbox-primary bg-black/40"
+                  checked={form.snackRequest.includes("makanan-ringan")}
+                  onChange={() => handleSnackRequestToggle("makanan-ringan")}
+                />
+                <span className="group-hover:text-blue-400 transition-colors">
+                  Makanan Ringan
+                </span>
+              </label>
+              <label className="flex items-center gap-2.5 text-white text-sm cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm checkbox-primary bg-black/40"
+                  checked={form.snackRequest.includes("makanan-berat")}
+                  onChange={() => handleSnackRequestToggle("makanan-berat")}
+                />
+                <span className="group-hover:text-blue-400 transition-colors">
+                  Makanan Berat
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
+
         <div className="form-control w-full">
           <label className="label">
             <span className="label-text mb-2 text-white">Meeting Link</span>
@@ -622,7 +769,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         <div className="form-control w-full">
           <label className="label">
             <span className="label-text mb-2 text-white flex items-center gap-1.5">
-              <MapPin size={14} /> Room
+              Room
             </span>
           </label>
           <select
@@ -699,7 +846,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         <div className="form-control w-full">
           <label className="label">
             <span className="label-text mb-2 text-white flex items-center gap-1.5">
-              <Users size={14} /> Participants
+              Participants
             </span>
           </label>
           <UserSearchSelect
@@ -709,31 +856,6 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             placeholder="Search by name or email…"
           />
         </div>
-
-        {/* Conflict feedback - Room */}
-        {checked && availability && !availability.roomAvailable && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-            <p className="text-xs text-red-300 font-semibold flex items-center gap-1.5">
-              <AlertTriangle size={13} /> Room Conflict
-            </p>
-            <p className="text-[11px] text-red-300/80 mt-1">
-              {availability.roomMessage ||
-                "This room is already booked at that time. Please choose a different time or room."}
-            </p>
-          </div>
-        )}
-
-        {checked &&
-          availability &&
-          availability.roomAvailable &&
-          availability.participantConflicts.length === 0 && (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
-              <p className="text-xs text-emerald-300 font-semibold flex items-center gap-1.5">
-                <CheckCircle size={13} /> Room and all participants are
-                available
-              </p>
-            </div>
-          )}
 
         {/* Actions */}
         {!showPreview && (
@@ -752,8 +874,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
               disabled={
                 isSubmitting ||
                 checkAvailabilityMutation.isPending ||
-                createMeetingMutation.isPending ||
-                (checked && availability && !availability.roomAvailable)
+                createMeetingMutation.isPending
               }
             >
               {isSubmitting ||
@@ -773,7 +894,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
       {/* Preview Modal */}
       {renderPreviewModal()}
-    </>
+    </div>
   );
 };
 

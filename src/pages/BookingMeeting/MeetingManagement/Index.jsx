@@ -436,7 +436,7 @@ const IndexBooking = () => {
         )}
 
         <dialog id="bookingModal" className="modal">
-          <div className="modal-box w-11/12 max-w-xl bg-slate-900 text-white rounded-2xl shadow-2xl">
+          <div className="modal-box w-11/12 max-w-xl bg-slate-900 text-white rounded-2xl shadow-2xl ">
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <h3 className="font-bold text-xl">
                 Book Room{selectedRoom ? `: ${selectedRoom.nama}` : ""}

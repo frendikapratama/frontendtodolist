@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, useCallback, useContext, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useContext,
+  useMemo,
+} from "react";
 import TaskBadges from "../Task/TaskBadges";
 import { useSubTask } from "../../hook/useSubTask";
 import { Plus, UserPlus, X, Trash2 } from "lucide-react";
@@ -11,13 +18,27 @@ import { useMember } from "../../hook/useMember";
 import { createPortal } from "react-dom";
 import { AuthContext } from "../../context/AuthContext";
 
+const useThrottle = (callback, delay) => {
+  const lastRun = useRef(Date.now());
+  return useCallback(
+    (...args) => {
+      const now = Date.now();
+      if (now - lastRun.current >= delay) {
+        callback(...args);
+        lastRun.current = now;
+      }
+    },
+    [callback, delay],
+  );
+};
+
 const SubtaskList = ({
   taskId,
   groupId,
   workspaceId,
   showAddButton = false,
   readOnly = false,
-  parentSortConfig
+  parentSortConfig,
 }) => {
   const { user: currentUser } = useContext(AuthContext);
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -33,8 +54,18 @@ const SubtaskList = ({
       else if (finishDate > dueDate) return "Completed - Overdue";
       else if (finishDate < dueDate) return "Completed - Early";
     }
-    if (status === "To Do") return "Planning";
-    if (["In Progress", "Blocked", "Hold"].includes(status)) return "Uncomplete";
+    if (status === "To Do") {
+      return "Planning";
+    }
+    if (status === "Blocked") {
+      return "Blocked";
+    }
+    if (status === "Hold") {
+      return "Hold";
+    }
+    if (status === "In Progress") {
+      return "Uncomplete";
+    }
     return null;
   };
 
@@ -75,22 +106,30 @@ const SubtaskList = ({
   }, [currentUser, membersWorkspaceQuery.data]);
 
   // Cek apakah user adalah PIC dari subtask tertentu
-  const isSubtaskPIC = useCallback((subtask) => {
-    if (!currentUser || !subtask.pic) return false;
-    return subtask.pic.some(
-      (pic) => pic._id === currentUser._id || pic._id === currentUser.id
-    );
-  }, [currentUser]);
+  const isSubtaskPIC = useCallback(
+    (subtask) => {
+      if (!currentUser || !subtask.pic) return false;
+      return subtask.pic.some(
+        (pic) => pic._id === currentUser._id || pic._id === currentUser.id,
+      );
+    },
+    [currentUser],
+  );
 
   // Member bisa edit status jika dia authorized ATAU dia PIC subtask tsb
-  const canEditStatus = useCallback((subtask) => {
-    return isAuthorized || isSubtaskPIC(subtask);
-  }, [isAuthorized, isSubtaskPIC]);
+  const canEditStatus = useCallback(
+    (subtask) => {
+      return isAuthorized || isSubtaskPIC(subtask);
+    },
+    [isAuthorized, isSubtaskPIC],
+  );
 
   // Helper: hanya jalankan fn jika authorized
-  const onlyAuthorized = (fn) => (...args) => {
-    if (isAuthorized) fn(...args);
-  };
+  const onlyAuthorized =
+    (fn) =>
+    (...args) => {
+      if (isAuthorized) fn(...args);
+    };
   // ──────────────────────────────────────────────────────────────────────────
 
   const [openDialog, setOpenDialog] = useState({ open: false, subtask: null });
@@ -104,7 +143,10 @@ const SubtaskList = ({
   const [draggedItem, setDraggedItem] = useState(null);
   const [activePopup, setActivePopup] = useState(null);
   const [picPopup, setPicPopup] = useState({ show: false, subtaskId: null });
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, subTaskId: null });
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    subTaskId: null,
+  });
   const [confirmDeletePIC, setConfirmDeletePIC] = useState({
     show: false,
     subtaskId: null,
@@ -133,7 +175,11 @@ const SubtaskList = ({
       if (sortConfig.key === "nama") {
         aValue = aValue?.toLowerCase() || "";
         bValue = bValue?.toLowerCase() || "";
-      } else if (["start_date", "due_date", "finish_date", "meeting_date"].includes(sortConfig.key)) {
+      } else if (
+        ["start_date", "due_date", "finish_date", "meeting_date"].includes(
+          sortConfig.key,
+        )
+      ) {
         aValue = aValue ? new Date(aValue).getTime() : 0;
         bValue = bValue ? new Date(bValue).getTime() : 0;
       } else if (sortConfig.key === "priority") {
@@ -141,7 +187,13 @@ const SubtaskList = ({
         aValue = priorityOrder[aValue] || 0;
         bValue = priorityOrder[bValue] || 0;
       } else if (sortConfig.key === "status") {
-        const statusOrder = { "To Do": 1, "In Progress": 2, Hold: 3, Blocked: 4, Done: 5 };
+        const statusOrder = {
+          "To Do": 1,
+          "In Progress": 2,
+          Hold: 3,
+          Blocked: 4,
+          Done: 5,
+        };
         aValue = statusOrder[aValue] || 0;
         bValue = statusOrder[bValue] || 0;
       } else if (sortConfig.key === "pic") {
@@ -162,9 +214,21 @@ const SubtaskList = ({
   const [scaleInput, setScaleInput] = useState({});
   const buttonRefs = useRef({});
 
-  const STATUS_OPTIONS = ["To Do", "In Progress", "Done-In review", "Blocked", "Hold"];
+  const STATUS_OPTIONS = [
+    "To Do",
+    "In Progress",
+    "Done-In review",
+    "Blocked",
+    "Hold",
+  ];
   const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
-  const NOTE_OPTIONS = ["Completed - On Time", "Completed - Overdue", "Completed - Early", "Uncomplete", "Planning"];
+  const NOTE_OPTIONS = [
+    "Completed - On Time",
+    "Completed - Overdue",
+    "Completed - Early",
+    "Uncomplete",
+    "Planning",
+  ];
   const TYPE_OPTIONS = ["Minor", "Major"];
 
   const handleAssignPic = useCallback(
@@ -193,11 +257,19 @@ const SubtaskList = ({
         return;
       }
       let updateData = { [field]: value };
-      if (field !== "note" && (field === "status" || field === "due_date" || field === "finish_date")) {
+      if (
+        field !== "note" &&
+        (field === "status" || field === "due_date" || field === "finish_date")
+      ) {
         const newStatus = field === "status" ? value : task.status;
         const newDueDate = field === "due_date" ? value : task.due_date;
-        const newFinishDate = field === "finish_date" ? value : task.finish_date;
-        const autoNote = calculateAutoNote(newStatus, newDueDate, newFinishDate);
+        const newFinishDate =
+          field === "finish_date" ? value : task.finish_date;
+        const autoNote = calculateAutoNote(
+          newStatus,
+          newDueDate,
+          newFinishDate,
+        );
         if (autoNote) updateData.note = autoNote;
       }
       const updatedSubtasks = localSubtasks.map((s) =>
@@ -223,7 +295,9 @@ const SubtaskList = ({
       const num = parseInt(val);
       if (num >= 1 && num <= 100) {
         const updateData = { scale: val };
-        setLocalSubtasks((prev) => prev.map((s) => s._id === subtaskId ? { ...s, ...updateData } : s));
+        setLocalSubtasks((prev) =>
+          prev.map((s) => (s._id === subtaskId ? { ...s, ...updateData } : s)),
+        );
         updateSubTaskMutation.mutate({ subtaskId, data: updateData });
       }
     },
@@ -235,10 +309,16 @@ const SubtaskList = ({
       const val = scaleInput[subtaskId];
       if (val === "") {
         const updateData = { scale: "" };
-        setLocalSubtasks((prev) => prev.map((s) => s._id === subtaskId ? { ...s, ...updateData } : s));
+        setLocalSubtasks((prev) =>
+          prev.map((s) => (s._id === subtaskId ? { ...s, ...updateData } : s)),
+        );
         updateSubTaskMutation.mutate({ subtaskId, data: updateData });
       }
-      setScaleInput((prev) => { const updated = { ...prev }; delete updated[subtaskId]; return updated; });
+      setScaleInput((prev) => {
+        const updated = { ...prev };
+        delete updated[subtaskId];
+        return updated;
+      });
     },
     [scaleInput, updateSubTaskMutation, localSubtasks],
   );
@@ -249,16 +329,25 @@ const SubtaskList = ({
       if (val === undefined) return;
       const trimmedValue = val.trim();
       const updateData = { reason: trimmedValue };
-      setLocalSubtasks((prev) => prev.map((s) => s._id === subtaskId ? { ...s, ...updateData } : s));
+      setLocalSubtasks((prev) =>
+        prev.map((s) => (s._id === subtaskId ? { ...s, ...updateData } : s)),
+      );
       updateSubTaskMutation.mutate({ subtaskId, data: updateData });
-      setReasonInput((prev) => { const updated = { ...prev }; delete updated[subtaskId]; return updated; });
+      setReasonInput((prev) => {
+        const updated = { ...prev };
+        delete updated[subtaskId];
+        return updated;
+      });
     },
     [reasonInput, updateSubTaskMutation, localSubtasks],
   );
 
   const handleReasonKeyDown = useCallback(
     (subtaskId, e) => {
-      if (e.key === "Enter") { e.preventDefault(); handleReasonBlur(subtaskId); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleReasonBlur(subtaskId);
+      }
     },
     [handleReasonBlur],
   );
@@ -289,6 +378,7 @@ const SubtaskList = ({
   };
 
   const handleDragEnd = () => setDraggedItem(null);
+  const throttledDragOver = useThrottle(handleDragOver, 50);
 
   const handleDeleteTask = useCallback((subTaskId) => {
     setConfirmDelete({ show: true, subTaskId });
@@ -304,7 +394,9 @@ const SubtaskList = ({
   const handleEdit = (subtaskId) => {
     if (!editedName.trim()) return;
     const updateData = { nama: editedName.trim() };
-    setLocalSubtasks((prev) => prev.map((s) => s._id === subtaskId ? { ...s, ...updateData } : s));
+    setLocalSubtasks((prev) =>
+      prev.map((s) => (s._id === subtaskId ? { ...s, ...updateData } : s)),
+    );
     updateSubTaskMutation.mutate({ subtaskId, data: updateData });
     setEditingSubtaskId(null);
   };
@@ -318,19 +410,40 @@ const SubtaskList = ({
     if (!subtaskName.trim()) return;
     addSubTaskMutation.mutate(
       { taskId, data: { nama: subtaskName.trim() } },
-      { onSuccess: () => { setSubtaskName(""); setShowForm(false); } },
+      {
+        onSuccess: () => {
+          setSubtaskName("");
+          setShowForm(false);
+        },
+      },
     );
   };
 
   const handleAddKeyDown = (e) => {
-    if (e.key === "Enter") { e.preventDefault(); handleAdd(); }
-    if (e.key === "Escape") { setSubtaskName(""); setShowForm(false); }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAdd();
+    }
+    if (e.key === "Escape") {
+      setSubtaskName("");
+      setShowForm(false);
+    }
   };
 
   const columnWidths = {
-    task: "w-80", pic: "w-32", status: "w-40", type: "w-32",
-    priority: "w-32", scale: "w-20", meetingDate: "w-40", startDate: "w-40",
-    dueDate: "w-40", finishDate: "w-40", note: "w-50", reason: "w-100", action: "w-40",
+    task: "w-80",
+    pic: "w-32",
+    status: "w-40",
+    type: "w-32",
+    priority: "w-32",
+    scale: "w-20",
+    meetingDate: "w-40",
+    startDate: "w-40",
+    dueDate: "w-40",
+    finishDate: "w-40",
+    note: "w-50",
+    reason: "w-100",
+    action: "w-40",
   };
 
   const handleDeletePIC = useCallback((subtaskId, userId) => {
@@ -354,12 +467,16 @@ const SubtaskList = ({
     useEffect(() => {
       const handleClickOutside = (event) => {
         if (
-          popupRef.current && !popupRef.current.contains(event.target) &&
-          buttonRef.current && !buttonRef.current.contains(event.target)
-        ) onClose();
+          popupRef.current &&
+          !popupRef.current.contains(event.target) &&
+          buttonRef.current &&
+          !buttonRef.current.contains(event.target)
+        )
+          onClose();
       };
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, [onClose, buttonRef]);
 
     const position = buttonRef.current?.getBoundingClientRect();
@@ -378,7 +495,9 @@ const SubtaskList = ({
           left: `${Math.min(position?.left || 0, window.innerWidth - 270)}px`,
         }}
       >
-        <div className="text-xs font-semibold mb-2 text-gray-700">Select Member:</div>
+        <div className="text-xs font-semibold mb-2 text-gray-700">
+          Select Member:
+        </div>
         <div className="max-h-40 overflow-y-auto mb-3 border border-gray-200 rounded">
           {members.map((member) => {
             const user = member.user || member;
@@ -391,38 +510,68 @@ const SubtaskList = ({
                 className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
               >
                 {photoUrl ? (
-                  <img src={photoUrl} alt={user.username} className="w-6 h-6 rounded-full object-cover"
-                    onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
+                  <img
+                    src={photoUrl}
+                    alt={user.username}
+                    className="w-6 h-6 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
                 ) : null}
-                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs"
-                  style={{ display: photoUrl ? "none" : "flex" }}>
+                <div
+                  className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs"
+                  style={{ display: photoUrl ? "none" : "flex" }}
+                >
                   {user.username?.substring(0, 2).toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate text-black">{user.username}</div>
+                  <div className="font-medium truncate text-black">
+                    {user.username}
+                  </div>
                   <div className="text-gray-500 truncate">{user.email}</div>
                 </div>
               </button>
             );
           })}
         </div>
-        <div className="text-xs font-semibold mb-1 text-gray-700">Or enter email:</div>
+        <div className="text-xs font-semibold mb-1 text-gray-700">
+          Or enter email:
+        </div>
         <input
-          type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") { e.preventDefault(); onSelect(email); setEmail(""); }
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onSelect(email);
+              setEmail("");
+            }
             if (e.key === "Escape") onClose();
           }}
           className="w-full px-2 py-1.5 text-xs border text-black border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="email@example.com" autoFocus
+          placeholder="email@example.com"
+          autoFocus
         />
         <div className="flex justify-end gap-2 mt-2">
-          <button onClick={onClose} className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800">Cancel</button>
           <button
-            onClick={() => { onSelect(email); setEmail(""); }}
+            onClick={onClose}
+            className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onSelect(email);
+              setEmail("");
+            }}
             className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
             disabled={!email.trim()}
-          >Assign</button>
+          >
+            Assign
+          </button>
         </div>
       </div>,
       document.body,
@@ -430,14 +579,20 @@ const SubtaskList = ({
   };
 
   if (subtaskByTask.isLoading) {
-    return <div className="ml-12 mt-1 mb-2 p-4 text-center text-gray-500">Loading subtasks...</div>;
+    return (
+      <div className="ml-12 mt-1 mb-2 p-4 text-center text-gray-500">
+        Loading subtasks...
+      </div>
+    );
   }
 
   return (
     <div className="mt-1 mb-2">
       <ConfirmDialog
         show={confirmDeletePIC.show}
-        onClose={() => setConfirmDeletePIC({ show: false, subtaskId: null, userId: null })}
+        onClose={() =>
+          setConfirmDeletePIC({ show: false, subtaskId: null, userId: null })
+        }
         onConfirm={confirmDeleteTaskPIC}
         title="Delete PIC"
         message="Are you sure want to delete this PIC? this action can't be undo"
@@ -448,23 +603,36 @@ const SubtaskList = ({
           key={s._id}
           draggable={!readOnly}
           onDragStart={(e) => !readOnly && handleDragStart(e, index)}
-          onDragOver={(e) => !readOnly && handleDragOver(e, index)}
+          onDragOver={(e) => !readOnly && throttledDragOver(e, index)}
           onDrop={!readOnly ? handleDrop : undefined}
           onDragEnd={!readOnly ? handleDragEnd : undefined}
           className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""}`}
         >
           {/* ── Name Column ── */}
-          <div className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 cursor-grab active:cursor-grabbing sticky left-0 bg-[#F0E4D3] z-20`}>
+          <div
+            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 cursor-grab active:cursor-grabbing sticky left-0 bg-[#F0E4D3] z-20`}
+          >
             <div className="pl-3 cursor-grab active:cursor-grabbing">
-              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+              <svg
+                className="w-4 h-4 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8h16M4 16h16"
+                />
               </svg>
             </div>
             {editingSubtaskId === s._id && !readOnly ? (
               <input
                 type="text"
                 className="text-sm border border-gray-300 text-black rounded px-2 py-1 w-full focus:ring-2 focus:ring-blue-500"
-                value={editedName} autoFocus
+                value={editedName}
+                autoFocus
                 onChange={(e) => setEditedName(e.target.value)}
                 onBlur={() => handleEdit(s._id)}
                 onKeyDown={(e) => handleEditKeyDown(e, s._id)}
@@ -483,25 +651,43 @@ const SubtaskList = ({
                 {s.nama}
               </span>
             )}
-            <TaskBadges taskId={s._id} isSubtask={true} task={s} groupId={groupId} />
+            <TaskBadges
+              taskId={s._id}
+              isSubtask={true}
+              task={s}
+              groupId={groupId}
+            />
           </div>
 
           {/* ── PIC Column ── */}
-          <div className={`${columnWidths.pic} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.pic} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center shrink-0`}
+          >
             <div className="flex items-center gap-1 relative">
               {s.pic && s.pic.length > 0 && (
                 <div className="flex -space-x-2">
                   {s.pic.slice(0, 3).map((picUser, idx) => {
-                    const photoUrl = picUser.photo ? getPhotoUrl(picUser.photo) : null;
+                    const photoUrl = picUser.photo
+                      ? getPhotoUrl(picUser.photo)
+                      : null;
                     return (
-                      <div key={idx} className="relative group hover:z-20 z-10 transition-all cursor-pointer">
+                      <div
+                        key={idx}
+                        className="relative group hover:z-20 z-10 transition-all cursor-pointer"
+                      >
                         {photoUrl ? (
-                          <img src={photoUrl} alt={picUser.username}
+                          <img
+                            src={photoUrl}
+                            alt={picUser.username}
                             className="w-7 h-7 rounded-full object-cover border-2 border-white"
-                            onError={(e) => { e.target.style.display = "none"; }} />
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
                         ) : (
                           <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white">
-                            {picUser.username?.substring(0, 2).toUpperCase() || "?"}
+                            {picUser.username?.substring(0, 2).toUpperCase() ||
+                              "?"}
                           </div>
                         )}
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20">
@@ -531,7 +717,9 @@ const SubtaskList = ({
               {/* Hanya authorized yang bisa assign PIC */}
               <button
                 ref={(el) => (buttonRefs.current[`pic-${s._id}`] = el)}
-                onClick={onlyAuthorized(() => setPicPopup({ show: true, subtaskId: s._id }))}
+                onClick={onlyAuthorized(() =>
+                  setPicPopup({ show: true, subtaskId: s._id }),
+                )}
                 className="w-7 h-7 rounded-full text-gray-500 border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
                 title="Assign PIC"
                 disabled={readOnly}
@@ -550,29 +738,38 @@ const SubtaskList = ({
           </div>
 
           {/* ── Type Column ── */}
-          <div className={`${columnWidths.type} px-6 py-3 flex items-center justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.type} px-6 py-3 flex items-center justify-center shrink-0`}
+          >
             <span
               ref={(el) => (buttonRefs.current[`type-${s._id}`] = el)}
               className={`px-3 py-1 text-[0.8em] font-medium rounded-full ${
-                isAuthorized ? "cursor-pointer hover:bg-gray-200" : "cursor-default"
+                isAuthorized
+                  ? "cursor-pointer hover:bg-gray-200"
+                  : "cursor-default"
               } ${s.type === "Major" ? "text-orange-700 bg-orange-200" : "text-cyan-800 bg-cyan-200"}`}
-              onClick={onlyAuthorized(() => setActivePopup({ subtaskId: s._id, field: "type" }))}
+              onClick={onlyAuthorized(() =>
+                setActivePopup({ subtaskId: s._id, field: "type" }),
+              )}
             >
               {s.type}
             </span>
-            {activePopup?.subtaskId === s._id && activePopup?.field === "type" && (
-              <PopupSelect
-                value={s.type || "Minor"}
-                options={TYPE_OPTIONS}
-                onChange={(value) => handlePopupChange(s._id, "type", value)}
-                onClose={() => setActivePopup(null)}
-                buttonRef={{ current: buttonRefs.current[`type-${s._id}`] }}
-              />
-            )}
+            {activePopup?.subtaskId === s._id &&
+              activePopup?.field === "type" && (
+                <PopupSelect
+                  value={s.type || "Minor"}
+                  options={TYPE_OPTIONS}
+                  onChange={(value) => handlePopupChange(s._id, "type", value)}
+                  onClose={() => setActivePopup(null)}
+                  buttonRef={{ current: buttonRefs.current[`type-${s._id}`] }}
+                />
+              )}
           </div>
 
           {/* ── Status Column ── */}
-          <div className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+          >
             {s.status === "Done-In review" ? (
               <div className="flex items-center space-x-2">
                 <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-yellow-100 text-yellow-700 whitespace-nowrap">
@@ -584,12 +781,18 @@ const SubtaskList = ({
                       onClick={() => handlePopupChange(s._id, "status", "Done")}
                       className="w-6 h-6 flex items-center justify-center rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors border border-green-300 text-xs"
                       title="Approve and set status to Done"
-                    >✓</button>
+                    >
+                      ✓
+                    </button>
                     <button
-                      onClick={() => handlePopupChange(s._id, "status", "In Progress")}
+                      onClick={() =>
+                        handlePopupChange(s._id, "status", "In Progress")
+                      }
                       className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors border border-red-300 text-xs"
                       title="Reject and set status to In Progress"
-                    >✕</button>
+                    >
+                      ✕
+                    </button>
                   </div>
                 )}
               </div>
@@ -598,58 +801,91 @@ const SubtaskList = ({
                 <span
                   ref={(el) => (buttonRefs.current[`status-${s._id}`] = el)}
                   className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 ${
-                    canEditStatus(s) ? "cursor-pointer hover:bg-indigo-200" : "cursor-default"
+                    canEditStatus(s)
+                      ? "cursor-pointer hover:bg-indigo-200"
+                      : "cursor-default"
                   }`}
-                  onClick={() => canEditStatus(s) && !readOnly && setActivePopup({ subtaskId: s._id, field: "status" })}
+                  onClick={() =>
+                    canEditStatus(s) &&
+                    !readOnly &&
+                    setActivePopup({ subtaskId: s._id, field: "status" })
+                  }
                 >
                   {s.status}
                 </span>
-                {activePopup?.subtaskId === s._id && activePopup?.field === "status" && (
-                  <PopupSelect
-                    value={s.status}
-                    options={STATUS_OPTIONS}
-                    onChange={(value) => handlePopupChange(s._id, "status", value)}
-                    onClose={() => setActivePopup(null)}
-                    buttonRef={{ current: buttonRefs.current[`status-${s._id}`] }}
-                  />
-                )}
+                {activePopup?.subtaskId === s._id &&
+                  activePopup?.field === "status" && (
+                    <PopupSelect
+                      value={s.status}
+                      options={STATUS_OPTIONS}
+                      onChange={(value) =>
+                        handlePopupChange(s._id, "status", value)
+                      }
+                      onClose={() => setActivePopup(null)}
+                      buttonRef={{
+                        current: buttonRefs.current[`status-${s._id}`],
+                      }}
+                    />
+                  )}
               </>
             )}
           </div>
 
           {/* ── Priority Column ── */}
-          <div className={`${columnWidths.priority} px-6 py-3 flex items-center justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.priority} px-6 py-3 flex items-center justify-center shrink-0`}
+          >
             <span
               ref={(el) => (buttonRefs.current[`priority-${s._id}`] = el)}
               className={`px-3 py-1 text-[0.8em] font-medium rounded-full ${
-                isAuthorized ? "cursor-pointer hover:bg-gray-200" : "cursor-default"
+                isAuthorized
+                  ? "cursor-pointer hover:bg-gray-200"
+                  : "cursor-default"
               } ${
-                s.priority === "Urgent" ? "text-red-700 bg-red-200"
-                : s.priority === "High" ? "text-orange-800 bg-orange-200"
-                : s.priority === "Medium" ? "text-blue-800 bg-blue-200"
-                : "text-gray-800 bg-gray-200"
+                s.priority === "Urgent"
+                  ? "text-red-700 bg-red-200"
+                  : s.priority === "High"
+                    ? "text-orange-800 bg-orange-200"
+                    : s.priority === "Medium"
+                      ? "text-blue-800 bg-blue-200"
+                      : "text-gray-800 bg-gray-200"
               }`}
-              onClick={onlyAuthorized(() => setActivePopup({ subtaskId: s._id, field: "priority" }))}
+              onClick={onlyAuthorized(() =>
+                setActivePopup({ subtaskId: s._id, field: "priority" }),
+              )}
             >
               {s.priority || "Low"}
             </span>
-            {activePopup?.subtaskId === s._id && activePopup?.field === "priority" && (
-              <PopupSelect
-                value={s.priority || "Medium"}
-                options={PRIORITY_OPTIONS}
-                onChange={(value) => handlePopupChange(s._id, "priority", value)}
-                onClose={() => setActivePopup(null)}
-                buttonRef={{ current: buttonRefs.current[`priority-${s._id}`] }}
-              />
-            )}
+            {activePopup?.subtaskId === s._id &&
+              activePopup?.field === "priority" && (
+                <PopupSelect
+                  value={s.priority || "Medium"}
+                  options={PRIORITY_OPTIONS}
+                  onChange={(value) =>
+                    handlePopupChange(s._id, "priority", value)
+                  }
+                  onClose={() => setActivePopup(null)}
+                  buttonRef={{
+                    current: buttonRefs.current[`priority-${s._id}`],
+                  }}
+                />
+              )}
           </div>
 
           {/* ── Scale Column ── */}
-          <div className={`${columnWidths.scale} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}>
+          <div
+            className={`${columnWidths.scale} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+          >
             <input
               className="w-14 border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="1-100" type="text" inputMode="numeric"
-              value={scaleInput[s._id] !== undefined ? scaleInput[s._id] : s.scale || ""}
+              placeholder="1-100"
+              type="text"
+              inputMode="numeric"
+              value={
+                scaleInput[s._id] !== undefined
+                  ? scaleInput[s._id]
+                  : s.scale || ""
+              }
               onChange={onlyAuthorized((e) => handleScaleChange(s._id, e))}
               onBlur={onlyAuthorized(() => handleScaleBlur(s._id))}
               disabled={readOnly}
@@ -657,104 +893,175 @@ const SubtaskList = ({
           </div>
 
           {/* ── Meeting Date Column ── */}
-          <div className={`${columnWidths.meetingDate} px-6 py-3 flex items-center justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.meetingDate} px-6 py-3 flex items-center justify-center shrink-0`}
+          >
             <span
               ref={(el) => (buttonRefs.current[`meeting_date-${s._id}`] = el)}
               className={`text-[0.8em] text-gray-600 px-1 rounded ${
-                isAuthorized ? "cursor-pointer hover:bg-gray-100" : "cursor-default"
+                isAuthorized
+                  ? "cursor-pointer hover:bg-gray-100"
+                  : "cursor-default"
               }`}
-              onClick={onlyAuthorized(() => setActivePopup({ subtaskId: s._id, field: "meeting_date" }))}
+              onClick={onlyAuthorized(() =>
+                setActivePopup({ subtaskId: s._id, field: "meeting_date" }),
+              )}
             >
               {s.meeting_date
-                ? new Date(s.meeting_date).toLocaleString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false })
+                ? new Date(s.meeting_date).toLocaleString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })
                 : "Set date & time"}
             </span>
-            {activePopup?.subtaskId === s._id && activePopup?.field === "meeting_date" && (
-              <DatePickerPopup
-                value={s.meeting_date}
-                onChange={(value) => handlePopupChange(s._id, "meeting_date", value)}
-                onClose={() => setActivePopup(null)}
-                buttonRef={{ current: buttonRefs.current[`meeting_date-${s._id}`] }}
-                showTimeSelect={true}
-              />
-            )}
+            {activePopup?.subtaskId === s._id &&
+              activePopup?.field === "meeting_date" && (
+                <DatePickerPopup
+                  value={s.meeting_date}
+                  onChange={(value) =>
+                    handlePopupChange(s._id, "meeting_date", value)
+                  }
+                  onClose={() => setActivePopup(null)}
+                  buttonRef={{
+                    current: buttonRefs.current[`meeting_date-${s._id}`],
+                  }}
+                  showTimeSelect={true}
+                />
+              )}
           </div>
 
           {/* ── Start Date Column ── */}
-          <div className={`${columnWidths.startDate} px-6 py-3 flex items-center justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.startDate} px-6 py-3 flex items-center justify-center shrink-0`}
+          >
             <span
               ref={(el) => (buttonRefs.current[`start_date-${s._id}`] = el)}
               className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-              onClick={() => !readOnly && setActivePopup({ subtaskId: s._id, field: "start_date" })}
+              onClick={() =>
+                !readOnly &&
+                setActivePopup({ subtaskId: s._id, field: "start_date" })
+              }
             >
               {s.start_date
-                ? new Date(s.start_date).toLocaleString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })
+                ? new Date(s.start_date).toLocaleString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
-            {activePopup?.subtaskId === s._id && activePopup?.field === "start_date" && (
-              <DatePickerPopup
-                value={s.start_date}
-                onChange={(value) => handlePopupChange(s._id, "start_date", value)}
-                onClose={() => setActivePopup(null)}
-                buttonRef={{ current: buttonRefs.current[`start_date-${s._id}`] }}
-              />
-            )}
+            {activePopup?.subtaskId === s._id &&
+              activePopup?.field === "start_date" && (
+                <DatePickerPopup
+                  value={s.start_date}
+                  onChange={(value) =>
+                    handlePopupChange(s._id, "start_date", value)
+                  }
+                  onClose={() => setActivePopup(null)}
+                  buttonRef={{
+                    current: buttonRefs.current[`start_date-${s._id}`],
+                  }}
+                />
+              )}
           </div>
 
           {/* ── Due Date Column ── */}
-          <div className={`${columnWidths.dueDate} px-6 py-3 flex items-center justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.dueDate} px-6 py-3 flex items-center justify-center shrink-0`}
+          >
             <span
               ref={(el) => (buttonRefs.current[`due_date-${s._id}`] = el)}
               className={`text-[0.8em] text-gray-600 px-1 rounded ${
-                isAuthorized ? "cursor-pointer hover:bg-gray-100" : "cursor-default"
+                isAuthorized
+                  ? "cursor-pointer hover:bg-gray-100"
+                  : "cursor-default"
               }`}
-              onClick={onlyAuthorized(() => setActivePopup({ subtaskId: s._id, field: "due_date" }))}
+              onClick={onlyAuthorized(() =>
+                setActivePopup({ subtaskId: s._id, field: "due_date" }),
+              )}
             >
               {s.due_date
-                ? new Date(s.due_date).toLocaleString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })
+                ? new Date(s.due_date).toLocaleString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
-            {activePopup?.subtaskId === s._id && activePopup?.field === "due_date" && (
-              <DatePickerPopup
-                value={s.due_date}
-                onChange={(value) => handlePopupChange(s._id, "due_date", value)}
-                onClose={() => setActivePopup(null)}
-                buttonRef={{ current: buttonRefs.current[`due_date-${s._id}`] }}
-              />
-            )}
+            {activePopup?.subtaskId === s._id &&
+              activePopup?.field === "due_date" && (
+                <DatePickerPopup
+                  value={s.due_date}
+                  onChange={(value) =>
+                    handlePopupChange(s._id, "due_date", value)
+                  }
+                  onClose={() => setActivePopup(null)}
+                  buttonRef={{
+                    current: buttonRefs.current[`due_date-${s._id}`],
+                  }}
+                />
+              )}
           </div>
 
           {/* ── Finish Date Column ── */}
-          <div className={`${columnWidths.finishDate} px-6 py-3 flex items-center justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.finishDate} px-6 py-3 flex items-center justify-center shrink-0`}
+          >
             <span
               ref={(el) => (buttonRefs.current[`finish_date-${s._id}`] = el)}
               className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
-              onClick={() => !readOnly && setActivePopup({ subtaskId: s._id, field: "finish_date" })}
+              onClick={() =>
+                !readOnly &&
+                setActivePopup({ subtaskId: s._id, field: "finish_date" })
+              }
             >
               {s.finish_date
-                ? new Date(s.finish_date).toLocaleString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })
+                ? new Date(s.finish_date).toLocaleString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                 : "Set date"}
             </span>
-            {activePopup?.subtaskId === s._id && activePopup?.field === "finish_date" && (
-              <DatePickerPopup
-                value={s.finish_date}
-                onChange={(value) => handlePopupChange(s._id, "finish_date", value)}
-                onClose={() => setActivePopup(null)}
-                buttonRef={{ current: buttonRefs.current[`finish_date-${s._id}`] }}
-              />
-            )}
+            {activePopup?.subtaskId === s._id &&
+              activePopup?.field === "finish_date" && (
+                <DatePickerPopup
+                  value={s.finish_date}
+                  onChange={(value) =>
+                    handlePopupChange(s._id, "finish_date", value)
+                  }
+                  onClose={() => setActivePopup(null)}
+                  buttonRef={{
+                    current: buttonRefs.current[`finish_date-${s._id}`],
+                  }}
+                />
+              )}
           </div>
 
           {/* ── Note Column ── */}
-          <div className={`${columnWidths.note} px-6 py-3 flex items-center justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.note} px-6 py-3 flex items-center justify-center shrink-0`}
+          >
             <span
               ref={(el) => (buttonRefs.current[`note-${s._id}`] = el)}
-              className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full ${
-                s.note === "Planning" ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                : s.note === "Uncomplete" ? "text-red-100 bg-red-900 hover:bg-red-400"
-                : s.note === "Completed - On Time" ? "text-green-700 bg-green-100 hover:bg-green-200"
-                : s.note === "Completed - Overdue" ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+              className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
+                task.note === "Planning"
+                  ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                  : task.note === "Uncomplete"
+                    ? "text-red-100 bg-red-900 hover:bg-red-400"
+                    : task.note === "Completed - On Time"
+                      ? "text-green-700 bg-green-100 hover:bg-green-200"
+                      : task.note === "Completed - Overdue"
+                        ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
+                        : task.note === "Blocked"
+                          ? "text-rose-700 bg-rose-100 hover:bg-rose-200"
+                          : task.note === "Hold"
+                            ? "text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
+                            : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
               }`}
               // Note auto-calculated, tidak perlu di-click
             >
@@ -763,16 +1070,31 @@ const SubtaskList = ({
           </div>
 
           {/* ── Reason Column ── */}
-          <div className={`${columnWidths.reason} px-6 py-3.5 border-b border-gray-100 flex justify-center`}>
+          <div
+            className={`${columnWidths.reason} px-6 py-3.5 border-b border-gray-100 flex justify-center`}
+          >
             {s.note === "Completed - Overdue" ? (
-              editingField?.subtaskId === s._id && editingField?.field === "reason" ? (
+              editingField?.subtaskId === s._id &&
+              editingField?.field === "reason" ? (
                 <input
                   className="w-full border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Max 2 sentences" type="text"
-                  value={reasonInput[s._id] !== undefined ? reasonInput[s._id] : s.reason || ""}
+                  placeholder="Max 2 sentences"
+                  type="text"
+                  value={
+                    reasonInput[s._id] !== undefined
+                      ? reasonInput[s._id]
+                      : s.reason || ""
+                  }
                   onChange={(e) => handleReasonChange(s._id, e)}
-                  onBlur={() => { handleReasonBlur(s._id); setEditingField(null); }}
-                  onKeyDown={(e) => { handleReasonKeyDown(s._id, e); if (e.key === "Enter" || e.key === "Escape") setEditingField(null); }}
+                  onBlur={() => {
+                    handleReasonBlur(s._id);
+                    setEditingField(null);
+                  }}
+                  onKeyDown={(e) => {
+                    handleReasonKeyDown(s._id, e);
+                    if (e.key === "Enter" || e.key === "Escape")
+                      setEditingField(null);
+                  }}
                   autoFocus
                 />
               ) : (
@@ -782,7 +1104,10 @@ const SubtaskList = ({
                     // Semua member bisa isi reason
                     if (isMember) {
                       setEditingField({ subtaskId: s._id, field: "reason" });
-                      setReasonInput((prev) => ({ ...prev, [s._id]: s.reason || "" }));
+                      setReasonInput((prev) => ({
+                        ...prev,
+                        [s._id]: s.reason || "",
+                      }));
                     }
                   }}
                   title={s.reason}
@@ -796,7 +1121,9 @@ const SubtaskList = ({
           </div>
 
           {/* ── Action Column ── */}
-          <div className={`${columnWidths.action} px-6 py-3 flex items-center gap-2 justify-center shrink-0`}>
+          <div
+            className={`${columnWidths.action} px-6 py-3 flex items-center gap-2 justify-center shrink-0`}
+          >
             <button
               className="bg-gray-100 rounded-xl p-1 text-black font-medium text-[0.7em] w-18 hover:bg-gray-200"
               onClick={() => {
@@ -818,15 +1145,6 @@ const SubtaskList = ({
                 />
               </div>
             )}
-            {openDialog.open && (
-              <DialogDetail
-                show={openDialog.open}
-                onClose={() => setOpenDialog({ open: false, subtask: null })}
-                subtaskId={openDialog.subtask?._id}
-                taskData={openDialog.subtask}
-                isSubtask={true}
-              />
-            )}
           </div>
 
           <ConfirmDialog
@@ -838,15 +1156,30 @@ const SubtaskList = ({
           />
         </div>
       ))}
-
+      {openDialog.open && (
+        <DialogDetail
+          show={openDialog.open}
+          onClose={() => setOpenDialog({ open: false, subtask: null })}
+          subtaskId={openDialog.subtask?._id}
+          taskData={openDialog.subtask}
+          isSubtask={true}
+          parentTaskId={taskId}
+          groupId={groupId}
+          workspaceId={workspaceId}
+        />
+      )}
       {showForm ? (
         <div className="flex gap-2 px-4 py-2">
           <input
-            type="text" placeholder="Subtask name"
+            type="text"
+            placeholder="Subtask name"
             className="flex-1 px-3 py-1.5 text-[0.9em] text-black text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={subtaskName} onChange={(e) => setSubtaskName(e.target.value)}
+            value={subtaskName}
+            onChange={(e) => setSubtaskName(e.target.value)}
             onKeyDown={handleAddKeyDown}
-            onBlur={() => subtaskName.trim() ? handleAdd() : setShowForm(false)}
+            onBlur={() =>
+              subtaskName.trim() ? handleAdd() : setShowForm(false)
+            }
             autoFocus
           />
         </div>

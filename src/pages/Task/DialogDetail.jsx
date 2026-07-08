@@ -21,11 +21,11 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/id";
 import { useAttachment } from "../../hook/useAttachment";
 import { useNotifications } from "../../context/NotificationContext";
-import toast from "react-hot-toast" 
+import toast from "react-hot-toast";
 import { useContext, useMemo } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useMember } from "../../hook/useMember";
-import { FaRegFilePdf,FaRegFileWord ,FaFile } from "react-icons/fa6";
+import { FaRegFilePdf, FaRegFileWord, FaFile } from "react-icons/fa6";
 import { FaRegFileExcel } from "react-icons/fa";
 import { CiImageOn } from "react-icons/ci";
 
@@ -39,6 +39,9 @@ const DialogDetail = ({
   taskData: propTaskData,
   isSubtask = false,
   subtaskId = null,
+  groupId,
+  parentTaskId,
+  workspaceId: propWorkspaceId,
 }) => {
   const itemId = isSubtask ? subtaskId : taskId;
 
@@ -49,8 +52,8 @@ const DialogDetail = ({
     deleteCommentMutation,
     editCommentMutation,
   } = useComment(itemId, isSubtask);
-  const { updateTaskMutation } = useTask();
-  const { updateSubTaskMutation } = useSubTask();
+  const { updateTaskMutation } = useTask(groupId);
+  const { updateSubTaskMutation } = useSubTask(parentTaskId, groupId);
   const updateMutation = isSubtask ? updateSubTaskMutation : updateTaskMutation;
 
   const {
@@ -59,7 +62,8 @@ const DialogDetail = ({
     attachmentsQuery,
   } = useAttachment(itemId, isSubtask);
 
-const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
+  const serverAttachments =
+    attachmentsQuery.data || taskData?.attachments || [];
   const dialogRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -80,6 +84,8 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editedReplyText, setEditedReplyText] = useState("");
   const [activeMenuId, setActiveMenuId] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadingFiles, setUploadingFiles] = useState([]);
 
   const [editingDescription, setEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
@@ -91,28 +97,51 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
 
   const { user: currentUser } = useContext(AuthContext);
 
-  const workspaceId = taskData?.workspaceId || taskData?.workspace?._id;
+  const workspaceId =
+    propWorkspaceId || taskData?.workspaceId || taskData?.workspace?._id;
 
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
 
   const isAuthorized = useMemo(() => {
-  if (!currentUser || !membersWorkspaceQuery.data) return false;
-  
-  const userMembership = membersWorkspaceQuery.data.members?.find(
-    (member) =>
-      member.user?._id === currentUser._id ||
-      member.user?._id === currentUser.id
-  );
-  
-  if (!userMembership) return true;
-  
-  const memberOnlyRoles = ["member"];
-  return !memberOnlyRoles.includes(userMembership.role);
-}, [currentUser, membersWorkspaceQuery.data]);
+    if (!currentUser || !membersWorkspaceQuery.data) return false;
+
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id,
+    );
+
+    if (!userMembership) return true;
+
+    const memberOnlyRoles = ["member"];
+    return !memberOnlyRoles.includes(userMembership.role);
+  }, [currentUser, membersWorkspaceQuery.data]);
+
+  // const isAuthorized = useMemo(() => {
+  //   if (!currentUser || !membersWorkspaceQuery.data) return false;
+
+  //   const userMembership = membersWorkspaceQuery.data.members?.find(
+  //     (member) =>
+  //       member.user?._id === currentUser._id ||
+  //       member.user?._id === currentUser.id,
+  //   );
+
+  //   return !!userMembership;
+  // }, [currentUser, membersWorkspaceQuery.data]);
+
+  const isItemPIC = useMemo(() => {
+    if (!currentUser || !taskData?.pic) return false;
+    return taskData.pic.some(
+      (pic) => pic._id === currentUser._id || pic._id === currentUser.id,
+    );
+  }, [currentUser, taskData]);
+
+  // const canEditDescription = isAuthorized || isItemPIC;
+  const canEditDescription = isAuthorized;
 
   const isFileOwner = (fileObj) => {
     const userId = currentUser?._id || currentUser?.id;
-    const uploaderId = fileObj.uploadedBy?._id || fileObj.uploadedBy; 
+    const uploaderId = fileObj.uploadedBy?._id || fileObj.uploadedBy;
     console.log("uploaderId:", uploaderId, "| userId:", userId);
     return uploaderId === userId;
   };
@@ -139,7 +168,7 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
       const dataKey = isSubtask ? data.subtaskId : data.taskId;
       if (dataKey === itemId) {
         console.log("Real-time comment received:", data);
-        commentQuery.refetch(); 
+        commentQuery.refetch();
       }
     };
 
@@ -147,7 +176,7 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
       const dataKey = isSubtask ? data.subtaskId : data.taskId;
       if (dataKey === itemId) {
         console.log("Real-time reply received:", data);
-        commentQuery.refetch(); 
+        commentQuery.refetch();
       }
     };
 
@@ -229,20 +258,75 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
       }
       setMessage("");
       if (textareaRef.current) {
-      textareaRef.current.style.height = "40px";
-    }
+        textareaRef.current.style.height = "40px";
+      }
     }
   };
 
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
 
-    for (const file of files) {
+    // Tambahkan file ke daftar uploading
+    const fileIds = files.map(
+      (file, index) => `${file.name}-${Date.now()}-${index}`,
+    );
+    const newUploadingFiles = files.map((file, index) => ({
+      id: fileIds[index],
+      name: file.name,
+      size: file.size,
+      progress: 0,
+      status: "uploading",
+    }));
+
+    setUploadingFiles((prev) => [...prev, ...newUploadingFiles]);
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileId = fileIds[i];
+
       try {
-        await uploadAttachmentMutation.mutateAsync(file);
+        // Update progress untuk file ini
+        setUploadingFiles((prev) =>
+          prev.map((f) => (f.id === fileId ? { ...f, progress: 10 } : f)),
+        );
+
+        await uploadAttachmentMutation.mutateAsync(file, {
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            setUploadingFiles((prev) =>
+              prev.map((f) =>
+                f.id === fileId ? { ...f, progress: percentCompleted } : f,
+              ),
+            );
+          },
+        });
+
+        // Tandai file selesai
+        setUploadingFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileId ? { ...f, progress: 100, status: "completed" } : f,
+          ),
+        );
+
+        // Hapus dari list setelah 2 detik
+        setTimeout(() => {
+          setUploadingFiles((prev) => prev.filter((f) => f.id !== fileId));
+        }, 2000);
       } catch (error) {
         console.error("Error uploading file:", error);
-        toast.error('Failed to upload file')
+        toast.error(`Failed to upload ${file.name}`);
+
+        // Tandai file gagal
+        setUploadingFiles((prev) =>
+          prev.map((f) => (f.id === fileId ? { ...f, status: "error" } : f)),
+        );
+
+        // Hapus dari list setelah 3 detik
+        setTimeout(() => {
+          setUploadingFiles((prev) => prev.filter((f) => f.id !== fileId));
+        }, 3000);
       }
     }
 
@@ -255,7 +339,7 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
     try {
       await deleteAttachmentMutation.mutateAsync(attachmentId);
     } catch (error) {
-      toast.error('Only uploader can delete')
+      toast.error("Only uploader can delete");
     }
   };
 
@@ -267,10 +351,14 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
 
   const getFileIcon = (fileType) => {
     if (!fileType) return <FaFile className="text-gray-500" />;
-    if (fileType.startsWith("image/")) return <CiImageOn className="text-lime-300" />;
-    if (fileType.includes("pdf")) return <FaRegFilePdf className="text-red-500" />;
-    if (fileType.includes("sheet") || fileType.includes("excel")) return <FaRegFileExcel className="text-green-500" />;
-    if (fileType.includes("word") || fileType.includes("document")) return <FaRegFileWord className="text-blue-500" />;
+    if (fileType.startsWith("image/"))
+      return <CiImageOn className="text-lime-300" />;
+    if (fileType.includes("pdf"))
+      return <FaRegFilePdf className="text-red-500" />;
+    if (fileType.includes("sheet") || fileType.includes("excel"))
+      return <FaRegFileExcel className="text-green-500" />;
+    if (fileType.includes("word") || fileType.includes("document"))
+      return <FaRegFileWord className="text-blue-500" />;
     return "📎";
   };
 
@@ -321,7 +409,7 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading file:", error);
-      toast.error('Failed to download file')
+      toast.error("Failed to download file");
     }
   };
 
@@ -351,12 +439,13 @@ const serverAttachments = attachmentsQuery.data || taskData?.attachments || [];
 
   const textareaRef = useRef(null);
 
-useEffect(() => {
-  if (textareaRef.current) {
-    textareaRef.current.style.height = "auto";
-    textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
-  }
-}, [message]);
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
+    }
+  }, [message]);
   return (
     <AnimatePresence>
       {show && (
@@ -392,7 +481,10 @@ useEffect(() => {
               {/* Main Content - Chat Area */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Comments Section */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4" onClick={() => setActiveMenuId(null)}>
+                <div
+                  className="flex-1 overflow-y-auto p-6 space-y-4"
+                  onClick={() => setActiveMenuId(null)}
+                >
                   {comments.map((comment) => (
                     <div key={comment._id} className="space-y-3">
                       <div className="flex gap-3">
@@ -410,12 +502,18 @@ useEffect(() => {
                               </p>
                             </div>
                             <div className="relative">
-                              {(isAuthorized || comment.user._id === (currentUser?._id || currentUser?.id)) && (
+                              {(isAuthorized ||
+                                comment.user._id ===
+                                  (currentUser?._id || currentUser?.id)) && (
                                 <>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setActiveMenuId(activeMenuId === comment._id ? null : comment._id);
+                                      setActiveMenuId(
+                                        activeMenuId === comment._id
+                                          ? null
+                                          : comment._id,
+                                      );
                                     }}
                                     className="text-gray-400 hover:text-gray-600 transition-colors"
                                     title="Menu"
@@ -423,7 +521,10 @@ useEffect(() => {
                                     <MoreVertical className="w-4 h-4" />
                                   </button>
                                   {activeMenuId === comment._id && (
-                                    <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                                    <div
+                                      className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
                                       <button
                                         onClick={() => {
                                           setEditingCommentId(comment._id);
@@ -436,7 +537,10 @@ useEffect(() => {
                                       </button>
                                       <button
                                         onClick={() => {
-                                          setConfirmDelete({ show: true, commentId: comment._id });
+                                          setConfirmDelete({
+                                            show: true,
+                                            commentId: comment._id,
+                                          });
                                           setActiveMenuId(null);
                                         }}
                                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -453,17 +557,23 @@ useEffect(() => {
                             <div className="space-y-2">
                               <textarea
                                 value={editedCommentText}
-                                onChange={(e) => setEditedCommentText(e.target.value)}
+                                onChange={(e) =>
+                                  setEditedCommentText(e.target.value)
+                                }
                                 className="w-full text-sm text-black border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
                                 rows={3}
                               />
                               <div className="flex gap-2">
                                 <button
-                                  onClick={() => handleEditComment(comment.text)}
+                                  onClick={() =>
+                                    handleEditComment(comment.text)
+                                  }
                                   disabled={editCommentMutation.isLoading}
                                   className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                  {editCommentMutation.isLoading ? "Saving..." : "Save"}
+                                  {editCommentMutation.isLoading
+                                    ? "Saving..."
+                                    : "Save"}
                                 </button>
                                 <button
                                   onClick={() => {
@@ -477,7 +587,9 @@ useEffect(() => {
                               </div>
                             </div>
                           ) : (
-                            <p className="text-gray-700 whitespace-pre-wrap">{comment.text}</p>
+                            <p className="text-gray-700 whitespace-pre-wrap">
+                              {comment.text}
+                            </p>
                           )}
                           <button
                             onClick={() => setReplyTo(comment._id)}
@@ -505,12 +617,18 @@ useEffect(() => {
                                 </p>
                               </div>
                               <div className="relative">
-                                {(isAuthorized || reply.user._id === (currentUser?._id || currentUser?.id)) && (
+                                {(isAuthorized ||
+                                  reply.user._id ===
+                                    (currentUser?._id || currentUser?.id)) && (
                                   <>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setActiveMenuId(activeMenuId === reply._id ? null : reply._id);
+                                        setActiveMenuId(
+                                          activeMenuId === reply._id
+                                            ? null
+                                            : reply._id,
+                                        );
                                       }}
                                       className="text-gray-400 hover:text-gray-600 transition-colors"
                                       title="Menu"
@@ -518,7 +636,10 @@ useEffect(() => {
                                       <MoreVertical className="w-3 h-3" />
                                     </button>
                                     {activeMenuId === reply._id && (
-                                      <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                                      <div
+                                        className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
                                         <button
                                           onClick={() => {
                                             setEditingReplyId(reply._id);
@@ -531,7 +652,10 @@ useEffect(() => {
                                         </button>
                                         <button
                                           onClick={() => {
-                                            setConfirmDelete({ show: true, commentId: reply._id });
+                                            setConfirmDelete({
+                                              show: true,
+                                              commentId: reply._id,
+                                            });
                                             setActiveMenuId(null);
                                           }}
                                           className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -548,7 +672,9 @@ useEffect(() => {
                               <div className="space-y-2">
                                 <textarea
                                   value={editedReplyText}
-                                  onChange={(e) => setEditedReplyText(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditedReplyText(e.target.value)
+                                  }
                                   className="w-full text-sm text-black border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
                                   rows={2}
                                 />
@@ -558,7 +684,9 @@ useEffect(() => {
                                     disabled={editCommentMutation.isLoading}
                                     className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                                   >
-                                    {editCommentMutation.isLoading ? "Saving..." : "Save"}
+                                    {editCommentMutation.isLoading
+                                      ? "Saving..."
+                                      : "Save"}
                                   </button>
                                   <button
                                     onClick={() => {
@@ -572,7 +700,9 @@ useEffect(() => {
                                 </div>
                               </div>
                             ) : (
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.text}</p>
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                                {reply.text}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -620,6 +750,7 @@ useEffect(() => {
                   </div>
 
                   {/* File Upload */}
+                  {/* File Upload */}
                   <div className="space-y-2">
                     <input
                       ref={fileInputRef}
@@ -639,6 +770,68 @@ useEffect(() => {
                         : "Upload File"}
                     </button>
 
+                    {/* ====== LETAKKAN KODE BARU DI SINI ====== */}
+                    {/* Upload Progress Indicators */}
+                    {uploadingFiles.length > 0 && (
+                      <div className="space-y-2 mt-2">
+                        {uploadingFiles.map((file) => (
+                          <div
+                            key={file.id}
+                            className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <Paperclip className="w-3 h-3 text-gray-500 shrink-0" />
+                                <span className="text-xs text-gray-700 truncate">
+                                  {file.name}
+                                </span>
+                              </div>
+                              <span className="text-xs text-gray-500 shrink-0 ml-2">
+                                {file.status === "completed"
+                                  ? "✓"
+                                  : file.status === "error"
+                                    ? "✗"
+                                    : `${file.progress}%`}
+                              </span>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-300 rounded-full ${
+                                  file.status === "completed"
+                                    ? "bg-green-500"
+                                    : file.status === "error"
+                                      ? "bg-red-500"
+                                      : "bg-blue-500"
+                                }`}
+                                style={{ width: `${file.progress}%` }}
+                              />
+                            </div>
+
+                            {/* Status Text */}
+                            <div className="mt-1">
+                              <span
+                                className={`text-xs ${
+                                  file.status === "completed"
+                                    ? "text-green-600"
+                                    : file.status === "error"
+                                      ? "text-red-600"
+                                      : "text-blue-600"
+                                }`}
+                              >
+                                {file.status === "completed"
+                                  ? "Upload completed"
+                                  : file.status === "error"
+                                    ? "Upload failed"
+                                    : "Uploading..."}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {serverAttachments.map((fileObj) => (
                       <div
                         key={fileObj._id}
@@ -656,7 +849,9 @@ useEffect(() => {
                     <input
                       type="text"
                       value={meetingLink}
-                      onChange={(e) => isAuthorized && handleMeetingLinkChange(e.target.value)}
+                      onChange={(e) =>
+                        isAuthorized && handleMeetingLinkChange(e.target.value)
+                      }
                       placeholder="Link meeting (opsional)"
                       readOnly={!isAuthorized}
                       className={`flex-1 text-black px-3 py-1 text-sm border rounded-lg focus:outline-none ${
@@ -672,8 +867,14 @@ useEffect(() => {
                     <Calendar className="w-4 h-4 text-gray-500" />
                     <input
                       type="date"
-                      value={meetingDate ? dayjs(meetingDate).format("YYYY-MM-DD") : ""}
-                      onChange={(e) => isAuthorized && handleMeetingDateChange(e.target.value)}
+                      value={
+                        meetingDate
+                          ? dayjs(meetingDate).format("YYYY-MM-DD")
+                          : ""
+                      }
+                      onChange={(e) =>
+                        isAuthorized && handleMeetingDateChange(e.target.value)
+                      }
                       disabled={!isAuthorized}
                       className={`flex-1 text-black px-3 py-1 text-sm border rounded-lg focus:outline-none ${
                         isAuthorized
@@ -692,7 +893,7 @@ useEffect(() => {
                     <p className="text-sm font-semibold text-gray-600 mb-2">
                       Task Description:
                     </p>
-                    {editingDescription && isAuthorized ? (
+                    {editingDescription && canEditDescription ? (
                       <div className="space-y-2">
                         <textarea
                           className="w-full text-sm text-black border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-10"
@@ -730,15 +931,20 @@ useEffect(() => {
                     ) : (
                       <p
                         className={`text-sm text-gray-800 px-2 py-1 rounded whitespace-pre-wrap ${
-                          isAuthorized ? "hover:bg-gray-100 cursor-text" : "cursor-default"
+                          canEditDescription
+                            ? "hover:bg-gray-100 cursor-text"
+                            : "cursor-default"
                         }`}
                         onClick={() => {
-                          if (!isAuthorized) return;
+                          if (!canEditDescription) return;
                           setEditingDescription(true);
                           setEditedDescription(descriptions);
                         }}
                       >
-                        {descriptions || (isAuthorized ? "Click to add description..." : "-")}
+                        {descriptions ||
+                          (canEditDescription
+                            ? "Click to add description..."
+                            : "-")}
                       </p>
                     )}
                   </div>
@@ -843,12 +1049,16 @@ useEffect(() => {
                                   >
                                     <Download className="w-3.5 h-3.5" />
                                   </button>
-                                 {(isAuthorized || isFileOwner(fileObj)) && (
+                                  {(isAuthorized || isFileOwner(fileObj)) && (
                                     <button
-                                      onClick={() => handleRemoveFile(fileObj._id)}
+                                      onClick={() =>
+                                        handleRemoveFile(fileObj._id)
+                                      }
                                       className="p-1.5 rounded hover:bg-red-100 text-red-600 transition-colors"
                                       title="Hapus"
-                                      disabled={deleteAttachmentMutation.isLoading}
+                                      disabled={
+                                        deleteAttachmentMutation.isLoading
+                                      }
                                     >
                                       <X className="w-3.5 h-3.5" />
                                     </button>

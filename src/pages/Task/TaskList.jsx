@@ -412,7 +412,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     if (status === "To Do") {
       return "Planning";
     }
-    if (["In Progress", "Blocked", "Hold"].includes(status)) {
+    if (status === "Blocked") {
+      return "Blocked";
+    }
+    if (status === "Hold") {
+      return "Hold";
+    }
+    if (status === "In Progress") {
       return "Uncomplete";
     }
     return null;
@@ -1497,7 +1503,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                             ? "text-green-700 bg-green-100 hover:bg-green-200"
                             : task.note === "Completed - Overdue"
                               ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                              : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
+                              : task.note === "Blocked"
+                                ? "text-rose-700 bg-rose-100 hover:bg-rose-200"
+                                : task.note === "Hold"
+                                  ? "text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
+                                  : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
                     }`}
                     // onClick={() =>
                     //   setActivePopup({ taskId: task._id, field: "note" })
@@ -1623,6 +1633,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             onClose={() => setOpenDialog({ open: false, task: null })}
             taskId={openDialog.task?._id}
             taskData={openDialog.task}
+            groupId={groupId}
           />
         )}
         {localTasks?.length === 0 && (

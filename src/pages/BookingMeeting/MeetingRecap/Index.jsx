@@ -201,6 +201,7 @@ const MeetingRecapPage = () => {
       endDate: "",
       status: "",
       onlyWithResults: false,
+      e,
     });
     setDateError("");
     setAppliedFilters({});
@@ -208,9 +209,9 @@ const MeetingRecapPage = () => {
   };
 
   const isFetchingAny = summaryQ.isFetching || resultsQ.isFetching;
-
   const handleExportExcel = async () => {
     setIsExporting(true);
+
     try {
       const res = await meetingRecapService.getMeetingResultsList({
         ...appliedFilters,
@@ -231,10 +232,7 @@ const MeetingRecapPage = () => {
         );
       }
 
-      if (!exportData.length) {
-        setIsExporting(false);
-        return;
-      }
+      if (!exportData.length) return;
 
       const workbook = new ExcelJS.Workbook();
       workbook.creator = "Planify";
@@ -250,31 +248,40 @@ const MeetingRecapPage = () => {
         "Tanggal",
         "Jam Mulai",
         "Jam Selesai",
-        "Tipe",
         "Status",
         "Catatan / Isi",
       ];
+
       const headerRow = sheet.addRow(headers);
-      headerRow.font = { bold: true };
+
       headerRow.eachCell((cell) => {
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFF3F4F6" },
+        cell.font = {
+          bold: true,
         };
+
+        cell.alignment = {
+          horizontal: "center",
+          vertical: "middle",
+        };
+
         cell.border = {
-          bottom: { style: "thin", color: { argb: "FFD1D5DB" } },
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
         };
       });
 
-      exportData.forEach((meeting, meetingIdx) => {
-        const results = meeting.meetingResults || [];
-        const rowsForThisMeeting = results.length > 0 ? results : [null];
+      let no = 1;
 
-        rowsForThisMeeting.forEach((result) => {
-          sheet.addRow([
-            meetingIdx + 1,
-            meeting.title || "",
+      exportData.forEach((meeting) => {
+        const results =
+          meeting.meetingResults?.length > 0 ? meeting.meetingResults : [null];
+
+        results.forEach((result) => {
+          const row = sheet.addRow([
+            no++,
+            meeting.title || "-",
             displayName(meeting.roomId) || "-",
             displayName(meeting.organizerId) ||
               meeting.organizerId?.email ||
@@ -282,47 +289,60 @@ const MeetingRecapPage = () => {
             dayjs(meeting.startTime).format("DD MMM YYYY"),
             dayjs(meeting.startTime).format("HH:mm"),
             dayjs(meeting.endTime).format("HH:mm"),
-            meeting.meetingType || "-",
             STATUS_LABEL[meeting.status] || meeting.status,
             result?.content || "-",
           ]);
+
+          row.eachCell((cell) => {
+            cell.alignment = {
+              vertical: "top",
+              horizontal: "left",
+              wrapText: true,
+            };
+          });
         });
       });
 
       sheet.columns = [
-        { width: 6 },
-        { width: 26 },
-        { width: 20 },
-        { width: 18 },
-        { width: 13 },
-        { width: 10 },
-        { width: 10 },
-        { width: 9 },
-        { width: 13 },
-        { width: 16 },
-        { width: 40 },
-        { width: 30 },
-        { width: 18 },
-        { width: 17 },
+        { width: 6 }, // No
+        { width: 35 }, // Judul Meeting
+        { width: 22 }, // Ruangan
+        { width: 22 }, // Organizer
+        { width: 16 }, // Tanggal
+        { width: 12 }, // Jam Mulai
+        { width: 12 }, // Jam Selesai
+        { width: 15 }, // Status
+        { width: 60 }, // Catatan
       ];
 
       sheet.autoFilter = {
         from: { row: 1, column: 1 },
         to: { row: 1, column: headers.length },
       };
-      sheet.views = [{ state: "frozen", ySplit: 1 }];
+
+      sheet.views = [
+        {
+          state: "frozen",
+          ySplit: 1,
+        },
+      ];
 
       const buffer = await workbook.xlsx.writeBuffer();
+
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
+
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = `Rekap_Meeting_${dayjs().format("YYYYMMDD_HHmm")}.xlsx`;
+
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export Excel failed:", err);

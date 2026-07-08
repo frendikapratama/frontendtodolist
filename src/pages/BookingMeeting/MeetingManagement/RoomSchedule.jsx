@@ -70,7 +70,11 @@ const MeetingCard = ({ meeting }) => {
 
       <div className="flex items-center gap-2 mb-3">
         <div className="w-6 h-6 rounded-full bg-blue-500/30 flex items-center justify-center text-blue-300 text-[10px] font-bold shrink-0">
-          {meeting.organizerId?.username?.[0]?.toUpperCase() || "?"}
+          <img
+            loading="lazy"
+            src={`${import.meta.env.VITE_API_URL}/uploads/users/${meeting.organizerId?.photo}`}
+            className="w-full h-full rounded-full object-cover"
+          />
         </div>
         <span className="text-xs text-slate-400">
           Organizer:{" "}
@@ -100,7 +104,11 @@ const MeetingCard = ({ meeting }) => {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 text-[10px] font-bold shrink-0">
-                      {p.username?.[0]?.toUpperCase() || "?"}
+                      <img
+                        loading="lazy"
+                        src={`${import.meta.env.VITE_API_URL}/uploads/users/${p.photo}`}
+                        className="w-full h-full rounded-full object-cover"
+                      />
                     </div>
                     <div>
                       <p className="text-xs text-white font-medium leading-none">

@@ -190,9 +190,6 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
 
   return (
     <div className="flex w-full h-[90vh] max-h-[90vh] gap-6 overflow-hidden">
-      {/* ======================================================== */}
-      {/* KOLOM KIRI: Konten Utama (Hasil Rapat & Form)           */}
-      {/* ======================================================== */}
       <div className="flex flex-col flex-1 h-full min-w-0">
         {/* Header */}
         <div className="flex justify-between items-start px-6 pt-6 pb-4 border-b border-white/10 shrink-0">
@@ -494,7 +491,7 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
                   <div className="w-7 h-7 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
                     {participant.photo ? (
                       <img
-                        src={currentPhotoUrl}
+                        src={`${import.meta.env.VITE_API_URL}/uploads/users/${participant.photo}`}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
