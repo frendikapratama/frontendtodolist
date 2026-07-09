@@ -16,8 +16,24 @@ const meetingService = {
     return data;
   },
 
-  getMeetings: async (page = 1, limit = 25) => {
-    const { data } = await api.get(`/meeting?page=${page}&limit=${limit}`);
+  getMeetings: async (page = 1, limit = 25, filters = {}) => {
+    const params = new URLSearchParams({
+      page,
+      limit,
+    });
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        value !== "all"
+      ) {
+        params.append(key, value);
+      }
+    });
+
+    const { data } = await api.get(`/meeting?${params.toString()}`);
     return data;
   },
 

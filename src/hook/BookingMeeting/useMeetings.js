@@ -55,12 +55,11 @@ const useMeetings = () => {
     };
   }, [socket, queryClient]);
 
-  const meetingsQuery = (page = 1, limit = 25) =>
+  const meetingsQuery = (page = 1, limit = 25, filters = {}) =>
     useQuery({
-      queryKey: ["meetings", page, limit],
-      queryFn: () => meetingService.getMeetings(page, limit),
+      queryKey: ["meetings", page, limit, filters],
+      queryFn: () => meetingService.getMeetings(page, limit, filters),
     });
-
   const meetingParticipantsQuery = (meetingId) =>
     useQuery({
       queryKey: ["meetingParticipants", meetingId],

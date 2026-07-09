@@ -21,7 +21,6 @@ import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import dayjs from "dayjs";
 import RoomSchedule from "./RoomSchedule";
 const BASE_URL = API_URL;
-
 // Stat Card Component
 const StatCard = ({ icon: Icon, label, value, color, iconColor, subtitle }) => (
   <div className="bg-linear-to-b from-slate-900/40 to-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 p-5 flex items-center gap-4 hover:border-white/15 hover:translate-y-0.5 transition-all duration-300 shadow-lg shadow-black/20 group relative overflow-hidden">
