@@ -1049,17 +1049,17 @@ const SubtaskList = ({
             <span
               ref={(el) => (buttonRefs.current[`note-${s._id}`] = el)}
               className={`px-3 py-1.5 text-[0.8em] w-full text-center fit-text whitespace-nowrap flex justify-center items-center font-semibold rounded-full cursor-pointer ${
-                task.note === "Planning"
+                s.note === "Planning"
                   ? "text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                  : task.note === "Uncomplete"
+                  : s.note === "Uncomplete"
                     ? "text-red-100 bg-red-900 hover:bg-red-400"
-                    : task.note === "Completed - On Time"
+                    : s.note === "Completed - On Time"
                       ? "text-green-700 bg-green-100 hover:bg-green-200"
-                      : task.note === "Completed - Overdue"
+                      : s.note === "Completed - Overdue"
                         ? "text-amber-700 bg-orange-100 hover:bg-amber-200"
-                        : task.note === "Blocked"
+                        : s.note === "Blocked"
                           ? "text-rose-700 bg-rose-100 hover:bg-rose-200"
-                          : task.note === "Hold"
+                          : s.note === "Hold"
                             ? "text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
                             : "text-cyan-700 bg-cyan-100 hover:bg-cyan-200"
               }`}
