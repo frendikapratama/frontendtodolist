@@ -2,7 +2,7 @@ name: Build & Push Frontend Planify
 
 on:
   push:
-    branches: [Pre-Developmen]
+    branches: [Pre-Development]
 
 permissions:
   contents: read
@@ -27,4 +27,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/frendikapratama/frontendtodolist:${{ github.sha }}
-            ghcr.io/frendikapratama/frontendtodolist:0.1.32
+            ghcr.io/frendikapratama/frontendtodolist:0.1.33

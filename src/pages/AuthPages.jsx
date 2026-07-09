@@ -6,7 +6,6 @@ import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
 import "../components/ui/AuthPages.css";
 import toast from "react-hot-toast";
-import TableMeeting from "./BookingMeeting/MeetingManagement/TableMeeting";
 
 export default function AuthCard() {
   const { login } = useContext(AuthContext);
@@ -536,64 +535,42 @@ export default function AuthCard() {
       </button>
     </div>
   );
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64] to-[#1D546C] p-4 relative overflow-y-auto">
-      {/* Copyright Footer */}
-      <footer className="absolute bottom-4 right-4 text-xs sm:text-sm text-white/50 z-50 pointer-events-none">
-        ©2026 Develop By IT Aldo. All rights reserved.
-      </footer>
 
-      {/* Main Container Dashboard - Menggunakan max-w-7xl agar memanjang ke samping */}
-      <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-4 sm:p-8 w-full max-w-7xl mx-auto my-auto">
-        <div className="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-6 lg:gap-10">
-          {/* Kolom Kiri: Logo & Table Meeting (Diberi porsi 65% agar LEBIH LUAS) */}
-          <div className="w-full lg:w-[65%]  ">
-            <div className="flex flex-row items-center">
-              <img
-                src={logo}
-                alt="logo"
-                className="h-auto max-w-[50px] sm:max-w-[50px] object-contain  "
-              />
-              <span>
-                <GradientText
-                  colors={[
-                    "#40ffaa",
-                    "#4079ff",
-                    "#40ffaa",
-                    "#4079ff",
-                    "#40ffaa",
-                  ]}
-                  animationSpeed={3}
-                  showBorder={false}
-                  className="custom-class font-bold tracking-tight leading-none transition-opacity duration-300 text-3xl "
-                >
-                  Planify
-                </GradientText>
-              </span>
-            </div>
-            {/* Container Tabel sekarang bisa melebar penuh */}
-            <div className="h-96 min-h-[45vh] overflow-y-auto custom-scrollbar mt-4">
-              <TableMeeting compact />
+  return (
+    <div className="h-screen flex items-center justify-center bg-linear-to-r from-[#0C2B4E] via-[#1A3D64] to-[#1D546C] p-4">
+      <h1 className="fixed bottom-4 right-4 text-sm text-white/70 z-50">
+        © 2026 Frendika & Marcello. All rights reserved.
+      </h1>
+      <div className="backdrop-blur-xl bg-blue-300 shadow-xl rounded-2xl p-2 sm:p-6 w-2xl max-w-4xl mx-4">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
+          {/* Logo Section */}
+          <div className="p-4 sm:p-8 w-full max-w-sm sm:max-w-md lg:w-1/2 space-y-6">
+            <div className="mx-auto flex items-center justify-center flex-col">
+              <img src={logo} alt="logo" />
+              <GradientText
+                colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
+                animationSpeed={3}
+                showBorder={false}
+                className="custom-class text-[4em] transition-opacity duration-300"
+              >
+                Planify
+              </GradientText>
             </div>
           </div>
 
-          {/* Kolom Kanan: Card Container Form (Diberi porsi lebih kecil 35% karena form tidak butuh lebar) */}
-          <div className="backdrop-blur-lg bg-black/10 shadow-lg rounded-2xl p-6 sm:p-8 w-full max-w-md lg:max-w-none lg:w-[35%] flex flex-col justify-center min-h-[45vh]">
-            <div
-              className={`flip-container h-full ${isFlipped ? "flipped" : ""}`}
-            >
-              <div className="flipper h-full">
+          {/* Card Container */}
+          <div className="backdrop-blur-lg bg-black/10 shadow-lg rounded-2xl p-4 sm:p-8 w-full min-h-[50vh] max-w-sm sm:max-w-md lg:w-1/2">
+            <div className={`flip-container ${isFlipped ? "flipped" : ""}`}>
+              <div className="flipper">
                 {/* Front - Login atau Reset Password */}
-                <div className="front h-full flex flex-col justify-center">
+                <div className="front ">
                   {currentStep === "login"
                     ? renderLoginForm()
                     : renderResetPasswordForm()}
                 </div>
 
                 {/* Back - Forgot Password */}
-                <div className="back h-full flex flex-col justify-center">
-                  {renderForgotPasswordForm()}
-                </div>
+                <div className="back">{renderForgotPasswordForm()}</div>
               </div>
             </div>
           </div>
