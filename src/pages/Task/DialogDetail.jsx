@@ -316,14 +316,17 @@ const DialogDetail = ({
         }, 2000);
       } catch (error) {
         console.error("Error uploading file:", error);
-        toast.error(`Failed to upload ${file.name}`);
+
+        const message =
+          error?.response?.data?.message || error?.message || "Upload failed.";
+
+        toast.error(message);
 
         // Tandai file gagal
         setUploadingFiles((prev) =>
           prev.map((f) => (f.id === fileId ? { ...f, status: "error" } : f)),
         );
 
-        // Hapus dari list setelah 3 detik
         setTimeout(() => {
           setUploadingFiles((prev) => prev.filter((f) => f.id !== fileId));
         }, 3000);

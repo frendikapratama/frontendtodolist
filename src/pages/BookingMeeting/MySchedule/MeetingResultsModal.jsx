@@ -39,9 +39,6 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
   const results = meetingData?.meetingResults || [];
   const participants = meetingData?.participants || [];
 
-  const currentPhotoUrl = user.photo
-    ? `${import.meta.env.VITE_API_URL}/uploads/users/${user.photo}`
-    : "https://placehold.co/400";
   const resetForm = () => {
     setContent("");
     setFile(null);
@@ -493,6 +490,8 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
                       <img
                         src={`${import.meta.env.VITE_API_URL}/uploads/users/${participant.photo}`}
                         className="w-full h-full rounded-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <User size={13} className="text-blue-400" />

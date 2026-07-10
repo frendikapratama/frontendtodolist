@@ -111,7 +111,7 @@ const IndexFacilities = () => {
   return (
     <div className="space-y-6">
       {/* Header - Disamakan Temanya dengan TableMeeting */}
-      <div className="sticky top-0 z-40 bg-linear-to-b from-slate-900/80 to-slate-900/95 backdrop-blur-md rounded-xl border border-white/10 p-5 transition-all duration-300 shadow-xl shadow-black/20 overflow-hidden mb-6">
+      <div className="sticky top-0 z-10 bg-linear-to-b from-slate-900/80 to-slate-900/95 backdrop-blur-md rounded-xl border border-white/10 p-5 transition-all duration-300 shadow-xl shadow-black/20 overflow-hidden mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-inner shrink-0">
