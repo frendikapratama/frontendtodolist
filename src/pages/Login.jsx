@@ -5,7 +5,6 @@ import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/LogoPlanify.png";
 import GradientText from "../components/ui/GradientText";
 import toast from "react-hot-toast";
-
 export default function Login() {
   const { login } = useContext(AuthContext);
   const [email, setEmail] = useState("");
