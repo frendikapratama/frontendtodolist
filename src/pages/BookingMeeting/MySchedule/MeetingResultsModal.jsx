@@ -369,7 +369,7 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
                     <div className="flex-1 min-w-0">
                       {result.content &&
                         result.content !== result.originalName && (
-                          <p className="text-sm text-slate-200 leading-relaxed wrap-break-word mb-2">
+                          <p className="text-sm text-slate-200 leading-relaxed wrap-break-word mb-2 whitespace-pre-wrap">
                             {result.content}
                           </p>
                         )}

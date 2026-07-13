@@ -25,6 +25,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
   const [form, setForm] = useState({
     title: meeting.title || "",
     description: meeting.description || "",
+    meetingLink: meeting.meetingLink || "",
     meetingType: meeting.meetingType || "internal",
     snackRequest: Array.isArray(meeting.snackRequest)
       ? meeting.snackRequest
@@ -113,6 +114,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
         organizerId: meeting.organizerId?._id || meeting.organizerId,
         participantIds,
         meetingType: form.meetingType,
+        meetingLink: form.meetingLink,
         snackRequest: form.snackRequest || null,
         meetingLink: form.meetingLink || null,
       },
@@ -303,6 +305,33 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
 
         <div className="form-control w-full">
           <label className="label">
+            <span className="label-text mb-2 text-white">Description</span>
+          </label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            rows={3}
+            className="textarea textarea-bordered w-full bg-black/60 text-white resize-none"
+          />
+        </div>
+
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text mb-2 text-white">meetingLink</span>
+          </label>
+          <input
+            type="text"
+            name="meetingLink"
+            value={form.meetingLink}
+            onChange={handleChange}
+            className="input input-bordered w-full bg-black/60 text-white"
+            required
+          />
+        </div>
+
+        <div className="form-control w-full">
+          <label className="label">
             <span className="label-text mb-2 text-white">Meeting Type</span>
           </label>
           <select
@@ -343,19 +372,6 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
             </div>
           </div>
         )}
-
-        <div className="form-control w-full">
-          <label className="label">
-            <span className="label-text mb-2 text-white">Description</span>
-          </label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={3}
-            className="textarea textarea-bordered w-full bg-black/60 text-white resize-none"
-          />
-        </div>
 
         <div className="form-control w-full">
           <label className="label">
