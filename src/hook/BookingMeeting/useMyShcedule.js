@@ -15,10 +15,9 @@ export const useMySchedule = () => {
   const queryClient = useQueryClient();
   const { socket } = useContext(AuthContext);
 
-  // Reset accumulated list lalu refetch dari page 1 (dipakai saat ada event socket)
+  // Reset ke page 1 lalu refetch dari page 1 (dipakai saat ada event socket)
   const resetAndRefetch = () => {
     setPage(1);
-    setItems([]);
     queryClient.invalidateQueries({ queryKey: ["mySchedule"], exact: false });
   };
 
@@ -54,8 +53,7 @@ export const useMySchedule = () => {
     if (!myScheduleQuery.data) return;
     const newItems = myScheduleQuery.data.schedule || [];
     setItems((prev) => (page === 1 ? newItems : [...prev, ...newItems]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myScheduleQuery.data]);
+  }, [myScheduleQuery.data, page]);
 
   const pagination = myScheduleQuery.data?.pagination;
   const totalItems = pagination?.total || 0;

@@ -118,7 +118,6 @@ const IndexMySchedule = () => {
       </div>
     );
   }
-
   return (
     <div className="space-y-4">
       {hasData ? (
