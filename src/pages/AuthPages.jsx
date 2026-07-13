@@ -464,7 +464,8 @@ export default function AuthCard() {
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-teal-500/10 rounded-full blur-[140px] pointer-events-none"></div>
 
       <h1 className="fixed bottom-4 right-4 text-xs text-blue-300/20 z-50">
-        © 2026 Frendika & Marcello. All rights reserved.
+        © 2026 Designed by IT Aldo | PT. Alkindo Naratama Tbk. | All rights
+        reserved.
       </h1>
 
       {/* Main Container Glassmorphism */}
@@ -488,7 +489,7 @@ export default function AuthCard() {
             </span>
             <span className="flex items-center gap-1.5">
               <Clock size={14} className="text-teal-300/80" />
-              {dayjs().format("hh:mm A")}
+              {dayjs().format("hh:mm")}
             </span>
           </div>
         </div>
