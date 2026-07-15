@@ -10,6 +10,7 @@ import {
   FileArchive,
   Clock,
   User,
+  Building2,
 } from "lucide-react";
 import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import { AuthContext } from "../../../context/AuthContext";
@@ -185,20 +186,66 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
     );
   }
 
+  // Buat fungsi helper
+  const formatMeetingType = (type) => {
+    if (!type) return "";
+
+    return type
+      .replace(/_/g, " ") // ganti underscore jadi spasi
+      .replace(/-/g, " ") // ganti dash jadi spasi
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  // Penggunaan
+  const meeting_type = formatMeetingType(meeting.meetingType);
+
   return (
     <div className="flex w-full h-[90vh] max-h-[90vh] gap-6 overflow-hidden">
       <div className="flex flex-col flex-1 h-full min-w-0">
         {/* Header */}
         <div className="flex justify-between items-start px-6 pt-6 pb-4 border-b border-white/10 shrink-0">
-          <div>
-            <h3 className="text-xl font-bold text-white">Meeting Results</h3>
-            <p className="text-sm text-slate-400 mt-0.5 line-clamp-1">
-              {meeting.title}
-            </p>
+          <div className="flex-1 min-w-0">
+            {/* Baris 1: Judul */}
+            <div className="flex items-center gap-3">
+              <h3 className="text-xl font-bold text-white">Meeting Results</h3>
+              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[8px] font-semibold uppercase tracking-wider">
+                {formatMeetingType(meeting.meetingType)}
+              </span>
+            </div>
+
+            {/* Baris 2: Judul Meeting + External Factory */}
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+              <p
+                className="text-sm text-slate-400 truncate max-w-md"
+                title={meeting.title}
+              >
+                {meeting.title}
+              </p>
+
+              {meeting.external_factory && (
+                <>
+                  <span className="w-px h-4 bg-white/10 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <Building2 size={12} className="text-purple-400" />
+                    <span
+                      className="truncate max-w-xs"
+                      title={meeting.external_factory}
+                    >
+                      {meeting.external_factory}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
+          {/* Tombol Close */}
           <button
             onClick={onClose}
-            className="btn btn-sm btn-circle btn-ghost text-slate-400 hover:text-white ml-4 shrink-0"
+            className="btn btn-sm btn-circle btn-ghost text-slate-400 hover:text-white ml-4 shrink-0 transition-colors mt-1"
+            aria-label="Close dialog"
           >
             <X size={18} />
           </button>

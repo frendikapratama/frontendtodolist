@@ -23,6 +23,16 @@ import meetingRecapService from "../../../services/BookingMeeting/meetingRecap";
 const displayName = (entity) =>
   entity?.name || entity?.nama || entity?.username || "";
 
+const formatMeetingType = (type) => {
+  if (!type) return "";
+
+  return type
+    .replace(/_/g, " ") // ganti underscore jadi spasi
+    .replace(/-/g, " ") // ganti dash jadi spasi
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
 // Mengubah warna status badge agar match dengan tema dark mode transparan
 const STATUS_MAP = {
   scheduled: {
@@ -125,6 +135,7 @@ const MeetingRecapPage = () => {
     startDate: "",
     endDate: "",
     status: "",
+    meetingType: "",
     onlyWithResults: false,
   });
   const [dateError, setDateError] = useState("");
@@ -180,10 +191,13 @@ const MeetingRecapPage = () => {
     const timer = setTimeout(() => {
       setPage(1);
       const f = {};
+
       if (filters.startDate) f.startDate = filters.startDate;
       if (filters.endDate) f.endDate = filters.endDate;
       if (filters.status) f.status = filters.status;
+      if (filters.meetingType) f.meetingType = filters.meetingType;
       if (filters.onlyWithResults) f.onlyWithResults = true;
+
       setAppliedFilters(f);
     }, 400);
 
@@ -192,6 +206,7 @@ const MeetingRecapPage = () => {
     filters.startDate,
     filters.endDate,
     filters.status,
+    filters.meetingType,
     filters.onlyWithResults,
   ]);
 
@@ -200,8 +215,8 @@ const MeetingRecapPage = () => {
       startDate: "",
       endDate: "",
       status: "",
+      meetingType: "",
       onlyWithResults: false,
-      e,
     });
     setDateError("");
     setAppliedFilters({});
@@ -245,6 +260,8 @@ const MeetingRecapPage = () => {
         "Judul Meeting",
         "Ruangan",
         "Organizer",
+        "Meeting Type",
+        "Name Of External Factory",
         "Tanggal",
         "Jam Mulai",
         "Jam Selesai",
@@ -286,6 +303,8 @@ const MeetingRecapPage = () => {
             displayName(meeting.organizerId) ||
               meeting.organizerId?.email ||
               "-",
+            formatMeetingType(meeting.meetingType),
+            meeting.external_factory,
             dayjs(meeting.startTime).format("DD MMM YYYY"),
             dayjs(meeting.startTime).format("HH:mm"),
             dayjs(meeting.endTime).format("HH:mm"),
@@ -308,6 +327,8 @@ const MeetingRecapPage = () => {
         { width: 35 }, // Judul Meeting
         { width: 22 }, // Ruangan
         { width: 22 }, // Organizer
+        { width: 22 }, // Meeting type
+        { width: 30 }, // externa factory name
         { width: 16 }, // Tanggal
         { width: 12 }, // Jam Mulai
         { width: 12 }, // Jam Selesai
@@ -458,7 +479,7 @@ const MeetingRecapPage = () => {
           <span>Filter & Search Workspace</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 items-end">
           <div>
             <label
               htmlFor="startDate"
@@ -515,6 +536,31 @@ const MeetingRecapPage = () => {
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
+          <div>
+            <label
+              htmlFor="meetingType"
+              className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5"
+            >
+              Meeting Type
+            </label>
+
+            <select
+              id="meetingType"
+              value={filters.meetingType}
+              onChange={(e) =>
+                setFilters((f) => ({
+                  ...f,
+                  meetingType: e.target.value,
+                }))
+              }
+              className="w-full border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white/5 text-slate-300 [&>option]:bg-slate-900 [&>option]:text-white"
+            >
+              <option value="">All Meeting Types</option>
+              <option value="internal_department">Internal Department</option>
+              <option value="internal_factory">Internal Factory</option>
+              <option value="external_factory">External Factory</option>
+            </select>
+          </div>
           <div className="flex items-center justify-between gap-4 h-9 lg:mb-0.5">
             <label className="flex items-center gap-2.5 text-sm font-medium text-slate-300 cursor-pointer select-none">
               <input
@@ -526,13 +572,13 @@ const MeetingRecapPage = () => {
                     onlyWithResults: e.target.checked,
                   }))
                 }
-                className="w-4 h-4 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-500/20 accent-blue-600 transition-all"
+                className="w-4 h-4 text-xs rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-500/20 accent-blue-600 transition-all"
               />
               Only with results
             </label>
             <button
               onClick={resetFilters}
-              className="px-4 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 transition-all shadow-sm"
+              className="px-2 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 transition-all shadow-sm"
             >
               Reset Filter
             </button>
@@ -584,6 +630,7 @@ const MeetingRecapPage = () => {
                   <th className="px-4 py-3.5 font-bold">Room</th>
                   <th className="px-4 py-3.5 font-bold">Organizer</th>
                   <th className="px-4 py-3.5 font-bold">Schedule</th>
+                  <th className="px-4 py-3.5 font-bold">Meeting Type</th>
                   <th className="px-4 py-3.5 font-bold text-center">Status</th>
                   <th className="px-5 py-3.5 font-bold text-center">
                     Summary Results
@@ -637,6 +684,18 @@ const MeetingRecapPage = () => {
                           <div className="text-xs font-medium text-slate-400 mt-0.5">
                             {dayjs(meeting.startTime).format("HH:mm")} –{" "}
                             {dayjs(meeting.endTime).format("HH:mm")}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-white">
+                              {meeting.meetingType
+                                ?.replaceAll("_", " ")
+                                .replace(/\b\w/g, (c) => c.toUpperCase())}
+                            </span>
+                            <span className="text-xs font-medium text-slate-400 mt-0.5">
+                              {meeting.external_factory}
+                            </span>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-center">

@@ -18,6 +18,7 @@ import {
   Calendar,
   User,
   Mail,
+  Asterisk,
 } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
 import { getUsers } from "../../../services/userServices";
@@ -48,11 +49,12 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     title: "",
     description: "",
     meetingLink: "",
+    external_factory: "",
     roomId: defaultRoomId,
     date: "",
     startTime: "",
     endTime: "",
-    meetingType: "internal",
+    meetingType: "internal_department",
     snackRequest: [],
   });
 
@@ -127,11 +129,15 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
   const handleMeetingTypeChange = (e) => {
     const value = e.target.value;
+
     setForm((prev) => ({
       ...prev,
       meetingType: value,
-      snackRequest: value === "internal" ? [] : prev.snackRequest,
+      external_factory:
+        value === "external_factory" ? prev.external_factory : "",
+      snackRequest: value === "external_factory" ? prev.snackRequest : [],
     }));
+
     setChecked(false);
     setAvailability(null);
     setShowPreview(false);
@@ -189,7 +195,8 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     startTime: getStartTime(),
     endTime: getEndTime(),
     meetingType: form.meetingType,
-    snackRequest: form.meetingType === "internal" ? [] : form.snackRequest,
+    snackRequest:
+      form.meetingType === "internal_department" ? [] : form.snackRequest,
   });
 
   const validateBasics = () => {
@@ -200,8 +207,14 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     if (!form.endTime) return "Please select an end time";
     if (form.endTime <= form.startTime)
       return "End time must be after start time";
-    if (participantIds.length === 0)
+
+    if (
+      form.meetingType !== "external_factory" &&
+      participantIds.length === 0
+    ) {
       return "Please add at least one participant";
+    }
+
     return null;
   };
 
@@ -220,6 +233,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         title: form.title,
         description: form.description,
         meetingLink: form.meetingLink,
+        external_factory: form.external_factory,
         organizerId,
       });
 
@@ -243,7 +257,6 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
       return;
     }
 
-    // Sembunyikan form
     setShowForm(false);
 
     const result = await checkAvailabilityMutation.mutateAsync(buildPayload());
@@ -257,6 +270,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
       title: form.title,
       description: form.description,
       meetingLink: form.meetingLink,
+      external_factory: form.external_factory,
       conflicts: result.participantConflicts || [],
       roomAvailable: result.roomAvailable,
       roomMessage: result.roomMessage,
@@ -273,7 +287,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
   const handlePreviewSubmit = async () => {
     await bookMeeting();
     setShowPreview(false);
-    setShowForm(true); // Opsional: tampilkan form kembali atau tutup modal
+    setShowForm(true);
     setPreviewData(null);
   };
 
@@ -282,11 +296,12 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
       title: "",
       description: "",
       meetingLink: "",
+      external_factory: "",
       roomId: "",
       date: "",
       startTime: "",
       endTime: "",
-      meetingType: "internal",
+      meetingType: "internal_department",
       snackRequest: [],
     });
     setParticipantIds([]);
@@ -296,7 +311,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     setShowPreview(false);
     setPreviewData(null);
     setIsSubmitting(false);
-    setShowForm(true); // Tampilkan form kembali
+    setShowForm(true);
     onClose?.();
   };
 
@@ -386,6 +401,24 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                         rel="noopener noreferrer"
                       >
                         {previewData.meetingLink}
+                      </a>
+                    </span>
+                  </div>
+                )}
+
+                {previewData.external_factory && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-gray-400 text-sm min-w-[100px]">
+                      external_factory
+                    </span>
+
+                    <span className="text-blue-400 underline">
+                      <a
+                        href={previewData.external_factory}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {previewData.external_factory}
                       </a>
                     </span>
                   </div>
@@ -664,7 +697,10 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         {/* Title */}
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white">Meeting Title</span>
+            <span className="label-text mb-2 flex items-center gap-1 text-white">
+              Meeting Title
+              <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+            </span>
           </label>
           <input
             type="text"
@@ -695,8 +731,9 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         {/* Meeting Type */}
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white font-medium">
+            <span className="label-text mb-2 flex items-center gap-1 text-white">
               Meeting Type
+              <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
             </span>
           </label>
           {/* Menambahkan h-12 atau py-2 serta appearance-none untuk menormalisasi select di Edge */}
@@ -706,24 +743,46 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             onChange={handleMeetingTypeChange}
             className="select select-bordered w-full h-12 bg-black/60 text-white focus:outline-none"
           >
-            <option value="internal" className="bg-gray-950 text-white">
-              Internal Divisi
+            <option
+              value="internal_department"
+              className="bg-gray-950 text-white"
+            >
+              Internal Departement
             </option>
-            <option value="external" className="bg-gray-950 text-white">
-              External
+            <option value="internal_factory" className="bg-gray-950 text-white">
+              Internal Factory
+            </option>
+            <option value="external_factory" className="bg-gray-950 text-white">
+              External Factory
             </option>
           </select>
         </div>
 
+        {form.meetingType === "external_factory" && (
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text mb-2 text-white">
+                Name Of External Factory
+              </span>
+            </label>
+            <input
+              type="text"
+              name="external_factory"
+              value={form.external_factory}
+              onChange={handleChange}
+              placeholder="e.g. PT ABC Indonesia"
+              className="input input-bordered w-full bg-black/60 text-white"
+            />
+          </div>
+        )}
         {/* Snack Request — hanya muncul jika external */}
-        {form.meetingType === "external" && (
+        {form.meetingType === "external_factory" && (
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text mb-2 text-white font-medium">
                 Snack Request
               </span>
             </label>
-            {/* Mengubah gap menjadi gap-4 atau gap-6 agar tidak berhimpitan, dan ditambahkan items-center */}
             <div className="flex flex-wrap items-center gap-6 p-2 rounded-lg bg-black/30 border border-gray-800">
               <label className="flex items-center gap-2.5 text-white text-sm cursor-pointer select-none group">
                 <input
@@ -768,8 +827,9 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         {/* Room */}
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white flex items-center gap-1.5">
+            <span className="label-text mb-2 flex items-center gap-1 text-white">
               Room
+              <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
             </span>
           </label>
           <select
@@ -792,7 +852,10 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="form-control w-full">
             <label className="label">
-              <span className="label-text mb-2 text-white">Date</span>
+              <span className="label-text mb-2 flex items-center gap-1 text-white">
+                Date
+                <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+              </span>
             </label>
             <input
               type="date"
@@ -806,7 +869,10 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
           </div>
           <div className="form-control w-full">
             <label className="label">
-              <span className="label-text mb-2 text-white">Start Time</span>
+              <span className="label-text mb-2 flex items-center gap-1 text-white">
+                Start Time
+                <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+              </span>
             </label>
             <TimeWheelPicker
               value={form.startTime}
@@ -821,7 +887,10 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
           </div>
           <div className="form-control w-full">
             <label className="label">
-              <span className="label-text mb-2 text-white">End Time</span>
+              <span className="label-text mb-2 flex items-center gap-1 text-white">
+                End Time
+                <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+              </span>
             </label>
             <TimeWheelPicker
               value={form.endTime}
@@ -845,8 +914,11 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white flex items-center gap-1.5">
+            <span className="label-text mb-2 flex items-center gap-1 text-white">
               Participants
+              {form.meetingType !== "external_factory" && (
+                <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+              )}
             </span>
           </label>
           <UserSearchSelect

@@ -7,11 +7,6 @@ import CancelMeetingDialog from "./CancelMeetingDialog";
 import dayjs from "dayjs";
 import useRooms from "../../../hook/BookingMeeting/useRooms";
 
-/**
- * Semua warna & sizing terpusat di sini.
- * Ganti nilai di object ini kalau mau reskin komponen,
- * tanpa perlu utak-atik JSX di bawah.
- */
 const theme = {
   panel: "bg-[#0f2c47]/50 border border-white/10",
   headerRow: "bg-[#0c2338]",
@@ -103,6 +98,16 @@ const TableMeeting = ({ compact = false }) => {
     iconSize: compact ? 20 : 24,
   };
 
+  const formatMeetingType = (type) => {
+    if (!type) return "";
+
+    return type
+      .replace(/_/g, " ") // ganti underscore jadi spasi
+      .replace(/-/g, " ") // ganti dash jadi spasi
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
   const handleFilterChange = (key, value) => {
     setPage(1);
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -321,6 +326,13 @@ const TableMeeting = ({ compact = false }) => {
                 >
                   Organizer
                 </th>
+                {!compact && (
+                  <th
+                    className={`font-semibold tracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
+                  >
+                    Meeting Type
+                  </th>
+                )}
                 <th
                   className={`font-semibold tracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
                 >
@@ -396,6 +408,14 @@ const TableMeeting = ({ compact = false }) => {
                     >
                       {meeting.organizerId?.username || "-"}
                     </td>
+
+                    {!compact && (
+                      <td
+                        className={`text-slate-200 ${sizing.cellPad} ${sizing.bodyText}`}
+                      >
+                        {formatMeetingType(meeting.meetingType) || "-"}
+                      </td>
+                    )}
 
                     <td className={sizing.cellPad}>
                       <div className="flex items-center">

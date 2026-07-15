@@ -9,6 +9,7 @@ import {
   Clock,
   User,
   X,
+  Asterisk,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -26,7 +27,8 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
     title: meeting.title || "",
     description: meeting.description || "",
     meetingLink: meeting.meetingLink || "",
-    meetingType: meeting.meetingType || "internal",
+    meetingType: meeting.meetingType || "internal_department",
+    external_factory: meeting.external_factory || "",
     snackRequest: Array.isArray(meeting.snackRequest)
       ? meeting.snackRequest
       : [],
@@ -85,11 +87,15 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
 
   const handleMeetingTypeChange = (e) => {
     const value = e.target.value;
+
     setForm((prev) => ({
       ...prev,
       meetingType: value,
-      // reset snackRequest saat balik ke internal
-      snackRequest: value === "internal" ? [] : prev.snackRequest,
+      // Hapus nilai jika bukan External Factory
+      external_factory:
+        value === "external_factory" ? prev.external_factory : "",
+      // Reset snack request jika bukan External Factory
+      snackRequest: value === "external_factory" ? prev.snackRequest : [],
     }));
   };
 
@@ -114,7 +120,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
         organizerId: meeting.organizerId?._id || meeting.organizerId,
         participantIds,
         meetingType: form.meetingType,
-        meetingLink: form.meetingLink,
+        external_factory: form.external_factory,
         snackRequest: form.snackRequest || null,
         meetingLink: form.meetingLink || null,
       },
@@ -291,7 +297,10 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white">Meeting Title</span>
+            <span className="label-text mb-2 flex items-center gap-1 text-white">
+              Meeting Type
+              <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+            </span>
           </label>
           <input
             type="text"
@@ -318,7 +327,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
 
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white">meetingLink</span>
+            <span className="label-text mb-2 text-white">Meeting Link</span>
           </label>
           <input
             type="text"
@@ -326,13 +335,15 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
             value={form.meetingLink}
             onChange={handleChange}
             className="input input-bordered w-full bg-black/60 text-white"
-            required
           />
         </div>
 
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white">Meeting Type</span>
+            <span className="label-text mb-2 flex items-center gap-1 text-white">
+              Meeting Type
+              <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+            </span>
           </label>
           <select
             name="meetingType"
@@ -340,34 +351,60 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
             onChange={handleMeetingTypeChange}
             className="select select-bordered w-full bg-black/60 text-white"
           >
-            <option value="internal">Internal</option>
-            <option value="external">External</option>
+            <option value="internal_department"> Internal Departement</option>
+            <option value="internal_factory"> Internal Factory</option>
+            <option value="external_factory"> External Factory</option>
           </select>
         </div>
-
-        {form.meetingType === "external" && (
+        {form.meetingType === "external_factory" && (
           <div className="form-control w-full">
             <label className="label">
-              <span className="label-text mb-2 text-white">Snack Request</span>
+              <span className="label-text mb-2 text-white">
+                {" "}
+                Name Of External Factory
+              </span>
             </label>
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
+            <input
+              type="text"
+              name="external_factory"
+              value={form.external_factory}
+              onChange={handleChange}
+              className="input input-bordered w-full bg-black/60 text-white"
+              required
+            />
+          </div>
+        )}
+
+        {/* Snack Request — hanya muncul jika external */}
+        {form.meetingType === "external_factory" && (
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text mb-2 text-white font-medium">
+                Snack Request
+              </span>
+            </label>
+            <div className="flex flex-wrap items-center gap-6 p-2 rounded-lg bg-black/30 border border-gray-800">
+              <label className="flex items-center gap-2.5 text-white text-sm cursor-pointer select-none group">
                 <input
                   type="checkbox"
-                  className="checkbox checkbox-sm"
+                  className="checkbox checkbox-sm checkbox-primary bg-black/40"
                   checked={form.snackRequest.includes("makanan-ringan")}
                   onChange={() => handleSnackRequestToggle("makanan-ringan")}
                 />
-                Makanan Ringan
+                <span className="group-hover:text-blue-400 transition-colors">
+                  Makanan Ringan
+                </span>
               </label>
-              <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
+              <label className="flex items-center gap-2.5 text-white text-sm cursor-pointer select-none group">
                 <input
                   type="checkbox"
-                  className="checkbox checkbox-sm"
+                  className="checkbox checkbox-sm checkbox-primary bg-black/40"
                   checked={form.snackRequest.includes("makanan-berat")}
                   onChange={() => handleSnackRequestToggle("makanan-berat")}
                 />
-                Makanan Berat
+                <span className="group-hover:text-blue-400 transition-colors">
+                  Makanan Berat
+                </span>
               </label>
             </div>
           </div>
@@ -375,8 +412,11 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
 
         <div className="form-control w-full">
           <label className="label">
-            <span className="label-text mb-2 text-white flex items-center gap-1.5">
-              <Users size={14} /> Participants
+            <span className="label-text mb-2 flex items-center gap-1 text-white">
+              Participants
+              {form.meetingType !== "external_factory" && (
+                <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
+              )}
             </span>
           </label>
           {participantsLoading ? (

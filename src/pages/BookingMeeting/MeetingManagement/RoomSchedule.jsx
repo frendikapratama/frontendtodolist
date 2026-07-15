@@ -5,6 +5,7 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import useRooms from "../../../hook/BookingMeeting/useRooms";
@@ -70,11 +71,16 @@ const MeetingCard = ({ meeting }) => {
 
       <div className="flex items-center gap-2 mb-3">
         <div className="w-6 h-6 rounded-full bg-blue-500/30 flex items-center justify-center text-blue-300 text-[10px] font-bold shrink-0">
-          <img
-            loading="lazy"
-            src={`${import.meta.env.VITE_API_URL}/uploads/users/${meeting.organizerId?.photo}`}
-            className="w-full h-full rounded-full object-cover"
-          />
+          {meeting.organizerId?.photo ? (
+            <img
+              src={`${import.meta.env.VITE_API_URL}/uploads/users/${meeting.organizerId?.photo}`}
+              className="w-full h-full rounded-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <User size={13} className="text-blue-400" />
+          )}
         </div>
         <span className="text-xs text-slate-400">
           Organizer:{" "}
