@@ -261,7 +261,7 @@ const MeetingRecapPage = () => {
         "Ruangan",
         "Organizer",
         "Meeting Type",
-        "Name Of External Factory",
+        "External Company / Organization",
         "Tanggal",
         "Jam Mulai",
         "Jam Selesai",

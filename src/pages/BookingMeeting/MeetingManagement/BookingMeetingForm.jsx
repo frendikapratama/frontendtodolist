@@ -761,8 +761,9 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
         {form.meetingType === "external_factory" && (
           <div className="form-control w-full">
             <label className="label">
-              <span className="label-text mb-2 text-white">
-                Name Of External Factory
+              <span className="label-text mb-2 flex items-center gap-1 text-white">
+                External Company / Organization
+                <Asterisk className="h-3 w-3 text-red-500" strokeWidth={3} />
               </span>
             </label>
             <input
@@ -770,8 +771,9 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
               name="external_factory"
               value={form.external_factory}
               onChange={handleChange}
-              placeholder="e.g. PT ABC Indonesia"
+              placeholder="e.g. PT ABC Indonesia (Customer, Supplier, Vendor, Contractor, etc.)"
               className="input input-bordered w-full bg-black/60 text-white"
+              required
             />
           </div>
         )}
