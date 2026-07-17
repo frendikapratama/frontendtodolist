@@ -550,12 +550,7 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {participant.responseAt && (
-                    <span className="text-[10px] text-slate-500">
-                      {dayjs(participant.responseAt).format("DD/MM/YYYY HH:mm")}
-                    </span>
-                  )}
+                <div className="flex flex-col items-center gap-2">
                   <span
                     className={`
             text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full 
@@ -564,7 +559,12 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
           `}
                   >
                     {getStatusLabel(invitationStatus)}
-                  </span>
+                  </span>{" "}
+                  {participant.responseAt && (
+                    <span className="text-[8px] text-slate-500">
+                      {dayjs(participant.responseAt).format("DD/MM/YYYY HH:mm")}
+                    </span>
+                  )}
                 </div>
               </div>
             );

@@ -12,6 +12,7 @@ import {
   Asterisk,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import ExternalParticipantsInput from "../../../components/ExternalParticipantsInput";
 
 const UpdateMeetingForm = ({ meeting, onClose }) => {
   const {
@@ -22,7 +23,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
   const [initialUsers, setInitialUsers] = useState([]);
   const { data: participantsData, isLoading: participantsLoading } =
     meetingParticipantsQuery(meeting._id);
-
+  const [externalParticipants, setExternalParticipants] = useState([]);
   const [form, setForm] = useState({
     title: meeting.title || "",
     description: meeting.description || "",
@@ -44,9 +45,12 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
 
   useEffect(() => {
     if (participantsData?.data) {
-      const ids = participantsData.data.map((p) => p.userId._id || p.userId);
+      const internal = participantsData.data.filter((p) => !p.isExternal);
+      const external = participantsData.data.filter((p) => p.isExternal);
+
+      const ids = internal.map((p) => p.userId._id || p.userId);
       setParticipantIds(ids);
-      const users = participantsData.data.map((p) => ({
+      const users = internal.map((p) => ({
         _id: p.userId._id || p.userId,
         username: p.userId.username,
         email: p.userId.email,
@@ -56,6 +60,14 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
       }));
       setInitialUsers(users);
       setSelectedParticipants(users);
+
+      setExternalParticipants(
+        external.map((p) => ({
+          name: p.externalName || p.externalEmail,
+          email: p.externalEmail,
+          noHp: p.externalNoHp || "",
+        })),
+      );
     }
   }, [participantsData]);
 
@@ -119,6 +131,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
         description: form.description,
         organizerId: meeting.organizerId?._id || meeting.organizerId,
         participantIds,
+        externalParticipants,
         meetingType: form.meetingType,
         external_factory: form.external_factory,
         snackRequest: form.snackRequest || null,
@@ -392,7 +405,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
                   onChange={() => handleSnackRequestToggle("makanan-ringan")}
                 />
                 <span className="group-hover:text-blue-400 transition-colors">
-                  Makanan Ringan
+                  Light Snacks
                 </span>
               </label>
               <label className="flex items-center gap-2.5 text-white text-sm cursor-pointer select-none group">
@@ -403,7 +416,7 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
                   onChange={() => handleSnackRequestToggle("makanan-berat")}
                 />
                 <span className="group-hover:text-blue-400 transition-colors">
-                  Makanan Berat
+                  Full Meal
                 </span>
               </label>
             </div>
@@ -430,6 +443,22 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
               initialUsers={initialUsers}
             />
           )}
+        </div>
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text mb-2 text-white">
+              Manual Input Participants
+            </span>
+          </label>
+          <ExternalParticipantsInput
+            value={externalParticipants}
+            onChange={(list) => {
+              setExternalParticipants(list);
+              setChecked(false);
+              setConflicts([]);
+            }}
+            placeholder="e.g username@gmail.com"
+          />
         </div>
         <div className="flex justify-end gap-2 mt-6">
           <button

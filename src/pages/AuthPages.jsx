@@ -32,6 +32,7 @@ export default function AuthCard() {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [time, setTime] = useState(dayjs().format("HH:mm:ss"));
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +59,16 @@ export default function AuthCard() {
       setCanResend(true);
     }
   }, [countdown, currentStep]);
+
+  useEffect(() => {
+    // update tiap 1000ms = 1 detik
+    const interval = setInterval(() => {
+      setTime(dayjs().format("HH:mm:ss"));
+    }, 1000);
+
+    // cleanup pas component di-unmount
+    return () => clearInterval(interval);
+  }, []); // [] = jalan 1x pas mount
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -489,7 +500,7 @@ export default function AuthCard() {
             </span>
             <span className="flex items-center gap-1.5">
               <Clock size={14} className="text-teal-300/80" />
-              {dayjs().format("hh:mm")}
+              {time}
             </span>
           </div>
         </div>

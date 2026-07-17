@@ -29,15 +29,17 @@ const CancelMeetingDialog = ({ meeting, onClose }) => {
         <div>
           <h4 className="text-sm font-bold text-red-400">Cancel Meeting?</h4>
           <p className="text-xs text-red-300/80 mt-1">
-            Are you sure you want to cancel the meeting <strong>{meeting.title}</strong>? 
-            This action cannot be undone.
+            Are you sure you want to cancel the meeting{" "}
+            <strong>{meeting.title}</strong>? This action cannot be undone.
           </p>
         </div>
       </div>
 
       <div className="form-control w-full">
         <label className="label">
-          <span className="label-text mb-2 text-white">Reason for Cancellation</span>
+          <span className="label-text mb-2 text-white">
+            Reason for Cancellation
+          </span>
         </label>
         <textarea
           value={reason}
@@ -63,7 +65,9 @@ const CancelMeetingDialog = ({ meeting, onClose }) => {
           className="btn bg-red-500 hover:bg-red-400 border-none text-white"
           disabled={cancelMeetingMutation.isPending}
         >
-          {cancelMeetingMutation.isPending ? "Cancelling…" : "Yes, Cancel Meeting"}
+          {cancelMeetingMutation.isPending
+            ? "Cancelling…"
+            : "Yes, Cancel Meeting"}
         </button>
       </div>
     </form>

@@ -25,7 +25,7 @@ import { getUsers } from "../../../services/userServices";
 import UserSearchSelect from "../../../components/Usersearchselect";
 import TimeWheelPicker from "../../../components/ui/TimeWheelPicker";
 import { createPortal } from "react-dom";
-
+import ExternalParticipantsInput from "../../../components/ExternalParticipantsInput";
 const pad = (n) => String(n).padStart(2, "0");
 
 const todayStr = () => {
@@ -60,6 +60,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
   const [participantIds, setParticipantIds] = useState([]);
   const [selectedParticipants, setSelectedParticipants] = useState([]);
+  const [externalParticipants, setExternalParticipants] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [checked, setChecked] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -192,13 +193,13 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
   const buildPayload = () => ({
     roomId: form.roomId,
     participantIds,
+    externalParticipants,
     startTime: getStartTime(),
     endTime: getEndTime(),
     meetingType: form.meetingType,
     snackRequest:
       form.meetingType === "internal_department" ? [] : form.snackRequest,
   });
-
   const validateBasics = () => {
     if (!form.title.trim()) return "Meeting title is required";
     if (!form.roomId) return "Please select a room";
@@ -280,6 +281,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
       startTime: form.startTime,
       endTime: form.endTime,
       participants: selectedParticipants,
+      externalParticipants,
     });
     setShowPreview(true);
   };
@@ -313,6 +315,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     setIsSubmitting(false);
     setShowForm(true);
     onClose?.();
+    setExternalParticipants([]);
   };
 
   // Modal Preview
@@ -320,6 +323,18 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
     if (!showPreview || !previewData) return null;
     const dialogEl = document.getElementById("bookingModal");
     const portalTarget = dialogEl || document.body;
+
+    const allParticipants = [
+      ...(previewData.participants || []),
+      ...(previewData.externalParticipants || []).map((p) => ({
+        _id: `manual-${p.email}`,
+        username: p.name || p.email,
+        email: p.email,
+        noHp: p.noHp,
+        isManual: true,
+      })),
+    ];
+
     return createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
         <div className="bg-gray-900 rounded-2xl max-w-2xl w-full h-[90vh] max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
@@ -396,7 +411,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
                     <span className="text-blue-400 underline">
                       <a
-                        href={previewData.meetingLink}
+                        ref={previewData.meetingLink}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -452,13 +467,25 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                     Participants
                   </span>
                   <span className="text-white">
-                    {participantIds.length} person
-                    {participantIds.length !== 1 ? "s" : ""}
+                    {allParticipants.length} person
+                    {allParticipants.length !== 1 ? "s" : ""}
                   </span>
                 </div>
               </div>
             </div>
-
+            {previewData.externalParticipants?.length > 0 && (
+              <div className="bg-gray-800/50 rounded-xl p-4 space-y-2">
+                <h4 className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Users size={14} className="text-blue-400" />
+                  Manual Input Participants
+                </h4>
+                {previewData.externalParticipants.map((p, i) => (
+                  <div key={i} className="text-xs text-gray-300">
+                    {p.name} — {p.email} {p.noHp && `(${p.noHp})`}
+                  </div>
+                ))}
+              </div>
+            )}
             {/* Room Conflict Warning */}
             {previewData.roomAvailable === false && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
@@ -481,59 +508,77 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             )}
 
             {/* Participants List */}
-            {previewData.participants &&
-              previewData.participants.length > 0 && (
-                <div className="bg-gray-800/50 rounded-xl p-4 space-y-3">
-                  <h4 className="text-sm font-medium text-gray-400 flex items-center gap-2">
-                    <Users size={14} className="text-blue-400" />
-                    Participant List
-                  </h4>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {previewData.participants.map((p, index) => {
-                      const hasConflict = previewData.conflicts?.some(
-                        (c) => c.userId?._id === p._id || c.userId === p._id,
-                      );
-                      return (
-                        <div
-                          key={p._id || index}
-                          className={`flex items-center gap-3 rounded-lg p-2.5 ${
-                            hasConflict
-                              ? "bg-yellow-500/10 border border-yellow-500/20"
-                              : "bg-gray-700/40"
-                          }`}
-                        >
-                          {p.photo ? (
-                            <img
-                              src={p.photo}
-                              alt={p.username}
-                              className="w-7 h-7 rounded-full object-cover shrink-0"
-                            />
-                          ) : (
-                            <div className="w-7 h-7 rounded-full bg-blue-600/40 flex items-center justify-center shrink-0">
-                              <User size={13} className="text-blue-300" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-white font-medium truncate">
-                              {p.username || "Unknown"}
-                            </p>
-                            {p.email && (
-                              <p className="text-xs text-gray-400 truncate">
-                                {p.email}
-                              </p>
-                            )}
+            {allParticipants.length > 0 && (
+              <div className="bg-gray-800/50 rounded-xl p-4 space-y-3">
+                <h4 className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Users size={14} className="text-blue-400" />
+                  Participant List
+                </h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {allParticipants.map((p, index) => {
+                    // BARU: cek conflict untuk participant internal (by userId) MAUPUN manual (by email)
+                    const hasConflict = previewData.conflicts?.some((c) => {
+                      if (p.isManual) {
+                        return (
+                          c.isExternal &&
+                          c.externalEmail?.toLowerCase() ===
+                            p.email?.toLowerCase()
+                        );
+                      }
+                      return c.userId?._id === p._id || c.userId === p._id;
+                    });
+                    return (
+                      <div
+                        key={p._id || index}
+                        className={`flex items-center gap-3 rounded-lg p-2.5 ${
+                          hasConflict
+                            ? "bg-yellow-500/10 border border-yellow-500/20"
+                            : "bg-gray-700/40"
+                        }`}
+                      >
+                        {p.isManual ? (
+                          <div className="w-7 h-7 rounded-full bg-green-600/30 flex items-center justify-center shrink-0">
+                            <Mail size={13} className="text-green-300" />
                           </div>
-                          {hasConflict && (
-                            <span className="text-xs text-yellow-400 flex items-center gap-1 shrink-0">
-                              <AlertTriangle size={11} /> Conflict
+                        ) : p.photo ? (
+                          <img
+                            src={p.photo}
+                            alt={p.username}
+                            className="w-7 h-7 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-blue-600/40 flex items-center justify-center shrink-0">
+                            <User size={13} className="text-blue-300" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white font-medium truncate">
+                            {p.username || "Unknown"}
+                          </p>
+
+                          {p.email && (
+                            <p className="text-xs text-gray-400 truncate">
+                              {p.email}
+                            </p>
+                          )}
+
+                          {p.isManual && (
+                            <span className="badge badge-info badge-xs mt-1">
+                              Manual
                             </span>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
+                        {hasConflict && (
+                          <span className="text-xs text-yellow-400 flex items-center gap-1 shrink-0">
+                            <AlertTriangle size={11} /> Conflict
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Participant Conflict Warning */}
             {previewData.conflicts && previewData.conflicts.length > 0 && (
@@ -556,6 +601,68 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {previewData.conflicts.map((conflict, index) => {
+                        // BARU: tangani conflict eksternal (manual input)
+                        if (conflict.isExternal) {
+                          const displayName =
+                            conflict.externalName || conflict.externalEmail;
+                          const displayEmail =
+                            conflict.externalEmail || "No email";
+
+                          return (
+                            <div
+                              key={conflict._id || index}
+                              className="bg-gray-800/50 rounded-lg p-3"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Mail
+                                  size={14}
+                                  className="text-green-300 shrink-0"
+                                />
+                                <span className="text-sm font-medium text-white">
+                                  {displayName}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  ({displayEmail})
+                                </span>
+                                <span className="badge badge-info badge-xs">
+                                  Manual
+                                </span>
+                              </div>
+                              <div className="mt-1 ml-6 text-xs text-gray-400">
+                                <div className="flex items-center gap-1">
+                                  <Clock
+                                    size={12}
+                                    className="text-yellow-400"
+                                  />
+                                  <span>Meeting: </span>
+                                  <span className="text-yellow-300">
+                                    {conflict.meetingId?.title ||
+                                      "Unknown meeting"}
+                                  </span>
+                                </div>
+                                {conflict.meetingId?.startTime &&
+                                  conflict.meetingId?.endTime && (
+                                    <div className="ml-4 text-[10px] text-gray-500">
+                                      {new Date(
+                                        conflict.meetingId.startTime,
+                                      ).toLocaleString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                      -{" "}
+                                      {new Date(
+                                        conflict.meetingId.endTime,
+                                      ).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          );
+                        }
+
                         // userId may be a plain string ID or a populated object
                         const conflictUserId =
                           typeof conflict.userId === "string"
@@ -794,7 +901,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                   onChange={() => handleSnackRequestToggle("makanan-ringan")}
                 />
                 <span className="group-hover:text-blue-400 transition-colors">
-                  Makanan Ringan
+                  Light Snacks
                 </span>
               </label>
               <label className="flex items-center gap-2.5 text-white text-sm cursor-pointer select-none group">
@@ -805,7 +912,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
                   onChange={() => handleSnackRequestToggle("makanan-berat")}
                 />
                 <span className="group-hover:text-blue-400 transition-colors">
-                  Makanan Berat
+                  Full Meal
                 </span>
               </label>
             </div>
@@ -928,6 +1035,25 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             onChange={handleParticipantsChange}
             fetchUsers={fetchUsers}
             placeholder="Search by name or email…"
+          />
+        </div>
+
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text mb-2 text-white">
+              Manual Input Participants
+            </span>
+          </label>
+          <ExternalParticipantsInput
+            value={externalParticipants}
+            onChange={(list) => {
+              setExternalParticipants(list);
+              setChecked(false);
+              setAvailability(null);
+              setShowPreview(false);
+              setPreviewData(null);
+            }}
+            placeholder="e.g username@gmail.com"
           />
         </div>
 

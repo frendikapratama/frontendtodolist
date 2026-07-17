@@ -64,10 +64,13 @@ const RescheduleMeetingForm = ({ meeting, onClose }) => {
 
   useEffect(() => {
     if (participantsData?.data) {
-      const ids = participantsData.data.map((p) => p.userId._id || p.userId);
+      // Hanya peserta internal yang relevan untuk cek konflik jadwal reschedule
+      const internal = participantsData.data.filter((p) => !p.isExternal);
+
+      const ids = internal.map((p) => p.userId._id || p.userId);
       setParticipantIds(ids);
       setSelectedParticipants(
-        participantsData.data.map((p) => ({
+        internal.map((p) => ({
           _id: p.userId._id || p.userId,
           username: p.userId.username,
           email: p.userId.email,
