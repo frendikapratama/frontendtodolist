@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import useMeetingRecap from "../../../hook/BookingMeeting/useMeetingRecap";
 import meetingRecapService from "../../../services/BookingMeeting/meetingRecap";
-
 const displayName = (entity) =>
   entity?.name || entity?.nama || entity?.username || "";
 

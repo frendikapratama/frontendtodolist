@@ -16,11 +16,13 @@ import {
   FileText,
   RefreshCw,
   FolderKanban,
-  Users,PauseCircle
+  Users,
+  PauseCircle,
 } from "lucide-react";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { getReports } from "../../services/report";
+import ExcelJS from "exceljs";
 
 export default function ReportPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,7 +53,9 @@ export default function ReportPage() {
   const { workspacesQuery } = useWorkspace();
   const workspaces = workspacesQuery.data || [];
 
-  const activeWorkspaceObj = workspaces.find((ws) => ws._id === selectedWorkspace);
+  const activeWorkspaceObj = workspaces.find(
+    (ws) => ws._id === selectedWorkspace,
+  );
   const projects = activeWorkspaceObj?.projects || [];
 
   useEffect(() => {
@@ -95,7 +99,12 @@ export default function ReportPage() {
     pageSize,
   ]);
 
-  const { data: reportResponse, isLoading, isPlaceholderData, refetch } = useReport(debouncedFilters);
+  const {
+    data: reportResponse,
+    isLoading,
+    isPlaceholderData,
+    refetch,
+  } = useReport(debouncedFilters);
   const reports = reportResponse?.data || [];
   const summary = reportResponse?.summary || {
     total: 0,
@@ -261,11 +270,10 @@ export default function ReportPage() {
     );
   };
 
-
-  const handleExportCSV = async () => {
+  const handleExportExcel = async () => {
     try {
       setIsExporting(true);
-      toast.loading("Preparing CSV file...", { id: "csv-export" });
+      toast.loading("Preparing Excel file...", { id: "excel-export" });
 
       const fullFilters = {
         workspaceId: selectedWorkspace,
@@ -283,10 +291,18 @@ export default function ReportPage() {
       const allRows = res?.data || [];
 
       if (allRows.length === 0) {
-        toast.error("No report data available to export", { id: "csv-export" });
+        toast.error("No report data available to export", {
+          id: "excel-export",
+        });
         setIsExporting(false);
         return;
       }
+
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "Planify";
+      workbook.created = new Date();
+
+      const sheet = workbook.addWorksheet("Detailed Report");
 
       const headers = [
         "Quarter",
@@ -311,20 +327,21 @@ export default function ReportPage() {
         "Status Penyelesaian",
       ];
 
-      const escapeCSV = (val) => {
-        if (val === null || val === undefined) return "";
-        const str = String(val);
-        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-          return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
-      };
+      const headerRow = sheet.addRow(headers);
 
-      const csvRows = [];
-      csvRows.push(headers.join(","));
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
 
-      for (const row of allRows) {
-        const values = [
+      allRows.forEach((row) => {
+        const dataRow = sheet.addRow([
           row.kuarter,
           row.departemen,
           row.workspace,
@@ -338,34 +355,77 @@ export default function ReportPage() {
           row.status,
           row.priority,
           row.scale,
-          row.startDate ? dayjs(row.startDate).format("YYYY-MM-DD") : "-",
-          row.dueDate ? dayjs(row.dueDate).format("YYYY-MM-DD") : "-",
+          row.startDate ? dayjs(row.startDate).format("DD MMM YYYY") : "-",
+          row.dueDate ? dayjs(row.dueDate).format("DD MMM YYYY") : "-",
           row.durationStartToEnd ?? "-",
-          row.finishDate ? dayjs(row.finishDate).format("YYYY-MM-DD") : "-",
+          row.finishDate ? dayjs(row.finishDate).format("DD MMM YYYY") : "-",
           row.durationStartToFinish ?? "-",
           row.durationDueToFinish ?? "-",
           row.completionStatus,
-        ];
-        csvRows.push(values.map(escapeCSV).join(","));
-      }
+        ]);
 
-      const csvString = csvRows.join("\n");
-      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+        dataRow.eachCell((cell) => {
+          cell.alignment = {
+            vertical: "middle",
+            horizontal: "left",
+            wrapText: true,
+          };
+        });
+      });
+
+      sheet.columns = [
+        { width: 12 }, // Quarter
+        { width: 18 }, // Departemen
+        { width: 18 }, // Workspace
+        { width: 22 }, // Project Name
+        { width: 18 }, // Nama Group
+        { width: 12 }, // Level
+        { width: 30 }, // Task Name
+        { width: 30 }, // Subtask Name
+        { width: 18 }, // PIC
+        { width: 12 }, // Type
+        { width: 14 }, // Status
+        { width: 12 }, // Priority
+        { width: 10 }, // Scale
+        { width: 14 }, // Start Date
+        { width: 14 }, // End Date
+        { width: 16 }, // Durasi Start-End
+        { width: 14 }, // Finish Date
+        { width: 16 }, // Durasi Start-Finish
+        { width: 16 }, // Durasi Due-Finish
+        { width: 20 }, // Status Penyelesaian
+      ];
+
+      sheet.autoFilter = {
+        from: { row: 1, column: 1 },
+        to: { row: 1, column: headers.length },
+      };
+
+      sheet.views = [{ state: "frozen", ySplit: 1 }];
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
 
       const dateStr = dayjs().format("YYYYMMDD_HHmmss");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `planify_detailed_report_${dateStr}.csv`);
+      link.href = url;
+      link.download = `planify_detailed_report_${dateStr}.xlsx`;
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-      toast.success("CSV file downloaded successfully", { id: "csv-export" });
+      toast.success("Excel file downloaded successfully", {
+        id: "excel-export",
+      });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate CSV export", { id: "csv-export" });
+      toast.error("Failed to generate Excel export", { id: "excel-export" });
     } finally {
       setIsExporting(false);
     }
@@ -376,9 +436,12 @@ export default function ReportPage() {
       {/* HEADER SECTION */}
       <div className="relative z-10 bg-linear-to-r from-blue-600/25 to-purple-600/25 backdrop-blur-sm rounded-xl p-6 border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-wide">Detailed Reports</h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-wide">
+            Detailed Reports
+          </h1>
           <p className="text-white/60 text-sm mt-1">
-            Track, filter, analyze, and export comprehensive tasks & subtasks metrics.
+            Track, filter, analyze, and export comprehensive tasks & subtasks
+            metrics.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -390,90 +453,146 @@ export default function ReportPage() {
             <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
           </button>
           <button
-            onClick={handleExportCSV}
+            onClick={handleExportExcel}
             disabled={isExporting || isLoading}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-md hover:shadow-emerald-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Download size={16} />
-            {isExporting ? "Exporting..." : "Export CSV"}
+            {isExporting ? "Exporting..." : "Export Excel"}
           </button>
         </div>
       </div>
 
       {/* SUMMARY STATS GRID */}
-  <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4">
         {/* TOTAL REPORT ROWS */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10">
           <div className="flex justify-between items-start">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Total Rows</span>
-            <span className="p-1 rounded bg-blue-500/20 text-blue-300"><FileText size={16} /></span>
+            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+              Total Rows
+            </span>
+            <span className="p-1 rounded bg-blue-500/20 text-blue-300">
+              <FileText size={16} />
+            </span>
           </div>
-          <p className="text-2xl font-bold text-white mt-2">{isLoading ? "..." : summary.total}</p>
-          <span className="text-xs text-white/40 block mt-1">Task + Subtask rows</span>
+          <p className="text-2xl font-bold text-white mt-2">
+            {isLoading ? "..." : summary.total}
+          </p>
+          <span className="text-xs text-white/40 block mt-1">
+            Task + Subtask rows
+          </span>
         </div>
 
         {/* TASKS */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10">
           <div className="flex justify-between items-start">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Tasks</span>
-            <span className="p-1 rounded bg-indigo-500/20 text-indigo-300"><FolderKanban size={16} /></span>
+            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+              Tasks
+            </span>
+            <span className="p-1 rounded bg-indigo-500/20 text-indigo-300">
+              <FolderKanban size={16} />
+            </span>
           </div>
-          <p className="text-2xl font-bold text-white mt-2">{isLoading ? "..." : summary.totalTask}</p>
-          <span className="text-xs text-indigo-300/60 block mt-1">Parent Tasks</span>
+          <p className="text-2xl font-bold text-white mt-2">
+            {isLoading ? "..." : summary.totalTask}
+          </p>
+          <span className="text-xs text-indigo-300/60 block mt-1">
+            Parent Tasks
+          </span>
         </div>
 
         {/* SUBTASKS */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10">
           <div className="flex justify-between items-start">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Subtasks</span>
-            <span className="p-1 rounded bg-purple-500/20 text-purple-300"><CornerDownRight size={16} /></span>
+            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+              Subtasks
+            </span>
+            <span className="p-1 rounded bg-purple-500/20 text-purple-300">
+              <CornerDownRight size={16} />
+            </span>
           </div>
-          <p className="text-2xl font-bold text-white mt-2">{isLoading ? "..." : summary.totalSubtask}</p>
-          <span className="text-xs text-purple-300/60 block mt-1">Subtasks linked</span>
+          <p className="text-2xl font-bold text-white mt-2">
+            {isLoading ? "..." : summary.totalSubtask}
+          </p>
+          <span className="text-xs text-purple-300/60 block mt-1">
+            Subtasks linked
+          </span>
         </div>
 
         {/* DONE ITEMS */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10">
           <div className="flex justify-between items-start">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Completed</span>
-            <span className="p-1 rounded bg-emerald-500/20 text-emerald-300"><CheckCircle2 size={16} /></span>
+            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+              Completed
+            </span>
+            <span className="p-1 rounded bg-emerald-500/20 text-emerald-300">
+              <CheckCircle2 size={16} />
+            </span>
           </div>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">{isLoading ? "..." : summary.done}</p>
+          <p className="text-2xl font-bold text-emerald-400 mt-2">
+            {isLoading ? "..." : summary.done}
+          </p>
           <span className="text-xs text-white/40 block mt-1">
-            {summary.total > 0 ? `${Math.round((summary.done / summary.total) * 100)}%` : "0%"} Completion rate
+            {summary.total > 0
+              ? `${Math.round((summary.done / summary.total) * 100)}%`
+              : "0%"}{" "}
+            Completion rate
           </span>
         </div>
 
         {/* ON TIME */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10">
           <div className="flex justify-between items-start">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">On-Time</span>
-            <span className="p-1 rounded bg-indigo-500/20 text-indigo-300"><Clock size={16} /></span>
+            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+              On-Time
+            </span>
+            <span className="p-1 rounded bg-indigo-500/20 text-indigo-300">
+              <Clock size={16} />
+            </span>
           </div>
-          <p className="text-2xl font-bold text-indigo-400 mt-2">{isLoading ? "..." : summary.ontime}</p>
-          <span className="text-xs text-indigo-300/60 block mt-1">Completed on schedule</span>
+          <p className="text-2xl font-bold text-indigo-400 mt-2">
+            {isLoading ? "..." : summary.ontime}
+          </p>
+          <span className="text-xs text-indigo-300/60 block mt-1">
+            Completed on schedule
+          </span>
         </div>
 
         {/* EARLY */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10">
           <div className="flex justify-between items-start">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Early</span>
-            <span className="p-1 rounded bg-teal-500/20 text-teal-300"><CheckCircle2 size={16} /></span>
+            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+              Early
+            </span>
+            <span className="p-1 rounded bg-teal-500/20 text-teal-300">
+              <CheckCircle2 size={16} />
+            </span>
           </div>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">{isLoading ? "..." : summary.early}</p>
-          <span className="text-xs text-emerald-400/60 block mt-1">Finished before due date</span>
+          <p className="text-2xl font-bold text-emerald-400 mt-2">
+            {isLoading ? "..." : summary.early}
+          </p>
+          <span className="text-xs text-emerald-400/60 block mt-1">
+            Finished before due date
+          </span>
         </div>
 
         {/* LATE ITEMS */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10 col-span-2 lg:col-span-1">
           <div className="flex justify-between items-start">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Late</span>
-            <span className="p-1 rounded bg-rose-500/20 text-rose-300"><AlertCircle size={16} /></span>
+            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+              Late
+            </span>
+            <span className="p-1 rounded bg-rose-500/20 text-rose-300">
+              <AlertCircle size={16} />
+            </span>
           </div>
-          <p className="text-2xl font-bold text-rose-400 mt-2">{isLoading ? "..." : summary.late}</p>
-          <span className="text-xs text-rose-400/60 block mt-1">Exceeded deadline</span>
+          <p className="text-2xl font-bold text-rose-400 mt-2">
+            {isLoading ? "..." : summary.late}
+          </p>
+          <span className="text-xs text-rose-400/60 block mt-1">
+            Exceeded deadline
+          </span>
         </div>
-
 
         {/* UNFINISHED ITEMS */}
         <div className="bg-white/5 backdrop-blur-xs border border-white/10 rounded-xl p-4 transition-all duration-300 hover:scale-102 hover:bg-white/10 col-span-2 lg:col-span-1">
@@ -492,7 +611,7 @@ export default function ReportPage() {
           </p>
 
           <span className="text-xs text-amber-400/60 block mt-1">
-            Planning & uncomplete 
+            Planning & uncomplete
           </span>
         </div>
       </div>
@@ -539,13 +658,19 @@ export default function ReportPage() {
               value={selectedWorkspace}
               onChange={(e) => {
                 setSelectedWorkspace(e.target.value);
-                setSelectedProject(""); 
+                setSelectedProject("");
               }}
               className="w-full px-3 py-2 bg-white/5 border border-white/10 focus:border-indigo-500 rounded-lg text-sm text-white focus:outline-hidden focus:bg-[#1C3A5A] transition-all"
             >
-              <option value="" className="bg-[#18304B] text-white">All Workspaces</option>
+              <option value="" className="bg-[#18304B] text-white">
+                All Workspaces
+              </option>
               {workspaces.map((ws) => (
-                <option key={ws._id} value={ws._id} className="bg-[#18304B] text-white">
+                <option
+                  key={ws._id}
+                  value={ws._id}
+                  className="bg-[#18304B] text-white"
+                >
                   {ws.nama}
                 </option>
               ))}
@@ -567,7 +692,11 @@ export default function ReportPage() {
                 {selectedWorkspace ? "All Projects" : "Select workspace first"}
               </option>
               {projects.map((project) => (
-                <option key={project._id} value={project._id} className="bg-[#18304B] text-white">
+                <option
+                  key={project._id}
+                  value={project._id}
+                  className="bg-[#18304B] text-white"
+                >
                   {project.nama}
                 </option>
               ))}
@@ -584,13 +713,30 @@ export default function ReportPage() {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="w-full px-3 py-2 bg-white/5 border border-white/10 focus:border-indigo-500 rounded-lg text-sm text-white focus:outline-hidden focus:bg-[#1C3A5A] transition-all"
             >
-              <option value="all" className="bg-[#18304B] text-white">All Statuses</option>
-              <option value="To Do" className="bg-[#18304B] text-white">To Do</option>
-              <option value="In Progress" className="bg-[#18304B] text-white">In Progress</option>
-              <option value="Hold" className="bg-[#18304B] text-white">Hold</option>
-              <option value="Blocked" className="bg-[#18304B] text-white">Blocked</option>
-              <option value="Done" className="bg-[#18304B] text-white">Done</option>
-              <option value="Done-In review" className="bg-[#18304B] text-white">Done-In review</option>
+              <option value="all" className="bg-[#18304B] text-white">
+                All Statuses
+              </option>
+              <option value="To Do" className="bg-[#18304B] text-white">
+                To Do
+              </option>
+              <option value="In Progress" className="bg-[#18304B] text-white">
+                In Progress
+              </option>
+              <option value="Hold" className="bg-[#18304B] text-white">
+                Hold
+              </option>
+              <option value="Blocked" className="bg-[#18304B] text-white">
+                Blocked
+              </option>
+              <option value="Done" className="bg-[#18304B] text-white">
+                Done
+              </option>
+              <option
+                value="Done-In review"
+                className="bg-[#18304B] text-white"
+              >
+                Done-In review
+              </option>
             </select>
           </div>
         </div>
@@ -606,11 +752,21 @@ export default function ReportPage() {
               onChange={(e) => setSelectedPriority(e.target.value)}
               className="w-full px-3 py-2 bg-white/5 border border-white/10 focus:border-indigo-500 rounded-lg text-sm text-white focus:outline-hidden focus:bg-[#1C3A5A] transition-all"
             >
-              <option value="all" className="bg-[#18304B] text-white">All Priorities</option>
-              <option value="Low" className="bg-[#18304B] text-white">Low</option>
-              <option value="Medium" className="bg-[#18304B] text-white">Medium</option>
-              <option value="High" className="bg-[#18304B] text-white">High</option>
-              <option value="Urgent" className="bg-[#18304B] text-white">Urgent</option>
+              <option value="all" className="bg-[#18304B] text-white">
+                All Priorities
+              </option>
+              <option value="Low" className="bg-[#18304B] text-white">
+                Low
+              </option>
+              <option value="Medium" className="bg-[#18304B] text-white">
+                Medium
+              </option>
+              <option value="High" className="bg-[#18304B] text-white">
+                High
+              </option>
+              <option value="Urgent" className="bg-[#18304B] text-white">
+                Urgent
+              </option>
             </select>
           </div>
 
@@ -650,19 +806,37 @@ export default function ReportPage() {
               <tr className="bg-white/5 border-b border-white/10 text-[11px] font-bold text-white/60 uppercase tracking-wider">
                 <th className="px-6 py-4 min-w-[140px]">Project Name</th>
                 <th className="px-6 py-4 min-w-[140px]">Group Name</th>
-                <th className="px-6 py-4 min-w-[280px] sticky left-0 bg-[#1f3f62] z-20 shadow-md">Task & Subtask</th>
+                <th className="px-6 py-4 min-w-[280px] sticky left-0 bg-[#1f3f62] z-20 shadow-md">
+                  Task & Subtask
+                </th>
                 <th className="px-6 py-4 min-w-[150px]">PIC</th>
                 <th className="px-6 py-4 min-w-[90px] text-center">Type</th>
                 <th className="px-6 py-4 min-w-[110px] text-center">Status</th>
-                <th className="px-6 py-4 min-w-[100px] text-center">Priority</th>
+                <th className="px-6 py-4 min-w-[100px] text-center">
+                  Priority
+                </th>
                 <th className="px-6 py-4 min-w-20 text-center">Scale</th>
-                <th className="px-6 py-4 min-w-[120px] text-center">Start Date</th>
-                <th className="px-6 py-4 min-w-[120px] text-center">End Date</th>
-                <th className="px-6 py-4 min-w-[110px] text-center">Start-End Dur.</th>
-                <th className="px-6 py-4 min-w-[120px] text-center">Finish Date</th>
-                <th className="px-6 py-4 min-w-[110px] text-center">Start-Finish</th>
-                <th className="px-6 py-4 min-w-[110px] text-center">Due-Finish</th>
-                <th className="px-6 py-4 min-w-[130px] text-center">Completion Status</th>
+                <th className="px-6 py-4 min-w-[120px] text-center">
+                  Start Date
+                </th>
+                <th className="px-6 py-4 min-w-[120px] text-center">
+                  End Date
+                </th>
+                <th className="px-6 py-4 min-w-[110px] text-center">
+                  Start-End Dur.
+                </th>
+                <th className="px-6 py-4 min-w-[120px] text-center">
+                  Finish Date
+                </th>
+                <th className="px-6 py-4 min-w-[110px] text-center">
+                  Start-Finish
+                </th>
+                <th className="px-6 py-4 min-w-[110px] text-center">
+                  Due-Finish
+                </th>
+                <th className="px-6 py-4 min-w-[130px] text-center">
+                  Completion Status
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-[13px] text-white/80">
@@ -671,7 +845,9 @@ export default function ReportPage() {
                   <td colSpan="14" className="text-center py-20">
                     <div className="flex flex-col items-center gap-3">
                       <RefreshCw className="animate-spin text-indigo-400 w-8 h-8" />
-                      <span className="text-white/60 text-sm">Retrieving report database...</span>
+                      <span className="text-white/60 text-sm">
+                        Retrieving report database...
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -680,7 +856,9 @@ export default function ReportPage() {
                   <td colSpan="14" className="text-center py-20">
                     <div className="flex flex-col items-center gap-2">
                       <AlertCircle className="text-white/30 w-10 h-10" />
-                      <span className="text-white/50 text-sm">No report rows found matching the filters.</span>
+                      <span className="text-white/50 text-sm">
+                        No report rows found matching the filters.
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -695,8 +873,12 @@ export default function ReportPage() {
                       } ${isPlaceholderData ? "opacity-60" : ""}`}
                     >
                       {/* GROUP NAME */}
-                      <td className="px-6 py-3.5 font-medium text-white/70">{row.project}</td>
-                      <td className="px-6 py-3.5 font-medium text-white/70">{row.group}</td>
+                      <td className="px-6 py-3.5 font-medium text-white/70">
+                        {row.project}
+                      </td>
+                      <td className="px-6 py-3.5 font-medium text-white/70">
+                        {row.group}
+                      </td>
 
                       {/* TASK & SUBTASK STICKY COLUMN */}
                       <td
@@ -708,13 +890,22 @@ export default function ReportPage() {
                       >
                         {isSubtask ? (
                           <div className="flex items-center gap-2 text-white/60">
-                            <CornerDownRight size={14} className="text-indigo-400 shrink-0" />
-                            <span className="truncate max-w-[200px]" title={row.subtaskName}>
+                            <CornerDownRight
+                              size={14}
+                              className="text-indigo-400 shrink-0"
+                            />
+                            <span
+                              className="truncate max-w-[200px]"
+                              title={row.subtaskName}
+                            >
                               {row.subtaskName}
                             </span>
                           </div>
                         ) : (
-                          <span className="truncate max-w-[260px] block" title={row.taskName}>
+                          <span
+                            className="truncate max-w-[260px] block"
+                            title={row.taskName}
+                          >
                             {row.taskName}
                           </span>
                         )}
@@ -724,7 +915,10 @@ export default function ReportPage() {
                       <td className="px-6 py-3.5 text-white/70">
                         <div className="flex items-center gap-1.5">
                           <Users size={12} className="text-white/40 shrink-0" />
-                          <span className="truncate max-w-[130px]" title={row.pic}>
+                          <span
+                            className="truncate max-w-[130px]"
+                            title={row.pic}
+                          >
                             {row.pic}
                           </span>
                         </div>
@@ -744,19 +938,29 @@ export default function ReportPage() {
                       </td>
 
                       {/* STATUS */}
-                      <td className="px-6 py-3.5 text-center">{getStatusBadge(row.status)}</td>
+                      <td className="px-6 py-3.5 text-center">
+                        {getStatusBadge(row.status)}
+                      </td>
 
                       {/* PRIORITY */}
-                      <td className="px-6 py-3.5 text-center">{getPriorityBadge(row.priority)}</td>
+                      <td className="px-6 py-3.5 text-center">
+                        {getPriorityBadge(row.priority)}
+                      </td>
 
                       {/* SCALE */}
-                      <td className="px-6 py-3.5 text-center font-medium text-white/80">{row.scale}</td>
+                      <td className="px-6 py-3.5 text-center font-medium text-white/80">
+                        {row.scale}
+                      </td>
 
                       {/* START DATE */}
-                      <td className="px-6 py-3.5 text-center text-white/70">{formatDate(row.startDate)}</td>
+                      <td className="px-6 py-3.5 text-center text-white/70">
+                        {formatDate(row.startDate)}
+                      </td>
 
                       {/* END DATE */}
-                      <td className="px-6 py-3.5 text-center text-white/70">{formatDate(row.dueDate)}</td>
+                      <td className="px-6 py-3.5 text-center text-white/70">
+                        {formatDate(row.dueDate)}
+                      </td>
 
                       {/* DURASI START-END */}
                       <td className="px-6 py-3.5 text-center font-medium text-indigo-200">
@@ -764,7 +968,9 @@ export default function ReportPage() {
                       </td>
 
                       {/* FINISH DATE */}
-                      <td className="px-6 py-3.5 text-center text-white/70">{formatDate(row.finishDate)}</td>
+                      <td className="px-6 py-3.5 text-center text-white/70">
+                        {formatDate(row.finishDate)}
+                      </td>
 
                       {/* DURASI START-FINISH */}
                       <td className="px-6 py-3.5 text-center font-medium text-white/60">
@@ -777,7 +983,9 @@ export default function ReportPage() {
                       </td>
 
                       {/* STATUS PENYELESAIAN */}
-                      <td className="px-6 py-3.5 text-center">{getCompletionBadge(row.completionStatus)}</td>
+                      <td className="px-6 py-3.5 text-center">
+                        {getCompletionBadge(row.completionStatus)}
+                      </td>
                     </tr>
                   );
                 })
@@ -792,13 +1000,19 @@ export default function ReportPage() {
             <div className="text-xs text-white/50">
               Showing{" "}
               <span className="font-semibold text-white">
-                {pagination.totalTasks > 0 ? (currentPage - 1) * pageSize + 1 : 0}
+                {pagination.totalTasks > 0
+                  ? (currentPage - 1) * pageSize + 1
+                  : 0}
               </span>{" "}
               to{" "}
               <span className="font-semibold text-white">
                 {Math.min(currentPage * pageSize, pagination.totalTasks)}
               </span>{" "}
-              of <span className="font-semibold text-white">{pagination.totalTasks}</span> tasks
+              of{" "}
+              <span className="font-semibold text-white">
+                {pagination.totalTasks}
+              </span>{" "}
+              tasks
             </div>
 
             <div className="flex items-center gap-4">
@@ -813,10 +1027,18 @@ export default function ReportPage() {
                   }}
                   className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white focus:outline-hidden"
                 >
-                  <option value="10" className="bg-[#18304B]">10</option>
-                  <option value="25" className="bg-[#18304B]">25</option>
-                  <option value="50" className="bg-[#18304B]">50</option>
-                  <option value="100" className="bg-[#18304B]">100</option>
+                  <option value="10" className="bg-[#18304B]">
+                    10
+                  </option>
+                  <option value="25" className="bg-[#18304B]">
+                    25
+                  </option>
+                  <option value="50" className="bg-[#18304B]">
+                    50
+                  </option>
+                  <option value="100" className="bg-[#18304B]">
+                    100
+                  </option>
                 </select>
               </div>
 
@@ -831,10 +1053,16 @@ export default function ReportPage() {
                 </button>
                 <div className="text-xs text-white/80">
                   Page <span className="font-semibold">{currentPage}</span> of{" "}
-                  <span className="font-semibold">{pagination.totalPages || 1}</span>
+                  <span className="font-semibold">
+                    {pagination.totalPages || 1}
+                  </span>
                 </div>
                 <button
-                  onClick={() => setCurrentPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) =>
+                      Math.min(pagination.totalPages, p + 1),
+                    )
+                  }
                   disabled={currentPage >= pagination.totalPages}
                   className="p-1.5 rounded bg-white/5 border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 transition-all active:scale-90"
                 >

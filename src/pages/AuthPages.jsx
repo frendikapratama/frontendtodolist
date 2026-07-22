@@ -7,7 +7,15 @@ import GradientText from "../components/ui/GradientText";
 import toast from "react-hot-toast";
 import TableMeeting from "./BookingMeeting/MeetingManagement/TableMeeting";
 import dayjs from "dayjs";
-import { Calendar, Clock, User, Lock, Eye, EyeOff } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+} from "lucide-react";
 
 export default function AuthCard() {
   const { login } = useContext(AuthContext);
@@ -33,7 +41,6 @@ export default function AuthCard() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [time, setTime] = useState(dayjs().format("HH:mm:ss"));
-
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,11 +81,14 @@ export default function AuthCard() {
     e.preventDefault();
     setError("");
     try {
+      setIsLoading(true);
       const res = await api.post("login", { identifier, password });
       await login(res.data.accessToken);
       navigate("/kuarter");
     } catch (err) {
       toast.error(err.response?.data?.message || "Login Failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -290,9 +300,24 @@ export default function AuthCard() {
 
         <button
           onClick={handleLoginSubmit}
-          className="w-full bg-linear-to-r from-[#1A3D64] to-[#1D546C] hover:from-[#1D546C] hover:to-[#1A3D64] text-white py-2.5 rounded-xl font-bold shadow-lg shadow-black/10 active:scale-[0.98] transition-all text-xs mt-2"
+          disabled={isLoading}
+          className={`
+    w-full py-2.5 rounded-xl font-bold text-xs mt-2
+    text-white transition-all
+    bg-linear-to-r from-[#1A3D64] to-[#1D546C]
+    hover:from-[#1D546C] hover:to-[#1A3D64]
+    shadow-lg shadow-black/10
+    ${isLoading ? "opacity-70 cursor-not-allowed" : "active:scale-[0.98]"}
+  `}
         >
-          Login
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              Logging in...
+              <Loader2 className="w-4 h-4 animate-spin" />
+            </span>
+          ) : (
+            "Login"
+          )}
         </button>
       </div>
     </div>
