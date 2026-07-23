@@ -1,4 +1,9 @@
-import { useMutation, useQueryClient, useQuery ,keepPreviousData } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useQuery,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -36,6 +41,7 @@ export const useUsersState = () => {
     divisi: "",
     posisi: "User",
     role: "",
+    canAccess: [],
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -62,7 +68,7 @@ export const useUsersState = () => {
   const userQuery = useQuery({
     queryKey: ["users", filters],
     queryFn: () => getUsers(filters),
-     placeholderData: keepPreviousData, 
+    placeholderData: keepPreviousData,
   });
 
   const mutation = useMutation({
@@ -78,7 +84,7 @@ export const useUsersState = () => {
       toast.success(
         variables.isEdit
           ? "User updated successfully"
-          : "User added successfully"
+          : "User added successfully",
       );
 
       queryClient.invalidateQueries({
