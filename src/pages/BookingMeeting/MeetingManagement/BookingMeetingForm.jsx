@@ -99,7 +99,11 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
   const fetchUsers = useCallback(async (query) => {
     if (!query) return [];
-    const res = await getUsers({ search: query, limit: 20 });
+    const res = await getUsers({
+      search: query,
+      limit: 20,
+      canAccess: "planify",
+    });
     const list = res?.data ?? [];
     return list.map((u) => ({
       _id: u._id,

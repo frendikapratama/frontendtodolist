@@ -18,6 +18,10 @@ export const getUsers = async (filters = {}) => {
     params.append("posisi", filters.posisi);
   }
 
+  if (filters.canAccess && filters.canAccess !== "all") {
+    params.append("canAccess", filters.canAccess);
+  }
+
   const response = await api.get(`/users?${params.toString()}`);
   return response.data;
 };
