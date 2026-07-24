@@ -270,49 +270,63 @@ const WorkspaceCard = ({
         <h4 className="font-semibold text-gray-900 mb-3 relative">
           All Members ({members.length})
         </h4>
-
-        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+        <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
           {members.map(
             (member, index) =>
               member.user && (
                 <div
                   key={member._id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 
-                  transition-colors duration-150"
+                  className="p-2.5 rounded-xl border border-gray-100 bg-white shadow-xs hover:border-gray-200 transition-all"
                 >
-                  <MemberAvatar
-                    member={member}
-                    index={index}
-                    size="sm"
-                    className="ring-2 ring-white"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">
-                      {member.user.username}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {member.user.email}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
-                      roleColors[member.role] || roleColors.viewer
-                    }`}
-                  >
-                    {member.role}
-                  </span>
-                  {isAdmin && (
-                    <Trash
-                      className="text-red-500 hover:text-red-800 w-6 h-5 cursor-pointer"
-                      onClick={() =>
-                        handleRemoveMemberClick(
-                          member._id,
-                          member.user._id,
-                          member.user.username,
-                        )
-                      }
+                  {/* Baris Atas: Avatar + User Info + Tombol Trash */}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <MemberAvatar
+                      member={member}
+                      index={index}
+                      size="sm"
+                      className="shrink-0"
                     />
-                  )}
+
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 text-xs truncate leading-snug">
+                        {member.user.username}
+                      </p>
+                      <p className="text-[11px] text-gray-500 truncate leading-tight">
+                        {member.user.email}
+                      </p>
+                    </div>
+
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleRemoveMemberClick(
+                            member._id,
+                            member.user._id,
+                            member.user.username,
+                          )
+                        }
+                        className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md shrink-0 transition-colors"
+                        title="Hapus"
+                      >
+                        <Trash className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Baris Bawah: Badge Role */}
+                  <div className="mt-2 pt-1.5 border-t border-gray-50 flex justify-between items-center">
+                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                      Role
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-medium border capitalize ${
+                        roleColors[member.role] || roleColors.viewer
+                      }`}
+                    >
+                      {member.role}
+                    </span>
+                  </div>
                 </div>
               ),
           )}

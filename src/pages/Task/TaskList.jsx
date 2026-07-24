@@ -59,28 +59,37 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   const { data, isLoading, isError } = taskByGroup;
   const { syncTasktoSubtasks, syncSubtasktoTask } = useStatusSync();
 
+  const userRole = useMemo(() => {
+    if (!currentUser || !membersWorkspaceQuery.data) return null;
+    const userMembership = membersWorkspaceQuery.data.members?.find(
+      (member) =>
+        member.user?._id === currentUser._id ||
+        member.user?._id === currentUser.id,
+    );
+    return userMembership ? userMembership.role : null;
+  }, [currentUser, membersWorkspaceQuery.data]);
+
   const isAuthorized = useMemo(() => {
-    if (!currentUser || !membersWorkspaceQuery.data) return false;
-    const userMembership = membersWorkspaceQuery.data.members?.find(
-      (member) =>
-        member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id,
-    );
-    if (!userMembership) return false;
     const allowedRoles = ["admin", "project_manager", "management"];
-    return allowedRoles.includes(userMembership.role);
-  }, [currentUser, membersWorkspaceQuery.data]);
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
+
   const isMember = useMemo(() => {
-    if (!currentUser || !membersWorkspaceQuery.data) return false;
-    const userMembership = membersWorkspaceQuery.data.members?.find(
-      (member) =>
-        member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id,
-    );
-    if (!userMembership) return false;
     const allowedRoles = ["admin", "project_manager", "member", "management"];
-    return allowedRoles.includes(userMembership.role);
-  }, [currentUser, membersWorkspaceQuery.data]);
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
+
+  const canView = useMemo(() => {
+    const allowedRoles = [
+      "admin",
+      "project_manager",
+      "member",
+      "management",
+      "viewer",
+    ];
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
+
   const isTaskPIC = useCallback(
     (task) => {
       if (!currentUser || !task.pic) return false;
@@ -93,11 +102,10 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
 
   const canEditStatus = useCallback(
     (task) => {
-      return isAuthorized || isTaskPIC(task);
+      return isAuthorized || (isMember && isTaskPIC(task));
     },
-    [isAuthorized, isTaskPIC],
+    [isAuthorized, isMember, isTaskPIC],
   );
-
   const [openDialog, setOpenDialog] = useState({ open: false, task: null });
   const [showAddTask, setShowAddTask] = useState(false);
   const [openSubtasks, setOpenSubtasks] = useState({});
@@ -300,7 +308,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         const task = localTasks.find((t) => t._id === taskId);
         setOpenDialog({ open: true, task: task });
       } else {
-        toast.error("Only Member can view task detailed");
+        toast.error("You don't have permission to view task details");
       }
     },
     [localTasks, isMember],
@@ -542,6 +550,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   );
 
   const handleDragStart = (e, index) => {
+    e.stopPropagation();
     const task = localTasks[index];
     setDragState({ index, task, fromGroup: groupId });
     e.dataTransfer.effectAllowed = "move";
@@ -553,16 +562,17 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   // consol
   const handleDragOver = (e, index) => {
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = "move";
 
-    const sourceGroupId = e.dataTransfer.getData("sourceGroupId");
-    const draggedTaskData = JSON.parse(
-      e.dataTransfer.getData("draggedTask") || "{}",
-    );
+    // Use dragState instead of e.dataTransfer.getData() because
+    // browsers block getData() during dragover events for security
+    const draggedTask = dragState.task;
+    const fromGroup = dragState.fromGroup;
 
-    if (!draggedTaskData._id) return;
+    if (!draggedTask) return;
 
-    const isSameGroup = sourceGroupId === groupId;
+    const isSameGroup = fromGroup === groupId;
 
     if (isSameGroup && dragState.index === index) return;
 
@@ -572,7 +582,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       if (isSameGroup) {
         const newTasks = [...filtered];
         const currentIndex = newTasks.findIndex(
-          (t) => t._id === draggedTaskData._id,
+          (t) => t._id === draggedTask._id,
         );
 
         if (currentIndex !== -1 && currentIndex !== index) {
@@ -583,7 +593,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         return newTasks;
       } else {
         const newTasks = [...filtered];
-        newTasks.splice(index, 0, { ...draggedTaskData, _isPreview: true });
+        newTasks.splice(index, 0, { ...draggedTask, _isPreview: true });
         return newTasks;
       }
     });
@@ -601,15 +611,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     const draggedTaskId = e.dataTransfer.getData("taskId");
     const isSameGroup = sourceGroupId === groupId;
 
-    setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
-
     if (isSameGroup) {
-      const finalTasks = localTasks
-        .filter((t) => !t._isPreview)
-        .map((t) => t._id);
-
-      updateTaskPositionsMutation.mutate(finalTasks);
+      // Use functional update to get the latest state
+      setLocalTasks((prev) => {
+        const finalTasks = prev.filter((t) => !t._isPreview).map((t) => t._id);
+        updateTaskPositionsMutation.mutate(finalTasks);
+        return prev.filter((t) => !t._isPreview);
+      });
     } else {
+      setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
       const dropEvent = new CustomEvent("taskDrop", {
         detail: {
           taskId: draggedTaskId,
@@ -624,7 +634,8 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     setDragState({ index: null, task: null, fromGroup: null });
   };
   //
-  const handleDragEnd = () => {
+  const handleDragEnd = (e) => {
+    if (e) e.stopPropagation();
     setLocalTasks((prev) => prev.filter((t) => !t._isPreview));
     setDragState({ index: null, task: null, fromGroup: null });
   };
@@ -989,12 +1000,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
             >
               {/* console */}
               <div
-                draggable
+                draggable={isMember}
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={(e) => throttledDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                a
                 className={`flex items-center hover:bg-none ${
                   isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
                 } ${
@@ -1007,7 +1017,9 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 <div
                   className={`flex-1 flex items-center ${
                     columnWidths.task
-                  } gap-1 px-3 py-3.5 border-b border-gray-100 cursor-grab active:cursor-grabbing sticky left-0 bg-[#EFECE3] z-20 ${
+                  } gap-1 px-3 py-3.5 border-b border-gray-100 ${
+                    isMember ? "cursor-grab active:cursor-grabbing" : ""
+                  } sticky left-0 bg-[#EFECE3] z-20 ${
                     isDragging ? "bg-gray-600" : ""
                   } ${isPreview ? "bg-blue-50" : ""}`}
                 >
@@ -1056,13 +1068,19 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     />
                   ) : (
                     <span
-                      className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text break-all line-clamp-10 flex-1 min-w-0"
+                      className={`text-[0.8em] text-gray-700 ${
+                        isMember
+                          ? "hover:bg-gray-100 cursor-pointer"
+                          : "cursor-default"
+                      } px-1 rounded break-all line-clamp-10 flex-1 min-w-0`}
                       onClick={() => {
-                        setEditingField({
-                          taskId: task._id,
-                          field: "nama",
-                        });
-                        setEditedValue(task.nama);
+                        if (isMember) {
+                          setEditingField({
+                            taskId: task._id,
+                            field: "nama",
+                          });
+                          setEditedValue(task.nama);
+                        }
                       }}
                     >
                       {task.nama}
@@ -1382,8 +1400,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) =>
                       (buttonRefs.current[`start_date-${task._id}`] = el)
                     }
-                    className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    className={`text-[0.8em] text-gray-600 ${
+                      isMember
+                        ? "cursor-pointer hover:bg-gray-100"
+                        : "cursor-default"
+                    } px-1 rounded`}
                     onClick={() =>
+                      isMember &&
                       setActivePopup({
                         taskId: task._id,
                         field: "start_date",
@@ -1455,8 +1478,13 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) =>
                       (buttonRefs.current[`finish_date-${task._id}`] = el)
                     }
-                    className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+                    className={`text-[0.8em] text-gray-600 ${
+                      isMember
+                        ? "cursor-pointer hover:bg-gray-100"
+                        : "cursor-default"
+                    } px-1 rounded`}
                     onClick={() =>
+                      isMember &&
                       setActivePopup({
                         taskId: task._id,
                         field: "finish_date",
@@ -1561,16 +1589,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       />
                     ) : (
                       <div
-                        className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 break-all px-2 py-1 rounded cursor-pointer w-full"
+                        className={`text-[0.8em] text-center text-gray-700 ${
+                          isMember
+                            ? "hover:bg-gray-100 cursor-pointer"
+                            : "cursor-default"
+                        } line-clamp-5 break-all px-2 py-1 rounded w-full`}
                         onClick={() => {
-                          setEditingField({
-                            taskId: task._id,
-                            field: "reason",
-                          });
-                          setReasonInput((prev) => ({
-                            ...prev,
-                            [task._id]: task.reason || "",
-                          }));
+                          if (isMember) {
+                            setEditingField({
+                              taskId: task._id,
+                              field: "reason",
+                            });
+                            setReasonInput((prev) => ({
+                              ...prev,
+                              [task._id]: task.reason || "",
+                            }));
+                          }
                         }}
                         title={task.reason}
                       >
@@ -1689,13 +1723,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 />
               </div>
             ) : (
-              <button
-                onClick={() => setShowAddTask(true)}
-                className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
-              >
-                <Plus className="w-4 h-4" />
-                Add task
-              </button>
+              isMember && (
+                <button
+                  onClick={() => setShowAddTask(true)}
+                  className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add task
+                </button>
+              )
             )}
           </div>
         )}
@@ -1752,13 +1788,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 }
               }}
             >
-              <button
-                onClick={() => setShowAddTask(true)}
-                className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
-              >
-                <Plus className="w-4 h-4" />
-                Add task
-              </button>
+              {isMember && (
+                <button
+                  onClick={() => setShowAddTask(true)}
+                  className="flex items-center gap-2 text-[0.8em] text-gray-500 hover:text-blue-600"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add task
+                </button>
+              )}
             </div>
           ))}
         <div ref={tableEndRef} className="h-1" />

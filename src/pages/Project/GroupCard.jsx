@@ -485,10 +485,14 @@ const GroupCard = ({ group, index, workspaceId }) => {
         `}
         onDragOver={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           setIsDragOver(true);
         }}
         onDragLeave={() => setIsDragOver(false)}
-        onDrop={handleDrop}
+        onDrop={(e) => {
+          e.stopPropagation();
+          handleDrop(e);
+        }}
       >
         <TaskList
           groupId={group._id}

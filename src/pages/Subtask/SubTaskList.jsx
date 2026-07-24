@@ -81,29 +81,30 @@ const SubtaskList = ({
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
 
   // ─── Authorization (sama persis dengan pola di TaskList) ───────────────────
-  const isAuthorized = useMemo(() => {
-    if (!currentUser || !membersWorkspaceQuery.data) return false;
+  const userRole = useMemo(() => {
+    if (!currentUser || !membersWorkspaceQuery.data) return null;
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
         member.user?._id === currentUser.id,
     );
-    if (!userMembership) return false;
-    const allowedRoles = ["admin", "project_manager", "management"];
-    return allowedRoles.includes(userMembership.role);
+    return userMembership ? userMembership.role : null;
   }, [currentUser, membersWorkspaceQuery.data]);
 
+  const isAuthorized = useMemo(() => {
+    const allowedRoles = ["admin", "project_manager", "management"];
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
+
   const isMember = useMemo(() => {
-    if (!currentUser || !membersWorkspaceQuery.data) return false;
-    const userMembership = membersWorkspaceQuery.data.members?.find(
-      (member) =>
-        member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id,
-    );
-    if (!userMembership) return false;
     const allowedRoles = ["admin", "project_manager", "member", "management"];
-    return allowedRoles.includes(userMembership.role);
-  }, [currentUser, membersWorkspaceQuery.data]);
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
+
+  const canView = useMemo(() => {
+    const allowedRoles = ["admin", "project_manager", "member", "management", "viewer"];
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
 
   // Cek apakah user adalah PIC dari subtask tertentu
   const isSubtaskPIC = useCallback(
@@ -116,12 +117,12 @@ const SubtaskList = ({
     [currentUser],
   );
 
-  // Member bisa edit status jika dia authorized ATAU dia PIC subtask tsb
+  // Member bisa edit status jika dia authorized ATAU (dia isMember & PIC subtask tsb)
   const canEditStatus = useCallback(
     (subtask) => {
-      return isAuthorized || isSubtaskPIC(subtask);
+      return isAuthorized || (isMember && isSubtaskPIC(subtask));
     },
-    [isAuthorized, isSubtaskPIC],
+    [isAuthorized, isMember, isSubtaskPIC],
   );
 
   // Helper: hanya jalankan fn jika authorized
@@ -601,18 +602,18 @@ const SubtaskList = ({
       {displaySubtasks.map((s, index) => (
         <div
           key={s._id}
-          draggable={!readOnly}
-          onDragStart={(e) => !readOnly && handleDragStart(e, index)}
-          onDragOver={(e) => !readOnly && throttledDragOver(e, index)}
-          onDrop={!readOnly ? handleDrop : undefined}
-          onDragEnd={!readOnly ? handleDragEnd : undefined}
+          draggable={!readOnly && isMember}
+          onDragStart={(e) => !readOnly && isMember && handleDragStart(e, index)}
+          onDragOver={(e) => !readOnly && isMember && throttledDragOver(e, index)}
+          onDrop={!readOnly && isMember ? handleDrop : undefined}
+          onDragEnd={!readOnly && isMember ? handleDragEnd : undefined}
           className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""}`}
         >
           {/* ── Name Column ── */}
           <div
-            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 cursor-grab active:cursor-grabbing sticky left-0 bg-[#F0E4D3] z-20`}
+            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 ${isMember ? "cursor-grab active:cursor-grabbing" : ""} sticky left-0 bg-[#F0E4D3] z-20`}
           >
-            <div className="pl-3 cursor-grab active:cursor-grabbing">
+            <div className={`pl-3 ${isMember ? "cursor-grab active:cursor-grabbing" : ""}`}>
               <svg
                 className="w-4 h-4 text-gray-400"
                 fill="none"
@@ -639,7 +640,7 @@ const SubtaskList = ({
               />
             ) : (
               <span
-                className="text-[0.8em] text-gray-700 hover:bg-gray-100 px-1 rounded cursor-text whitespace-normal break-all line-clamp-5"
+                className={`text-[0.8em] text-gray-700 ${!readOnly && isMember ? "hover:bg-gray-100 cursor-pointer" : "cursor-default"} px-1 rounded whitespace-normal break-all line-clamp-5`}
                 onClick={() => {
                   // Semua member bisa edit nama subtask (sama dgn task)
                   if (!readOnly && isMember) {
@@ -1099,7 +1100,7 @@ const SubtaskList = ({
                 />
               ) : (
                 <div
-                  className="text-[0.8em] text-center text-gray-700 hover:bg-gray-100 line-clamp-5 break-all px-2 py-1 rounded cursor-pointer w-full"
+                  className={`text-[0.8em] text-center text-gray-700 ${isMember ? "hover:bg-gray-100 cursor-pointer" : "cursor-default"} line-clamp-5 break-all px-2 py-1 rounded w-full`}
                   onClick={() => {
                     // Semua member bisa isi reason
                     if (isMember) {
@@ -1130,7 +1131,7 @@ const SubtaskList = ({
                 if (isMember) {
                   setOpenDialog({ open: true, subtask: s });
                 } else {
-                  toast.error("Only members can view subtask details");
+                  toast.error("You don't have permission to view subtask details");
                 }
               }}
             >
@@ -1184,7 +1185,7 @@ const SubtaskList = ({
           />
         </div>
       ) : (
-        showAddButton && (
+        showAddButton && isMember && (
           <button
             onClick={() => setShowForm(true)}
             className="sticky left-0 bg-[#F0E4D3] pl-4 mt-1 flex text-[0.8em] items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"

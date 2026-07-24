@@ -102,32 +102,25 @@ const DialogDetail = ({
 
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
 
-  const isAuthorized = useMemo(() => {
-    if (!currentUser || !membersWorkspaceQuery.data) return false;
-
+  const userRole = useMemo(() => {
+    if (!currentUser || !membersWorkspaceQuery.data) return null;
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
         member.user?._id === currentUser.id,
     );
-
-    if (!userMembership) return true;
-
-    const memberOnlyRoles = ["member"];
-    return !memberOnlyRoles.includes(userMembership.role);
+    return userMembership ? userMembership.role : null;
   }, [currentUser, membersWorkspaceQuery.data]);
 
-  // const isAuthorized = useMemo(() => {
-  //   if (!currentUser || !membersWorkspaceQuery.data) return false;
+  const isAuthorized = useMemo(() => {
+    const allowedRoles = ["admin", "project_manager", "management"];
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
 
-  //   const userMembership = membersWorkspaceQuery.data.members?.find(
-  //     (member) =>
-  //       member.user?._id === currentUser._id ||
-  //       member.user?._id === currentUser.id,
-  //   );
-
-  //   return !!userMembership;
-  // }, [currentUser, membersWorkspaceQuery.data]);
+  const isMember = useMemo(() => {
+    const allowedRoles = ["admin", "project_manager", "member", "management"];
+    return allowedRoles.includes(userRole);
+  }, [userRole]);
 
   const isItemPIC = useMemo(() => {
     if (!currentUser || !taskData?.pic) return false;
@@ -136,8 +129,7 @@ const DialogDetail = ({
     );
   }, [currentUser, taskData]);
 
-  // const canEditDescription = isAuthorized || isItemPIC;
-  const canEditDescription = isAuthorized;
+  const canEditDescription = isAuthorized || (isMember && isItemPIC);
 
   const isFileOwner = (fileObj) => {
     const userId = currentUser?._id || currentUser?.id;
