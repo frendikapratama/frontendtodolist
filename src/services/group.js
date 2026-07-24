@@ -10,6 +10,11 @@ export async function updategroup(groupId, data) {
   return res.data.data;
 }
 
+export async function updateGroupPositions(projectId, groupIds) {
+  const res = await api.put(`group/${projectId}/positions`, { groupIds });
+  return res.data;
+}
+
 export async function deleteGroup(groupId) {
   const res = await api.delete(`group/${groupId}`);
   return res.data.data;

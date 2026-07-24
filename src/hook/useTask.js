@@ -15,13 +15,13 @@ import {
 } from "../services/task";
 import toast from "react-hot-toast";
 
-export const useTask = (groupId, filters = {} /*searchQuery = */) => {
+export const useTask = (groupId, filters = {}, options = { enabled: true } /*searchQuery = */) => {
   const queryClient = useQueryClient();
 
   const taskByGroup = useQuery({
     queryKey: ["task", groupId, filters], // Include all filters in queryKey
     queryFn: () => getByGroup(groupId, filters),
-    enabled: !!groupId,
+    enabled: !!groupId && options.enabled,
   });
 
   const addTaskMutation = useMutation({

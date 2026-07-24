@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { addGroupToProject, updategroup, deleteGroup, getGroupsByKuarter } from "../services/group";
+import { addGroupToProject, updategroup, deleteGroup, getGroupsByKuarter, updateGroupPositions } from "../services/group";
 import toast from "react-hot-toast";
 export const useGroup = () => {
   const queryClient = useQueryClient();
@@ -22,9 +22,11 @@ export const useGroup = () => {
   });
 
   const updateGroupMutation = useMutation({
-    mutationFn: ({ groupId, data }) => updategroup(groupId, data),
-    onSuccess: () => {
-      toast.success("Group updated successfully");
+    mutationFn: ({ groupId, data, hideToast }) => updategroup(groupId, data),
+    onSuccess: (data, variables) => {
+      if (!variables.hideToast) {
+        toast.success("Group updated successfully");
+      }
       queryClient.invalidateQueries({ queryKey: ["project"] });
     },
     onError: (error) => {
@@ -55,10 +57,22 @@ export const useGroup = () => {
     },
   });
 
+  const updateGroupPositionsMutation = useMutation({
+    mutationFn: ({ projectId, groupIds }) => updateGroupPositions(projectId, groupIds),
+    onSuccess: () => {
+      toast.success("Group position updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["project"] });
+    },
+    onError: () => {
+      toast.error("Failed to update group positions");
+    },
+  });
+
   return {
     addGroupMutation,
     updateGroupMutation,
     deleteMutation,
+    updateGroupPositionsMutation,
   };
 };
 

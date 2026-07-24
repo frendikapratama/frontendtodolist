@@ -84,7 +84,10 @@ const TimeWheelPicker = ({ value, onChange, placeholder = "Select time" }) => {
         <span className={value ? "text-white" : "text-slate-500"}>
           {value || placeholder}
         </span>
-        <Clock size={16} className="text-slate-400" />
+        <Clock
+          size={16}
+          className="text-slate-400 cursor-context-menu hover:text-white"
+        />
       </button>
 
       {open && (

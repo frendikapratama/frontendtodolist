@@ -8,7 +8,9 @@ import { useProgress } from "../../hook/useProgress";
 import { useRecentUpdates } from "../../context/RecentlyContext";
 
 const GroupCard = ({ group, index, workspaceId }) => {
-  const { taskByGroup: allTasksQuery } = useTask(group._id, {});
+  const [isCardOpen, setIsCardOpen] = useState(group.isOpen ?? false);
+
+  const { taskByGroup: allTasksQuery } = useTask(group._id, {}, { enabled: isCardOpen });
   const majorCount =
     allTasksQuery.data?.filter((t) => t.type === "Major").length || 0;
   const minorCount =
@@ -35,6 +37,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
   const { taskByGroup, updateTaskMutation } = useTask(
     group._id,
     debouncedFilters,
+    { enabled: isCardOpen }
   );
   const { updateGroupMutation, deleteMutation } = useGroup();
   const { progressByGroup } = useProgress(group._id);
@@ -45,7 +48,6 @@ const GroupCard = ({ group, index, workspaceId }) => {
   } = useRecentUpdates();
 
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isCardOpen, setIsCardOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(group.nama);
   const [confirmDelete, setConfirmDelete] = useState({
@@ -113,6 +115,16 @@ const GroupCard = ({ group, index, workspaceId }) => {
     return () => document.removeEventListener("taskDrop", handleTaskDrop);
   }, [group._id, updateTaskMutation]);
 
+  const handleToggleCard = () => {
+    const newIsOpen = !isCardOpen;
+    setIsCardOpen(newIsOpen);
+    updateGroupMutation.mutate({
+      groupId: group._id,
+      data: { isOpen: newIsOpen },
+      hideToast: true,
+    });
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
@@ -176,7 +188,7 @@ const GroupCard = ({ group, index, workspaceId }) => {
             className={`w-5 h-5 text-white cursor-pointer transition-transform duration-500 ${
               isCardOpen ? "rotate-0" : "-rotate-90"
             }`}
-            onClick={() => setIsCardOpen(!isCardOpen)}
+            onClick={handleToggleCard}
           />
           {isEditing ? (
             <input

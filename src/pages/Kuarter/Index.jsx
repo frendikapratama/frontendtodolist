@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useKuarter } from "../../hook/useKuarter";
 import { useNavigate } from "react-router-dom";
 import { KuarterForm } from "./KuarterForm";
@@ -6,23 +6,53 @@ import { Dot, Trash2, Eye } from "lucide-react";
 import NotificationBell from "../../components/ui/NotificationBell";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { AuthContext } from "../../context/AuthContext";
+
 const Kuarter = () => {
   const { kuarterQuery, updatedKuarterMutation, deleteMutation } = useKuarter();
   const [editing, setEditing] = useState(null);
   const [editedName, setEditedName] = useState("");
   const [toDelete, setToDelete] = useState(null);
   const [activeIndex, setActiveIndex] = useState({});
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
   const isAdmin = user?.isSystemAdmin === true;
   // Warna untuk setiap status
   const STATUS_COLORS = {
-    "To Do": "#f59e0b",
-    "In Progress": "#3b82f6",
-    Done: "#10b981",
-    "On Hold": "#6b7280",
-    Blocked: "#ef4444",
+    "To Do": "#f59e0b", // Amber / Orange
+    "In Progress": "#3b82f6", // Blue
+    Done: "#10b981", // Emerald Green
+    "Done-In review": "#06b6d4", // Cyan / Teal (Bedas dari Green)
+    Hold: "#64748b", // Slate / Cool Gray (Bedas dari Green & Cyan)
+    Blocked: "#ef4444", // Red
+  };
+
+  const ALL_STATUSES = [
+    "Done",
+    "To Do",
+    "Done-In review",
+    "In Progress",
+    "Hold",
+    "Blocked",
+  ];
+
+  // 3. Helper untuk memetakan data task
+  const getChartData = (kuarter) => {
+    const totalTask = kuarter.totalTask || 0;
+
+    return ALL_STATUSES.map((status) => {
+      // Menangani variasi key (misal kuarter["Done-In review"] atau kuarter["DoneInReview"])
+      const value = kuarter[status] || 0;
+      const percentage =
+        totalTask > 0 ? ((value / totalTask) * 100).toFixed(1) : "0.0";
+
+      return {
+        name: status,
+        value: value,
+        color: STATUS_COLORS[status] || "#6b7280",
+        percentage: percentage,
+      };
+    });
   };
 
   // Custom Tooltip
@@ -78,37 +108,37 @@ const Kuarter = () => {
   };
 
   // Function untuk mengkonversi data task ke format pie chart
-  const getChartData = (kuarter) => {
-    const data = [];
-    const statuses = Object.keys(kuarter).filter(
-      (key) =>
-        ![
-          "_id",
-          "nama",
-          "workspace",
-          "departemen",
-          "createdAt",
-          "updatedAt",
-          "__v",
-          "totalTask",
-        ].includes(key)
-    );
+  // const getChartData = (kuarter) => {
+  //   const data = [];
+  //   const statuses = Object.keys(kuarter).filter(
+  //     (key) =>
+  //       ![
+  //         "_id",
+  //         "nama",
+  //         "workspace",
+  //         "departemen",
+  //         "createdAt",
+  //         "updatedAt",
+  //         "__v",
+  //         "totalTask",
+  //       ].includes(key),
+  //   );
 
-    const totalTask = kuarter.totalTask || 1;
+  //   const totalTask = kuarter.totalTask || 1;
 
-    statuses.forEach((status) => {
-      if (kuarter[status] > 0) {
-        data.push({
-          name: status,
-          value: kuarter[status],
-          color: STATUS_COLORS[status] || "#6b7280",
-          percentage: ((kuarter[status] / totalTask) * 100).toFixed(1),
-        });
-      }
-    });
+  //   statuses.forEach((status) => {
+  //     if (kuarter[status] > 0) {
+  //       data.push({
+  //         name: status,
+  //         value: kuarter[status],
+  //         color: STATUS_COLORS[status] || "#6b7280",
+  //         percentage: ((kuarter[status] / totalTask) * 100).toFixed(1),
+  //       });
+  //     }
+  //   });
 
-    return data;
-  };
+  //   return data;
+  // };
 
   useEffect(() => {
     if (deleteMutation.isSuccess) {
@@ -247,78 +277,85 @@ const Kuarter = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {kuarterQuery.data?.map((kuarter) => {
               const chartData = getChartData(kuarter);
+              const hasTasks = chartData.some((item) => item.value > 0);
               const currentActiveIndex = activeIndex[kuarter._id];
 
               return (
                 <div
                   key={kuarter._id}
-                  className="bg-[#1A3D64]/30 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl hover:bg-[#1A3D64]/40 transition-all duration-300 overflow-hidden animate-fadeIn"
+                  className="bg-[#1A3D64]/30 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl hover:bg-[#1A3D64]/40 transition-all duration-300 overflow-hidden animate-fadeIn flex flex-col justify-between"
                 >
-                  <div className="p-5 space-y-4">
-                    {/* Header */}
-                    {editing === kuarter._id ? (
-                      <input
-                        type="text"
-                        className="text-lg font-semibold text-white bg-[#1D546C]/40 border border-white/30 rounded-xl px-3 py-2 w-full focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                        value={editedName}
-                        autoFocus
-                        onChange={(e) => setEditedName(e.target.value)}
-                        onBlur={() => handleEdit(kuarter._id)}
-                        onKeyDown={(e) => handleEditKeyDown(e, kuarter._id)}
-                      />
-                    ) : (
-                      <h2
-                        className="text-xl font-bold text-white hover:bg-[#1D546C]/30 px-2 py-1 rounded-lg cursor-pointer transition-all duration-200"
-                        onClick={() => {
-                          setEditing(kuarter._id);
-                          setEditedName(kuarter.nama);
-                        }}
-                      >
-                        {kuarter.nama}
-                      </h2>
-                    )}
+                  <div className="p-5 flex flex-col justify-between h-full space-y-4">
+                    {/* Header & Department */}
+                    <div className="space-y-3">
+                      {editing === kuarter._id ? (
+                        <input
+                          type="text"
+                          className="text-lg font-semibold text-white bg-[#1D546C]/40 border border-white/30 rounded-xl px-3 py-2 w-full focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                          value={editedName}
+                          autoFocus
+                          onChange={(e) => setEditedName(e.target.value)}
+                          onBlur={() => handleEdit(kuarter._id)}
+                          onKeyDown={(e) => handleEditKeyDown(e, kuarter._id)}
+                        />
+                      ) : (
+                        <div className="min-h-14 flex items-center">
+                          <h2
+                            className="text-lg font-bold text-white hover:bg-[#1D546C]/30 px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 line-clamp-2 leading-snug w-full"
+                            title={kuarter.nama}
+                            onClick={() => {
+                              setEditing(kuarter._id);
+                              setEditedName(kuarter.nama);
+                            }}
+                          >
+                            {kuarter.nama}
+                          </h2>
+                        </div>
+                      )}
 
-                    {/* Department Badge */}
-                    <div
-                      className={`flex items-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 w-fit ${
-                        kuarter.departemen === "PBPG"
-                          ? "text-blue-400"
-                          : kuarter.departemen === "HPC"
-                          ? "text-green-400"
-                          : kuarter.departemen === "PT"
-                          ? "text-yellow-400"
-                          : "text-red-400"
-                      }`}
-                    >
-                      <Dot className="w-9 h-9 animate-pulse" />
-                      <p className="text-sm font-bold pr-3">
-                        {kuarter.departemen}
-                      </p>
+                      {/* Department Badge */}
+                      <div
+                        className={`flex items-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 w-fit ${
+                          kuarter.departemen === "PBPG"
+                            ? "text-blue-400"
+                            : kuarter.departemen === "HPC"
+                              ? "text-green-400"
+                              : kuarter.departemen === "PT"
+                                ? "text-yellow-400"
+                                : "text-red-400"
+                        }`}
+                      >
+                        <Dot className="w-9 h-9 animate-pulse" />
+                        <p className="text-sm font-bold pr-3">
+                          {kuarter.departemen}
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Chart Section */}
-                    {chartData.length > 0 ? (
-                      <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="text-sm font-semibold text-white">
-                            Task Distribution
-                          </h4>
-                          <span className="text-xs bg-blue-500/30 text-white px-2 py-1 rounded-full">
-                            Total: {kuarter.totalTask || 0}
-                          </span>
-                        </div>
+                    {/* Chart & Legend Section */}
+                    <div className="bg-white/5 rounded-xl p-4 border border-white/10 flex-1 flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-sm font-semibold text-white">
+                          Task Distribution
+                        </h4>
+                        <span className="text-xs bg-blue-500/30 text-white px-2.5 py-1 rounded-full font-medium">
+                          Total: {kuarter.totalTask || 0}
+                        </span>
+                      </div>
 
-                        <ResponsiveContainer width="100%" height={200}>
+                      {/* Chart Render */}
+                      {hasTasks ? (
+                        <ResponsiveContainer width="100%" height={180}>
                           <PieChart>
                             <Pie
-                              data={chartData}
+                              data={chartData.filter((d) => d.value > 0)}
                               cx="50%"
                               cy="50%"
                               labelLine={false}
-                              outerRadius={70}
+                              outerRadius={65}
                               fill="#8884d8"
                               dataKey="value"
                               onMouseEnter={(_, index) =>
@@ -330,73 +367,79 @@ const Kuarter = () => {
                               label={renderCustomLabel}
                               isAnimationActive={true}
                             >
-                              {chartData.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${index}`}
-                                  fill={entry.color}
-                                  opacity={
-                                    currentActiveIndex === null ||
-                                    currentActiveIndex === index
-                                      ? 1
-                                      : 0.6
-                                  }
-                                  style={{
-                                    filter:
+                              {chartData
+                                .filter((d) => d.value > 0)
+                                .map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color}
+                                    opacity={
+                                      currentActiveIndex === null ||
                                       currentActiveIndex === index
-                                        ? "brightness(1.1)"
-                                        : "brightness(1)",
-                                    transition: "all 0.3s ease",
-                                    cursor: "pointer",
-                                  }}
-                                />
-                              ))}
+                                        ? 1
+                                        : 0.6
+                                    }
+                                    style={{
+                                      filter:
+                                        currentActiveIndex === index
+                                          ? "brightness(1.1)"
+                                          : "brightness(1)",
+                                      transition: "all 0.3s ease",
+                                      cursor: "pointer",
+                                    }}
+                                  />
+                                ))}
                             </Pie>
                             <Tooltip content={<CustomTooltip />} />
                           </PieChart>
                         </ResponsiveContainer>
+                      ) : (
+                        <div className="flex items-center justify-center h-[180px]">
+                          <p className="text-gray-400 text-sm">No tasks yet</p>
+                        </div>
+                      )}
 
-                        {/* Legend */}
-                        <div className="grid grid-cols-2 gap-2 mt-3">
-                          {chartData.map((entry, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 text-xs cursor-pointer hover:bg-white/5 p-2 rounded transition-colors"
-                              onMouseEnter={() =>
-                                onPieEnter(null, index, kuarter._id)
-                              }
-                              onMouseLeave={() => onPieLeave(kuarter._id)}
-                            >
+                      {/* Fixed Legend - Menampilkan Semua 5 Status */}
+                      <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-white/10">
+                        {chartData.map((entry, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between text-xs p-1.5 rounded hover:bg-white/5 transition-colors"
+                          >
+                            <div className="flex items-center gap-2 truncate">
                               <div
-                                className="w-3 h-3 rounded-full"
+                                className="w-2.5 h-2.5 rounded-full shrink-0"
                                 style={{ backgroundColor: entry.color }}
                               ></div>
-                              <span className="text-gray-300">
+                              <span
+                                className="text-gray-300 truncate"
+                                title={entry.name}
+                              >
                                 {entry.name}
                               </span>
                             </div>
-                          ))}
-                        </div>
+                            <span className="text-gray-400 text-[10px] font-mono ml-1 shrink-0">
+                              {entry.value}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ) : (
-                      <div className="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-center h-[200px]">
-                        <p className="text-gray-400 text-sm">No tasks yet</p>
-                      </div>
-                    )}
+                    </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
-                         {isAdmin && (
-                      <button
-                        className="flex-1 px-4 py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-medium rounded-xl transition-all duration-200 border border-red-500/30 flex items-center justify-center gap-2"
-                        onClick={() => {
-                          setToDelete(kuarter._id);
-                          ConfirmationModal();
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                      </button>
-                            )}
+                    <div className="flex gap-2 pt-2">
+                      {isAdmin && (
+                        <button
+                          className="flex-1 px-4 py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-medium rounded-xl transition-all duration-200 border border-red-500/30 flex items-center justify-center gap-2"
+                          onClick={() => {
+                            setToDelete(kuarter._id);
+                            ConfirmationModal();
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      )}
                       <button
                         className="flex-1 px-4 py-2.5 bg-primary hover:from-blue-400 hover:shadow-xl text-white font-medium rounded-xl shadow-lg shadow-blue-500/50 transition-all duration-300 flex items-center justify-center gap-2"
                         onClick={() => handleDetailKuarter(kuarter._id)}

@@ -29,6 +29,9 @@ const ProjectDetailPage = () => {
   const { selectedWorkspaceId, setSelectedWorkspaceId } =
     useSelectedWorkspace();
   const [viewMode, setViewMode] = useState("table");
+  const [localGroups, setLocalGroups] = useState([]);
+  const [draggedGroupIndex, setDraggedGroupIndex] = useState(null);
+  const { updateGroupPositionsMutation } = useGroup();
 
   // State untuk edit nama project
   const [isEditingName, setIsEditingName] = useState(false);
@@ -40,6 +43,10 @@ const ProjectDetailPage = () => {
       data.workspace?._id || data.workspaceId || data.workspaceId?._id || null;
 
     if (workspaceId) setSelectedWorkspaceId(workspaceId);
+    
+    if (data.groups) {
+      setLocalGroups([...data.groups].sort((a, b) => (Number(a.position) || 0) - (Number(b.position) || 0)));
+    }
   }, [data, setSelectedWorkspaceId]);
 
   useEffect(() => {
@@ -106,6 +113,30 @@ const ProjectDetailPage = () => {
     } else if (e.key === "Escape") {
       handleCancelEdit();
     }
+  };
+
+  const handleGroupDragStart = (e, index) => {
+    setDraggedGroupIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleGroupDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedGroupIndex === null || draggedGroupIndex === index) return;
+
+    setLocalGroups((prev) => {
+      const newGroups = [...prev];
+      const [removed] = newGroups.splice(draggedGroupIndex, 1);
+      newGroups.splice(index, 0, removed);
+      return newGroups;
+    });
+    setDraggedGroupIndex(index);
+  };
+
+  const handleGroupDragEnd = () => {
+    setDraggedGroupIndex(null);
+    const newGroupIds = localGroups.map(g => g._id);
+    updateGroupPositionsMutation.mutate({ projectId: id, groupIds: newGroupIds });
   };
 
   if (isLoading) {
@@ -255,17 +286,25 @@ const ProjectDetailPage = () => {
       <div className="max-w-full px-8 py-6">
         {viewMode === "table" && (
           <div className="space-y-3">
-            {data.groups &&
-              data.groups.map((group, index) => (
-                <GroupCard
+            {localGroups &&
+              localGroups.map((group, index) => (
+                <div
                   key={group._id}
-                  group={group}
-                  index={index}
-                  workspaceId={actualWorkspaceId}
-                />
+                  draggable
+                  onDragStart={(e) => handleGroupDragStart(e, index)}
+                  onDragOver={(e) => handleGroupDragOver(e, index)}
+                  onDragEnd={handleGroupDragEnd}
+                  className="cursor-move"
+                >
+                  <GroupCard
+                    group={group}
+                    index={index}
+                    workspaceId={actualWorkspaceId}
+                  />
+                </div>
               ))}
 
-            {(!data.groups || data.groups.length === 0) && (
+            {(!localGroups || localGroups.length === 0) && (
               <div className="text-center py-20 bg-[#EFECE3] rounded-lg border-2 border-dashed border-gray-300">
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">

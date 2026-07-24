@@ -339,181 +339,169 @@ export default function Sidebar() {
                 .map((item) => renderMenuItem(item))}
               {/* Quarters Section */}
               {kuarters?.length > 0 && (
-                <div className="px-3">
+                <div className="px-2 pt-2 border-t border-gray-300/60 mt-2">
                   {isSidebarOpen ? (
                     <>
+                      {/* Toggle Head Section */}
                       <button
-                        onClick={() =>
-                          setShowQuartersSection(!showQuartersSection)
-                        }
-                        className="w-full flex items-center justify-between text-[0.8em] pt-2 font-semibold text-gray-500 uppercase mb-2 hover:text-gray-700 transition-colors"
+                        type="button"
+                        onClick={() => setShowQuartersSection((prev) => !prev)}
+                        className="w-full flex items-center justify-between px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-800 transition-colors rounded-md"
                       >
                         <span>Quarters</span>
                         <ChevronRight
-                          className={`w-4 h-4 transition-transform ${
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
                             showQuartersSection ? "rotate-90" : ""
                           }`}
                         />
                       </button>
 
+                      {/* Quarters List */}
                       {showQuartersSection && (
-                        <div className="space-y-1">
+                        <div className="mt-1 space-y-1">
                           {kuarters.map((k) => {
                             const isQuarterActive = selectedQuarterId === k._id;
 
                             return (
-                              <div key={k._id}>
+                              <div
+                                key={k._id}
+                                className="rounded-lg overflow-hidden transition-all"
+                              >
+                                {/* Quarter Card Button */}
                                 <button
+                                  type="button"
                                   onClick={() => {
-                                    navigate(`/kuarter/${k._id}`);
-                                    setSelectedQuarterId(k._id);
-                                    if (k.workspace && k.workspace.length > 0) {
-                                      setSelectedWorkspaceId(k.workspace[0]);
+                                    if (isQuarterActive) {
+                                      setSelectedQuarterId(null);
+                                    } else {
+                                      setSelectedQuarterId(k._id);
+                                      navigate(`/kuarter/${k._id}`);
+                                      setSelectedWorkspaceId(null);
                                     }
                                     if (window.innerWidth < 1024) {
                                       setIsSidebarOpen(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center px-3 h-10 py-2.5 rounded-lg transition-all group ${
-                                    location.pathname === `/kuarter/${k._id}` &&
-                                    isSidebarOpen
-                                      ? "bg-blue-600 text-white"
-                                      : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    location.pathname.startsWith(
+                                      `/kuarter/${k._id}`,
+                                    )
+                                      ? "bg-blue-600 text-white shadow-sm"
+                                      : "text-gray-700 hover:bg-blue-50/80 hover:text-gray-900"
                                   }`}
                                 >
-                                  <div className="w-6 h-6 rounded bg-green-500 text-white flex items-center justify-center mr-2 text-[0.8em] font-semibold">
-                                    {k.nama.charAt(0).toUpperCase()}
+                                  <div className="flex items-center space-x-2.5 min-w-0">
+                                    <div
+                                      className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-xs font-bold ${
+                                        location.pathname.startsWith(
+                                          `/kuarter/${k._id}`,
+                                        )
+                                          ? "bg-white/20 text-white"
+                                          : "bg-emerald-600 text-white"
+                                      }`}
+                                    >
+                                      {k.nama.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="truncate text-xs">
+                                      {k.nama}
+                                    </span>
                                   </div>
-                                  <span className="font-medium text-[0.9em]">
-                                    {k.nama}
-                                  </span>
+
+                                  <ChevronRight
+                                    className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 opacity-60 ${
+                                      isQuarterActive ? "rotate-90" : ""
+                                    }`}
+                                  />
                                 </button>
 
-                                {/* Workspace dan Projects*/}
+                                {/* Sub-content Workspace & Project (Accordian Style) */}
                                 {isQuarterActive && (
-                                  <div className="ml-6 mt-2 space-y-1">
+                                  <div className="ml-3 pl-2.5 my-1 border-l-2 border-gray-300/60 space-y-2">
                                     {relatedWorkspaces.length > 0 ? (
-                                      <div>
-                                        <div className="relative">
-                                          <button
-                                            onClick={() =>
-                                              setWorkspaceDropdownOpen(
-                                                !workspaceDropdownOpen,
+                                      <div className="space-y-1.5 pt-1">
+                                        {/* Workspace Selector */}
+                                        <div className="space-y-1">
+                                          <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block px-1">
+                                            Workspace
+                                          </label>
+                                          <select
+                                            value={selectedWorkspaceId || ""}
+                                            onChange={(e) =>
+                                              setSelectedWorkspaceId(
+                                                e.target.value,
                                               )
                                             }
-                                            className="w-full flex items-center text-[0.8em] justify-between px-3 py-2 bg-white border border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
+                                            className="w-full px-2 py-1.5 text-xs bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-700 font-medium"
                                           >
-                                            <div className="flex items-center">
-                                              <Briefcase className="w-4 h-4 mr-2 text-gray-600" />
-                                              <span className="text-[1em] text-gray-700">
-                                                {selectedWorkspaceId &&
-                                                relatedWorkspaces.find(
-                                                  (w) =>
-                                                    w._id ===
-                                                    selectedWorkspaceId,
-                                                )
-                                                  ? relatedWorkspaces.find(
-                                                      (w) =>
-                                                        w._id ===
-                                                        selectedWorkspaceId,
-                                                    ).nama
-                                                  : "Select Workspace"}
-                                              </span>
-                                            </div>
-                                            <ChevronDown
-                                              className={`w-4 h-4 text-gray-400 transition-transform ${
-                                                workspaceDropdownOpen
-                                                  ? "rotate-180"
-                                                  : ""
-                                              }`}
-                                            />
-                                          </button>
-
-                                          {workspaceDropdownOpen && (
-                                            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                              {relatedWorkspaces.map((ws) => (
-                                                <button
-                                                  key={ws._id}
-                                                  onClick={() => {
-                                                    setSelectedWorkspaceId(
-                                                      ws._id,
-                                                    );
-                                                    setWorkspaceDropdownOpen(
-                                                      false,
-                                                    );
-                                                  }}
-                                                  className={`w-full flex items-center px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 ${
-                                                    selectedWorkspaceId ===
-                                                    ws._id
-                                                      ? "bg-blue-50"
-                                                      : ""
-                                                  }`}
-                                                >
-                                                  <div className="w-5 h-5 rounded bg-[#0E7490] text-white flex items-center justify-center mr-2 text-[0.7em] font-semibold">
-                                                    {ws.nama
-                                                      .charAt(0)
-                                                      .toUpperCase()}
-                                                  </div>
-                                                  <span className="text-gray-700 text-[0.9em]">
-                                                    {ws.nama}
-                                                  </span>
-                                                </button>
-                                              ))}
-                                            </div>
-                                          )}
+                                            <option value="" disabled>
+                                              Pilih Workspace...
+                                            </option>
+                                            {relatedWorkspaces.map((ws) => (
+                                              <option
+                                                key={ws._id}
+                                                value={ws._id}
+                                              >
+                                                {ws.nama}
+                                              </option>
+                                            ))}
+                                          </select>
                                         </div>
 
-                                        {/* Projects dari workspace */}
+                                        {/* Projects List */}
                                         {selectedWorkspaceId && (
-                                          <div className="mt-2 space-y-1">
+                                          <div className="space-y-0.5 pt-1">
+                                            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block px-1 mb-1">
+                                              Projects
+                                            </span>
                                             {relatedWorkspaces
                                               .filter(
                                                 (ws) =>
                                                   ws._id ===
                                                   selectedWorkspaceId,
                                               )
-                                              .map(
-                                                (ws) =>
-                                                  ws.projects?.length > 0 && (
-                                                    <div key={ws._id}>
-                                                      {ws.projects.map(
-                                                        (project) => (
-                                                          <NavLink
-                                                            key={project._id}
-                                                            to={`/project/${project._id}`}
-                                                            onClick={() => {
-                                                              if (
-                                                                window.innerWidth <
-                                                                1024
-                                                              ) {
-                                                                setIsSidebarOpen(
-                                                                  false,
-                                                                );
-                                                              }
-                                                            }}
-                                                            className={({
-                                                              isActive,
-                                                            }) =>
-                                                              `block w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
-                                                                isActive
-                                                                  ? "bg-[#0E7490] text-white text-[0.9em]"
-                                                                  : "text-gray-600 hover:text-[#234C6A] hover:bg-blue-50 text-[0.9em]"
-                                                              }`
-                                                            }
-                                                          >
-                                                            {project.nama}
-                                                          </NavLink>
-                                                        ),
-                                                      )}
-                                                    </div>
-                                                  ),
+                                              .map((ws) =>
+                                                ws.projects?.length > 0 ? (
+                                                  ws.projects.map((project) => (
+                                                    <NavLink
+                                                      key={project._id}
+                                                      to={`/project/${project._id}`}
+                                                      onClick={() => {
+                                                        if (
+                                                          window.innerWidth <
+                                                          1024
+                                                        ) {
+                                                          setIsSidebarOpen(
+                                                            false,
+                                                          );
+                                                        }
+                                                      }}
+                                                      className={({
+                                                        isActive,
+                                                      }) =>
+                                                        `flex items-center px-2 py-1.5 rounded-md text-xs transition-colors ${
+                                                          isActive
+                                                            ? "bg-[#0E7490] text-white font-medium"
+                                                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/60"
+                                                        }`
+                                                      }
+                                                    >
+                                                      <span className="truncate">
+                                                        {project.nama}
+                                                      </span>
+                                                    </NavLink>
+                                                  ))
+                                                ) : (
+                                                  <div className="text-[11px] italic text-gray-400 px-1 py-1">
+                                                    Tidak ada project
+                                                  </div>
+                                                ),
                                               )}
                                           </div>
                                         )}
                                       </div>
                                     ) : (
-                                      <div className="text-xs text-gray-500 px-3 py-2">
-                                        No workspace found
+                                      <div className="text-[11px] italic text-gray-400 py-1">
+                                        Workspace tidak ditemukan
                                       </div>
                                     )}
                                   </div>
@@ -525,31 +513,24 @@ export default function Sidebar() {
                       )}
                     </>
                   ) : (
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {kuarters.map((k) => (
                         <button
                           key={k._id}
+                          type="button"
                           onClick={() => {
                             navigate(`/kuarter/${k._id}`);
                             setSelectedQuarterId(k._id);
-                            if (k.workspace && k.workspace.length > 0) {
-                              setSelectedWorkspaceId(k.workspace[0]);
-                            }
+                            setSelectedWorkspaceId(null);
                           }}
-                          className={`w-full flex items-center justify-center py-2 rounded-lg transition-all ${
-                            location.pathname === `/kuarter/${k._id}` ||
-                            selectedQuarterId === k._id
-                              ? "bg-none text-white"
-                              : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
-                          }`}
+                          className="w-full flex items-center justify-center py-1 group relative"
                           title={k.nama}
                         >
                           <div
-                            className={`w-7 h-7 rounded flex items-center justify-center text-[0.8em] font-semibold ${
-                              location.pathname === `/kuarter/${k._id}` ||
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-transform group-hover:scale-105 ${
                               selectedQuarterId === k._id
-                                ? "bg-blue-600 rounded-xl text-white"
-                                : "bg-green-500 text-white"
+                                ? "bg-blue-600 text-white ring-2 ring-blue-300"
+                                : "bg-emerald-600 text-white"
                             }`}
                           >
                             {k.nama.charAt(0).toUpperCase()}
