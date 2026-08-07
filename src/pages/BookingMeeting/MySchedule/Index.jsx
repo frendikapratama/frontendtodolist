@@ -232,7 +232,7 @@ const IndexMySchedule = () => {
                           <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
                             Organizer
                           </span>
-                          <span className="text-xs font-medium text-slate-300 truncate">
+                          <span className="text-xs font-medium text-slate-300 truncate ">
                             {item.organizerId?.username || "Unknown"}
                           </span>
                         </div>

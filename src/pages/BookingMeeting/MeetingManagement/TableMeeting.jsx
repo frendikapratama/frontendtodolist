@@ -90,7 +90,7 @@ const TableMeeting = ({ compact = false }) => {
 
   // Sizing yang menyesuaikan compact / normal, terpusat juga
   const sizing = {
-    cellPad: compact ? "py-3 px-3" : "py-4 px-4",
+    cellPad: compact ? "py-3 px-2" : "py-4 px-4",
     headText: compact ? "text-xs" : "text-sm",
     bodyText: compact ? "text-xs" : "text-sm",
     titleText: compact ? "text-base" : "text-xl",
@@ -404,7 +404,7 @@ const TableMeeting = ({ compact = false }) => {
                     </td>
 
                     <td
-                      className={`text-slate-200 ${sizing.cellPad} ${sizing.bodyText}`}
+                      className={`text-slate-200 capitalize ${sizing.cellPad} ${sizing.bodyText}`}
                     >
                       {meeting.organizerId?.username || "-"}
                     </td>
@@ -418,7 +418,7 @@ const TableMeeting = ({ compact = false }) => {
                     )}
 
                     <td className={sizing.cellPad}>
-                      <div className="flex items-center">
+                      <div className="flex items">
                         <StatusBadge status={meeting.status} />
                       </div>
                     </td>
