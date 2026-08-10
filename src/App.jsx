@@ -25,6 +25,7 @@ import IndexRooms from "./pages/BookingMeeting/Rooms/Index";
 import IndexBooking from "./pages/BookingMeeting/MeetingManagement/Index";
 import IndexMySchedule from "./pages/BookingMeeting/MySchedule/Index";
 import MeetingRecapPage from "./pages/BookingMeeting/MeetingRecap/Index";
+import ScheduleToday from "./pages/BookingMeeting/ScheduleToday";
 
 export default function App() {
   if (import.meta.env.MODE === "development") {
@@ -39,6 +40,7 @@ export default function App() {
           <RecentUpdatesProvider>
             <BrowserRouter>
               <Routes>
+                <Route path="/shcedule-today" element={<ScheduleToday />} />
                 <Route path="/forgot-password" element={<AuthPages />} />
                 <Route path="/verify-reset-password" element={<AuthPages />} />
                 <Route path="/" element={<Navigate to="/login" />} />
