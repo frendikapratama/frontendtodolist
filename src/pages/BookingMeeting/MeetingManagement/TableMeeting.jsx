@@ -31,9 +31,8 @@ const STATUS_STYLES = {
   },
   in_progress: {
     label: "In Progress",
-    className:
-      "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20",
-    dot: "bg-emerald-400",
+    className: "bg-orange-500/15 text-orange-300 border border-orange-500/20",
+    dot: "bg-orange-400",
   },
   completed: {
     label: "Completed",

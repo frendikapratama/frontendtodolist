@@ -51,7 +51,6 @@ const RescheduleMeetingForm = ({ meeting, onClose }) => {
     startTime: initialStartTime,
     endTime: initialEndTime,
   });
-
   const [availability, setAvailability] = useState(null);
   const [checked, setChecked] = useState(false);
 

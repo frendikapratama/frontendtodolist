@@ -65,7 +65,7 @@ export default function ScheduleToday() {
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-teal-500/10 rounded-full blur-[140px] pointer-events-none"></div>
 
       <h1 className="fixed bottom-4 right-4 text-xs text-blue-300 z-50">
-        © 2026 Designed by IT Aldo | PT. Alkindo Naratama Tbk. | All rights
+        © 2026 Developed by IT Aldo | PT. Alkindo Naratama Tbk. | All rights
         reserved.
       </h1>
 

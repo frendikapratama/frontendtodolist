@@ -48,16 +48,18 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
       const internal = participantsData.data.filter((p) => !p.isExternal);
       const external = participantsData.data.filter((p) => p.isExternal);
 
-      const ids = internal.map((p) => p.userId._id || p.userId);
+      const ids = internal.map((p) => p.userId?._id || p.userId).filter(Boolean);
       setParticipantIds(ids);
-      const users = internal.map((p) => ({
-        _id: p.userId._id || p.userId,
-        username: p.userId.username,
-        email: p.userId.email,
-        photo: p.userId.photo
-          ? `${import.meta.env.VITE_API_URL}/uploads/users/${p.userId.photo}`
-          : undefined,
-      }));
+      const users = internal
+        .filter((p) => p.userId)
+        .map((p) => ({
+          _id: p.userId?._id || p.userId,
+          username: p.userId?.username || p.userId?.email || "Unknown",
+          email: p.userId?.email || "",
+          photo: p.userId?.photo
+            ? `${import.meta.env.VITE_API_URL}/uploads/users/${p.userId.photo}`
+            : undefined,
+        }));
       setInitialUsers(users);
       setSelectedParticipants(users);
 
@@ -160,7 +162,9 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
       // Filter konflik — exclude participant yang memang sudah ada di meeting ini
       // (mereka wajar punya conflict karena meeting ini sendiri)
       const existingIds =
-        participantsData?.data?.map((p) => p.userId._id || p.userId) || [];
+        participantsData?.data
+          ?.filter((p) => !p.isExternal && p.userId)
+          ?.map((p) => p.userId?._id || p.userId) || [];
 
       const newParticipantIds = participantIds.filter(
         (id) => !existingIds.includes(id),
