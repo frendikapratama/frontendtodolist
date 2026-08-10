@@ -62,7 +62,6 @@ const StatusBadge = ({ status }) => {
     </span>
   );
 };
-
 const TableMeeting = ({ compact = false }) => {
   const today = dayjs().format("YYYY-MM-DD");
 

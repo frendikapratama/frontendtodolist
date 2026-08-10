@@ -13,9 +13,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) return;
+    // if (!token) return;
 
-    const newSocket = initSocket(token);
+    const newSocket = initSocket(token || null); // selalu connect, guest kalau token kosong
     setSocket(newSocket);
 
     newSocket.on("onlineUsers", (users) => {
