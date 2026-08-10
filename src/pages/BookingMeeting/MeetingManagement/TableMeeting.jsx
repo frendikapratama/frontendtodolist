@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, MapPin, Clock, Filter, X } from "lucide-react";
 import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import UpdateMeetingForm from "./UpdateMeetingForm";
@@ -62,7 +62,11 @@ const StatusBadge = ({ status }) => {
     </span>
   );
 };
-const TableMeeting = ({ compact = false }) => {
+const TableMeeting = ({ compact = false, pollingInterval }) => {
+  console.log("[TableMeeting] mounted", {
+    compact,
+    pollingInterval,
+  });
   const today = dayjs().format("YYYY-MM-DD");
 
   const [page, setPage] = useState(1);
@@ -82,8 +86,20 @@ const TableMeeting = ({ compact = false }) => {
   });
 
   const { meetingsQuery } = useMeetings();
-  const { data, isLoading } = meetingsQuery(page, limit, filters);
+  const { data, isLoading, dataUpdatedAt, isError, error, isFetching } =
+    meetingsQuery(page, limit, filters, {
+      refetchInterval: pollingInterval,
+    });
 
+  useEffect(() => {
+    if (isError) {
+      console.log("[TableMeeting] refetch failed:", error?.message);
+    }
+  }, [isError]);
+
+  useEffect(() => {
+    console.log("[TableMeeting] isFetching:", isFetching);
+  }, [isFetching]);
   const { roomsQuery } = useRooms();
   const rooms = roomsQuery.data || [];
 

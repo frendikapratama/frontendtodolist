@@ -40,7 +40,7 @@ export default function App() {
           <RecentUpdatesProvider>
             <BrowserRouter>
               <Routes>
-                <Route path="/shcedule-today" element={<ScheduleToday />} />
+                <Route path="/schedule-today" element={<ScheduleToday />} />
                 <Route path="/forgot-password" element={<AuthPages />} />
                 <Route path="/verify-reset-password" element={<AuthPages />} />
                 <Route path="/" element={<Navigate to="/login" />} />

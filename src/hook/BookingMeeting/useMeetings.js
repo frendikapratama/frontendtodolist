@@ -55,10 +55,24 @@ const useMeetings = () => {
     };
   }, [socket, queryClient]);
 
-  const meetingsQuery = (page = 1, limit = 25, filters = {}) =>
+  // const meetingsQuery = (page = 1, limit = 25, filters = {}) =>
+  //   useQuery({
+  //     queryKey: ["meetings", page, limit, filters],
+  //     queryFn: () => meetingService.getMeetings(page, limit, filters),
+  //   });
+
+  const meetingsQuery = (page = 1, limit = 25, filters = {}, options = {}) =>
     useQuery({
       queryKey: ["meetings", page, limit, filters],
-      queryFn: () => meetingService.getMeetings(page, limit, filters),
+      queryFn: () => {
+        console.log(
+          "[meetingsQuery] fetching...",
+          new Date().toLocaleTimeString(),
+        );
+        return meetingService.getMeetings(page, limit, filters);
+      },
+      refetchInterval: options.refetchInterval,
+      refetchIntervalInBackground: options.refetchIntervalInBackground ?? true,
     });
   const meetingParticipantsQuery = (meetingId) =>
     useQuery({
