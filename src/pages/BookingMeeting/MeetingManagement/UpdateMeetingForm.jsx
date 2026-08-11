@@ -48,7 +48,9 @@ const UpdateMeetingForm = ({ meeting, onClose }) => {
       const internal = participantsData.data.filter((p) => !p.isExternal);
       const external = participantsData.data.filter((p) => p.isExternal);
 
-      const ids = internal.map((p) => p.userId?._id || p.userId).filter(Boolean);
+      const ids = internal
+        .map((p) => p.userId?._id || p.userId)
+        .filter(Boolean);
       setParticipantIds(ids);
       const users = internal
         .filter((p) => p.userId)
