@@ -46,7 +46,13 @@ export default function ScheduleToday() {
   const location = useLocation();
 
   // Handlers untuk OTP input
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(dayjs().format("HH:mm:ss"));
+    }, 1000);
 
+    return () => clearInterval(timer);
+  }, []);
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
