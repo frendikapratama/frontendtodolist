@@ -374,11 +374,11 @@ const TableMeeting = ({ compact = false }) => {
                       >
                         {meeting.title}
                       </div>
-                      {meeting.description && (
+                      {/* {meeting.description && (
                         <div className="text-xs text-slate-400 font-normal mt-1 wrap-break-word line-clamp-2">
                           {meeting.description}
                         </div>
-                      )}
+                      )} */}
                     </td>
 
                     <td className={sizing.cellPad}>

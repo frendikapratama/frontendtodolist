@@ -60,13 +60,12 @@ const TableMeetingToday = ({ compact = false }) => {
 
   const { useMeetingsAllToday } = useMeetings();
   const { meetings, isLoading } = useMeetingsAllToday();
-
   // Sizing yang menyesuaikan compact / normal, terpusat juga
   const sizing = {
     cellPad: compact ? "py-3 px-2" : "py-4 px-4",
-    headText: compact ? "text-xs" : "text-sm",
-    bodyText: compact ? "text-xs" : "text-sm",
-    titleText: compact ? "text-base" : "text-xl",
+    headText: compact ? "text-sm" : "text-lg",
+    bodyText: compact ? "text-sm" : "text-lg",
+    titleText: compact ? "text-xl" : "text-2xl",
     iconBox: compact ? "w-10 h-10" : "w-12 h-12",
     iconSize: compact ? 20 : 24,
   };
@@ -153,7 +152,7 @@ const TableMeetingToday = ({ compact = false }) => {
             <thead className={`sticky top-0 z-10 ${theme.headerRow}`}>
               <tr className={`border-b ${theme.headerBorder}`}>
                 <th
-                  className={`font-semibold tracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
+                  className={`font-semibold texttracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
                 >
                   Title
                 </th>
@@ -218,11 +217,11 @@ const TableMeetingToday = ({ compact = false }) => {
                       >
                         {meeting.title}
                       </div>
-                      {meeting.description && (
+                      {/* {meeting.description && (
                         <div className="text-xs text-slate-400 font-normal mt-1 wrap-break-word line-clamp-2">
                           {meeting.description}
                         </div>
-                      )}
+                      )} */}
                     </td>
 
                     <td className={sizing.cellPad}>
