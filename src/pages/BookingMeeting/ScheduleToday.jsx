@@ -6,6 +6,7 @@ import logo from "../../assets/LogoPlanify.png";
 import GradientText from "../../components/ui/GradientText";
 import toast from "react-hot-toast";
 import TableMeeting from "./MeetingManagement/TableMeeting";
+import TableMeetingToday from "./MeetingManagement/Tablemeetingtoday";
 import dayjs from "dayjs";
 import {
   Calendar,
@@ -99,7 +100,7 @@ export default function ScheduleToday() {
         <div className="flex flex-col lg:flex-row gap-6 px-2 pt-4 grow overflow-hidden h-full items-stretch">
           {/* Kiri: Today's Meetings */}
           <div className="grow flex-1 rounded-2xl  p-1 overflow-hidden h-full flex flex-col  m-0">
-            <TableMeeting compact pollingInterval={10000} />
+            <TableMeetingToday compact />
           </div>
         </div>
       </div>

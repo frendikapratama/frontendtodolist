@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Calendar, MapPin, Clock, Filter, X } from "lucide-react";
+import React, { useState } from "react";
+import { Calendar, MapPin, Clock } from "lucide-react";
 import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import UpdateMeetingForm from "./UpdateMeetingForm";
 import RescheduleMeetingForm from "./RescheduleMeetingForm";
 import CancelMeetingDialog from "./CancelMeetingDialog";
-import dayjs from "dayjs";
-import useRooms from "../../../hook/BookingMeeting/useRooms";
 
 const theme = {
   panel: "bg-[#0f2c47]/50 border border-white/10",
@@ -13,13 +11,7 @@ const theme = {
   headerBorder: "border-white/10",
   rowHover: "hover:bg-white/5",
   rowDivide: "divide-white/5",
-  filterPanel: "bg-[#0f2c47]/50 border border-white/10",
-  inputBg: "bg-[#122d47] border-white/10 focus:border-teal-400/60",
   iconBoxBg: "bg-teal-500/10 border border-teal-400/20 text-teal-300",
-  badgeOutline: "bg-slate-800 text-white border-white/10 hover:bg-slate-700",
-  btnActive: "bg-teal-600 hover:bg-teal-500 text-white border-none",
-  btnInactive: "bg-[#122d47] hover:bg-[#16324f] text-white border-none",
-  accentText: "text-teal-300",
 };
 
 // Status badge dibuat custom (bukan daisyUI badge-*) biar selaras palet teal/blue
@@ -61,34 +53,13 @@ const StatusBadge = ({ status }) => {
     </span>
   );
 };
-const TableMeeting = ({ compact = false }) => {
-  console.log("[TableMeeting] mounted", {
-    compact,
-  });
-  const today = dayjs().format("YYYY-MM-DD");
 
-  const [page, setPage] = useState(1);
-  const limit = 25;
+const TableMeetingToday = ({ compact = false }) => {
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [modalType, setModalType] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
 
-  const [filters, setFilters] = useState({
-    organizerId: "",
-    roomId: "",
-    startDate: compact ? today : "",
-    endDate: compact ? today : "",
-    status: "all",
-    meetingType: "all",
-    search: "",
-  });
-
-  const { meetingsQuery } = useMeetings();
-  const { data, isLoading, dataUpdatedAt, isError, error, isFetching } =
-    meetingsQuery(page, limit, filters);
-
-  const { roomsQuery } = useRooms();
-  const rooms = roomsQuery.data || [];
+  const { useMeetingsAllToday } = useMeetings();
+  const { meetings, isLoading } = useMeetingsAllToday();
 
   // Sizing yang menyesuaikan compact / normal, terpusat juga
   const sizing = {
@@ -110,35 +81,6 @@ const TableMeeting = ({ compact = false }) => {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
   };
-  const handleFilterChange = (key, value) => {
-    setPage(1);
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const resetFilters = () => {
-    setPage(1);
-    setFilters({
-      organizerId: "",
-      roomId: "",
-      startDate: compact ? today : "",
-      endDate: compact ? today : "",
-      status: "all",
-      meetingType: "all",
-      search: "",
-    });
-  };
-
-  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
-    if (value === "" || value === "all") return false;
-    if (
-      compact &&
-      (key === "startDate" || key === "endDate") &&
-      value === today
-    ) {
-      return false;
-    }
-    return true;
-  });
 
   const openModal = (type, meeting) => {
     setSelectedMeeting(meeting);
@@ -151,9 +93,6 @@ const TableMeeting = ({ compact = false }) => {
     setModalType(null);
     document.getElementById("meetingManagementModal").close();
   };
-
-  const meetings = data?.data || [];
-  const pagination = data?.pagination || {};
 
   const formatDateTime = (dateStr) => {
     if (!dateStr) return "-";
@@ -190,115 +129,20 @@ const TableMeeting = ({ compact = false }) => {
               <h2
                 className={`${sizing.titleText} text-white font-bold tracking-tight`}
               >
-                Meeting Schedule
+                Today's Meeting Schedule
               </h2>
               <span className="px-2.5 py-0.5 text-xs font-semibold bg-white/10 text-slate-300 rounded-full border border-white/5">
-                {pagination.total || 0} Total
+                {meetings.length || 0} Total
               </span>
             </div>
             {!compact && (
               <p className="text-sm text-slate-400 mt-0.5">
-                Monitor, and manage all your scheduled conference room meetings.
+                Monitor all conference room meetings scheduled for today.
               </p>
             )}
           </div>
         </div>
-
-        <button
-          onClick={() => setShowFilters((prev) => !prev)}
-          className={`btn btn-sm gap-2 ${
-            showFilters ? theme.btnActive : theme.btnInactive
-          }`}
-        >
-          <Filter size={14} />
-          {showFilters ? "Hide Filters" : "Show Filters"}
-          {hasActiveFilters && !showFilters && (
-            <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-          )}
-        </button>
       </div>
-
-      {/* Filter Panel */}
-      {showFilters && (
-        <div
-          className={`backdrop-blur-md rounded-xl shadow-xl p-4 shrink-0 ${theme.filterPanel}`}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end md:grid-cols-4">
-            {/* Room */}
-            <div className="flex flex-col gap-1 min-w-[170px]">
-              <label className="text-xs font-medium text-slate-400">Room</label>
-              <select
-                value={filters.roomId}
-                onChange={(e) => handleFilterChange("roomId", e.target.value)}
-                className={`select select-sm text-white focus:outline-none ${theme.inputBg}`}
-              >
-                <option value="">All Rooms</option>
-                {rooms.map((room) => (
-                  <option key={room._id} value={room._id}>
-                    {room.nama}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Status */}
-            <div className="flex flex-col gap-1 min-w-[150px]">
-              <label className="text-xs font-medium text-slate-400">
-                Status
-              </label>
-              <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange("status", e.target.value)}
-                className={`select select-sm text-white focus:outline-none ${theme.inputBg}`}
-              >
-                <option value="all">All Status</option>
-                <option value="scheduled">Scheduled</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-
-            {/* Start Date */}
-            <div className="flex flex-col gap-1 min-w-40">
-              <label className="text-xs font-medium text-slate-400">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) =>
-                  handleFilterChange("startDate", e.target.value)
-                }
-                className={`input input-sm text-white focus:outline-none ${theme.inputBg}`}
-              />
-            </div>
-
-            {/* End Date */}
-            <div className="flex flex-col gap-1 min-w-40">
-              <label className="text-xs font-medium text-slate-400">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) => handleFilterChange("endDate", e.target.value)}
-                className={`input input-sm text-white focus:outline-none ${theme.inputBg}`}
-              />
-            </div>
-
-            {hasActiveFilters && (
-              <button
-                onClick={resetFilters}
-                className="btn btn-sm bg-[#122d47] hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 border-white/10 gap-1.5"
-              >
-                <X size={14} />
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Container Table */}
       <div
@@ -356,7 +200,7 @@ const TableMeeting = ({ compact = false }) => {
                     colSpan={5}
                     className="text-center py-12 text-slate-400 text-sm"
                   >
-                    No meetings found.
+                    No meetings found for today.
                   </td>
                 </tr>
               ) : (
@@ -430,36 +274,6 @@ const TableMeeting = ({ compact = false }) => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between p-4 border-t border-white/10 bg-white/5 shrink-0">
-            <span className="text-xs text-slate-400">
-              Page {pagination.page} of {pagination.totalPages}
-            </span>
-            <div className="join">
-              <button
-                className="join-item btn btn-xs sm:btn-sm bg-[#122d47] text-white border-white/10 hover:bg-[#16324f] disabled:opacity-40"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={!pagination.hasPrev}
-              >
-                «
-              </button>
-              <button className="join-item btn btn-xs sm:btn-sm bg-[#122d47] text-white border-white/10 cursor-default">
-                {pagination.page}
-              </button>
-              <button
-                className="join-item btn btn-xs sm:btn-sm bg-[#122d47] text-white border-white/10 hover:bg-[#16324f] disabled:opacity-40"
-                onClick={() =>
-                  setPage((p) => Math.min(pagination.totalPages, p + 1))
-                }
-                disabled={!pagination.hasNext}
-              >
-                »
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Main Modal untuk Edit/Reschedule/Cancel */}
@@ -504,4 +318,4 @@ const TableMeeting = ({ compact = false }) => {
   );
 };
 
-export default TableMeeting;
+export default TableMeetingToday;

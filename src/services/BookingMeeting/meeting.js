@@ -37,6 +37,11 @@ const meetingService = {
     return data;
   },
 
+  getMeetingsAllToday: async () => {
+    const { data } = await api.get("/meeting/all/today");
+    return data;
+  },
+
   getMeetingParticipants: async (id) => {
     const { data } = await api.get(`/meeting/${id}/participants`);
     return data;

@@ -55,25 +55,25 @@ const useMeetings = () => {
     };
   }, [socket, queryClient]);
 
-  // const meetingsQuery = (page = 1, limit = 25, filters = {}) =>
-  //   useQuery({
-  //     queryKey: ["meetings", page, limit, filters],
-  //     queryFn: () => meetingService.getMeetings(page, limit, filters),
-  //   });
-
-  const meetingsQuery = (page = 1, limit = 25, filters = {}, options = {}) =>
+  const meetingsQuery = (page = 1, limit = 25, filters = {}) =>
     useQuery({
       queryKey: ["meetings", page, limit, filters],
-      queryFn: () => {
-        console.log(
-          "[meetingsQuery] fetching...",
-          new Date().toLocaleTimeString(),
-        );
-        return meetingService.getMeetings(page, limit, filters);
-      },
-      refetchInterval: options.refetchInterval,
-      refetchIntervalInBackground: options.refetchIntervalInBackground ?? true,
+      queryFn: () => meetingService.getMeetings(page, limit, filters),
     });
+
+  // const meetingsQuery = (page = 1, limit = 25, filters = {}, options = {}) =>
+  //   useQuery({
+  //     queryKey: ["meetings", page, limit, filters],
+  //     queryFn: () => {
+  //       console.log(
+  //         "[meetingsQuery] fetching...",
+  //         new Date().toLocaleTimeString(),
+  //       );
+  //       return meetingService.getMeetings(page, limit, filters);
+  //     },
+  //     refetchInterval: options.refetchInterval,
+  //     refetchIntervalInBackground: options.refetchIntervalInBackground ?? true,
+  //   });
   const meetingParticipantsQuery = (meetingId) =>
     useQuery({
       queryKey: ["meetingParticipants", meetingId],
@@ -94,6 +94,33 @@ const useMeetings = () => {
       queryFn: () => meetingService.getMeetingDetail(meetingId),
       enabled: !!meetingId,
     });
+
+  const useMeetingsAllToday = () => {
+    const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
+      queryKey: ["meetings-all-today"],
+      queryFn: meetingService.getMeetingsAllToday,
+
+      // Polling setiap 10 detik
+      refetchInterval: 10000,
+
+      // Tetap polling meskipun window tidak sedang aktif
+      refetchIntervalInBackground: true,
+
+      // Ambil ulang ketika kembali ke browser
+      refetchOnWindowFocus: true,
+    });
+
+    return {
+      meetings: data?.data || [],
+      total: data?.total || 0,
+
+      isLoading,
+      isFetching,
+      isError,
+      error,
+      refetch,
+    };
+  };
 
   const checkAvailabilityMutation = useMutation({
     mutationFn: meetingService.checkAvailability,
@@ -214,6 +241,7 @@ const useMeetings = () => {
     meetingParticipantsQuery,
     dashboardQuery,
     meetingDetailQuery,
+    useMeetingsAllToday,
     checkAvailabilityMutation,
     createMeetingMutation,
     updateMeetingMutation,
