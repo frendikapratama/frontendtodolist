@@ -671,7 +671,7 @@ const MeetingRecapPage = () => {
                             )}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-slate-300 font-medium">
+                        <td className="px-4 py-4 text-slate-300 font-medium capitalize">
                           {displayName(meeting.organizerId) || (
                             <span className="text-white/20 font-normal">—</span>
                           )}

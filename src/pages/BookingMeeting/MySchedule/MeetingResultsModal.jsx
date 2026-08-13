@@ -263,7 +263,9 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
             </div>
             <div className="flex items-center gap-1.5">
               <User size={12} className="text-emerald-400" />
-              <span>{meeting.organizerId?.username || "-"}</span>
+              <span className="capitalize">
+                {meeting.organizerId?.username || "-"}
+              </span>
             </div>
             <div className="ml-auto flex items-center gap-1.5">
               <span
@@ -439,10 +441,12 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
 
                       {/* Meta Information */}
                       <div className="flex items-center gap-2 mt-2.5 text-xs text-slate-500">
-                        <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                        <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center shrink-0 ">
                           <User size={9} />
                         </div>
-                        <span>{result.uploadedBy?.username || "Unknown"}</span>
+                        <span className="capitalize">
+                          {result.uploadedBy?.username || "Unknown"}
+                        </span>
                         <span>·</span>
                         <span>
                           {dayjs(result.uploadedAt).locale("en").fromNow()}

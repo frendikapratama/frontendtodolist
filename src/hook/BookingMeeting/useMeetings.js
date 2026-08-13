@@ -99,15 +99,6 @@ const useMeetings = () => {
     const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
       queryKey: ["meetings-all-today"],
       queryFn: meetingService.getMeetingsAllToday,
-
-      // Polling setiap 10 detik
-      refetchInterval: 10000,
-
-      // Tetap polling meskipun window tidak sedang aktif
-      refetchIntervalInBackground: true,
-
-      // Ambil ulang ketika kembali ke browser
-      refetchOnWindowFocus: true,
     });
 
     return {
