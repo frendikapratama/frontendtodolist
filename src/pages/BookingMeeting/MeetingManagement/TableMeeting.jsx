@@ -339,7 +339,14 @@ const TableMeeting = ({ compact = false }) => {
                   className={`font-semibold tracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
                 >
                   Status
-                </th>
+                </th>{" "}
+                {!compact && (
+                  <th
+                    className={`font-semibold tracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
+                  >
+                    Created At
+                  </th>
+                )}
               </tr>
             </thead>
 
@@ -380,7 +387,6 @@ const TableMeeting = ({ compact = false }) => {
                         </div>
                       )} */}
                     </td>
-
                     <td className={sizing.cellPad}>
                       <div className="flex items-center gap-1.5 text-slate-200">
                         <MapPin
@@ -394,7 +400,6 @@ const TableMeeting = ({ compact = false }) => {
                         </span>
                       </div>
                     </td>
-
                     <td className={sizing.cellPad}>
                       <div className="flex flex-col text-slate-200 text-xs">
                         <span className="flex items-center gap-1 font-medium whitespace-nowrap">
@@ -404,13 +409,11 @@ const TableMeeting = ({ compact = false }) => {
                         </span>
                       </div>
                     </td>
-
                     <td
                       className={`text-slate-200 capitalize ${sizing.cellPad} ${sizing.bodyText}`}
                     >
                       {meeting.organizerId?.username || "-"}
                     </td>
-
                     {!compact && (
                       <td
                         className={`text-slate-200 ${sizing.cellPad} ${sizing.bodyText}`}
@@ -418,12 +421,18 @@ const TableMeeting = ({ compact = false }) => {
                         {formatMeetingType(meeting.meetingType) || "-"}
                       </td>
                     )}
-
                     <td className={sizing.cellPad}>
                       <div className="flex items">
                         <StatusBadge status={meeting.status} />
                       </div>
-                    </td>
+                    </td>{" "}
+                    {!compact && (
+                      <td className={sizing.cellPad}>
+                        <div className="flex items text-slate-200 text-xs">
+                          {formatDateTime(meeting.createdAt)}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
