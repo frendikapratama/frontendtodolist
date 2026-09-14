@@ -1,4 +1,4 @@
-import { useState,useContext ,useMemo  } from "react";
+import { useState, useContext, useMemo } from "react";
 import { useCollaboration } from "../../hook/useCollaboration";
 import { useWorkspace } from "../../hook/useWorkspace";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,7 @@ import AnimatedPercentage from "../../components/ui/AnimatedPercentage";
 import { useProgressProject } from "../../hook/useProgress";
 import { useProject } from "../../hook/useProject";
 import { useMember } from "../../hook/useMember";
-import { AuthContext } from "../../context/AuthContext"; 
+import { AuthContext } from "../../context/AuthContext";
 
 const ProjectCard = ({
   project,
@@ -15,7 +15,7 @@ const ProjectCard = ({
   borderColor,
   badgeColor,
   badgeText,
-  isAuthorized={isAuthorized},
+  isAuthorized,
   collaborationInfo,
   ownerInfo,
   onDelete,
@@ -52,7 +52,7 @@ const ProjectCard = ({
           setEditedName(project.nama);
           setIsEditing(false);
         },
-      }
+      },
     );
   };
 
@@ -174,7 +174,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   const incomingRequests = useCollaborationRequests(
     workspaceId,
     "incoming",
-    "pending"
+    "pending",
   );
   const outgoingRequests = useCollaborationRequests(workspaceId, "outgoing");
 
@@ -209,14 +209,13 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   };
 
   const availableWorkspaces = workspacesQuery.data?.filter(
-    (ws) => ws._id !== workspaceId && ws.kuarterId === currentKuarterId
+    (ws) => ws._id !== workspaceId && ws.kuarterId === currentKuarterId,
   );
 
   const ownedOnlyProjects = projectsQuery.data?.owned || [];
   const ownedWithCollaboration = projectsQuery.data?.ownedButCollaborated || [];
   const collaboratedFromOthers =
     projectsQuery.data?.collaboratedFromOthers || [];
-
 
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
   const { user: currentUser } = useContext(AuthContext);
@@ -226,7 +225,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
     const userMembership = membersWorkspaceQuery.data.members?.find(
       (member) =>
         member.user?._id === currentUser._id ||
-        member.user?._id === currentUser.id
+        member.user?._id === currentUser.id,
     );
     if (!userMembership) return false;
     const allowedRoles = ["admin", "project_manager", "management"];
@@ -322,7 +321,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                     <option key={project._id} value={project._id}>
                       {project.nama}
                     </option>
-                  )
+                  ),
                 )}
               </select>
             </div>
@@ -423,7 +422,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                         project={project}
                         workspaceId={workspaceId}
                         isOwner={true}
-                          isAuthorized={isAuthorized}   
+                        isAuthorized={isAuthorized}
                         borderColor="border-green-500"
                         badgeColor="badge-success"
                         badgeText="Owner"
@@ -549,7 +548,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                         </p>
                         <p className="text-[0.7em] text-gray-500">
                           {new Date(request.createdAt).toLocaleDateString(
-                            "id-ID"
+                            "id-ID",
                           )}
                         </p>
                         <div className="badge badge-warning text-[0.7em] font-bold  badge-sm mt-2">
@@ -613,8 +612,8 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                         request.status === "approved"
                           ? "badge-success"
                           : request.status === "rejected"
-                          ? "badge-error"
-                          : "badge-warning"
+                            ? "badge-error"
+                            : "badge-warning"
                       }`}
                     >
                       {request.status}
