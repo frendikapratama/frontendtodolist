@@ -107,39 +107,6 @@ const Kuarter = () => {
     );
   };
 
-  // Function untuk mengkonversi data task ke format pie chart
-  // const getChartData = (kuarter) => {
-  //   const data = [];
-  //   const statuses = Object.keys(kuarter).filter(
-  //     (key) =>
-  //       ![
-  //         "_id",
-  //         "nama",
-  //         "workspace",
-  //         "departemen",
-  //         "createdAt",
-  //         "updatedAt",
-  //         "__v",
-  //         "totalTask",
-  //       ].includes(key),
-  //   );
-
-  //   const totalTask = kuarter.totalTask || 1;
-
-  //   statuses.forEach((status) => {
-  //     if (kuarter[status] > 0) {
-  //       data.push({
-  //         name: status,
-  //         value: kuarter[status],
-  //         color: STATUS_COLORS[status] || "#6b7280",
-  //         percentage: ((kuarter[status] / totalTask) * 100).toFixed(1),
-  //       });
-  //     }
-  //   });
-
-  //   return data;
-  // };
-
   useEffect(() => {
     if (deleteMutation.isSuccess) {
       closeModalDelete();

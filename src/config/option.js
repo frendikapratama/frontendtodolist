@@ -9,7 +9,7 @@ export function getDepartemenOptions() {
 
 export function getDivisiOptions(departemenId) {
   const selectedDepartemen = DEPARTEMEN_DIVISI.find(
-    (dept) => dept.departemenId === departemenId
+    (dept) => dept.departemenId === departemenId,
   );
 
   return (
@@ -19,3 +19,12 @@ export function getDivisiOptions(departemenId) {
     })) || []
   );
 }
+
+export const PROJECT_STATUS_OPTIONS = [
+  "draft",
+  "planning",
+  "in progress",
+  "hold",
+  "completed",
+  "cancelled",
+];

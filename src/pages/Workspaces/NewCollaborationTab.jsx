@@ -7,6 +7,9 @@ import { useProgressProject } from "../../hook/useProgress";
 import { useProject } from "../../hook/useProject";
 import { useMember } from "../../hook/useMember";
 import { AuthContext } from "../../context/AuthContext";
+import EditProjectModal from "../Project/EditProjectModal";
+
+import { Pencil, Trash2 } from "lucide-react";
 
 const ProjectCard = ({
   project,
@@ -26,6 +29,7 @@ const ProjectCard = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(project.nama);
   const { updateProjectMutation } = useProject();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleNameEdit = (e) => {
     e.preventDefault();
@@ -70,27 +74,16 @@ const ProjectCard = ({
 
   return (
     <div
-      className={`card bg-white/50 text-black shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow border-l-4 ${borderColor} relative`}
+      className={`card bg-white/50 text-black shadow-sm hover:shadow-md transition-all p-5 rounded-xl border-l-4 ${borderColor} border border-black/5 cursor-pointer flex flex-col justify-between gap-4`}
       onClick={handleCardClick}
     >
-      {isOwner && onDelete && isAuthorized && (
-        <button
-          className="btn btn-error btn-xs absolute top-2 right-2"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(project._id, project.nama);
-          }}
-        >
-          Delete
-        </button>
-      )}
-
-      <div className="mt-2 grid grid-cols-2 gap-10 items-center">
-        <div className="flex flex-col gap-1">
+      {/* HEADER SECTION */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
           {isEditing ? (
             <input
               type="text"
-              className="card-title text-[0.9em] bg-white border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full text-base font-semibold bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={editedName}
               autoFocus
               onChange={(e) => setEditedName(e.target.value)}
@@ -105,53 +98,125 @@ const ProjectCard = ({
             />
           ) : (
             <h4
-              className="card-title text-[0.9em] cursor-pointer hover:underline"
+              className="text-base font-bold text-gray-800 truncate hover:text-blue-600 transition-colors"
               onClick={handleStartEdit}
+              title={project.nama}
             >
               {project.nama}
             </h4>
           )}
-          {project.description && (
-            <p className="text-[0.8em] text-gray-600 mb-2">
-              {project.description}
-            </p>
-          )}
-          <p className="text-[0.7em] text-gray-500">
+          <p className="text-[0.7rem] text-gray-700 mt-0.5">
+            Created At :{" "}
             {new Date(project.createdAt).toLocaleDateString("id-ID")}
           </p>
-          <div className="flex gap-2 mt-2 flex-col">
-            <div
-              className={`badge ${badgeColor} badge-sm font-bold text-[0.6em]`}
+        </div>
+
+        {/* Action Buttons (Lebih Ringkas & Clean) */}
+        <div className="flex items-center gap-1 shrink-0">
+          {isOwner && isAuthorized && (
+            <button
+              className="p-1.5 rounded-lg text-gray-500 hover:text-black hover:bg-black/5 transition-colors"
+              title="Edit Project"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditModalOpen(true);
+              }}
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          )}
+
+          {isOwner && onDelete && isAuthorized && (
+            <button
+              className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+              title="Delete Project"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(project._id, project.nama);
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <EditProjectModal
+        project={project}
+        workspaceId={workspaceId}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+      />
+
+      {/* BODY & FOOTER SECTION */}
+      <div className="flex items-end justify-between gap-4 pt-3 border-t border-black/5">
+        {/* Detail Project */}
+        <div className="flex flex-col gap-2">
+          {/* Tanggal & Status */}
+          <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-gray-600 items-center">
+            {project.startedAt && (
+              <>
+                <span className="font-medium text-gray-700">Start</span>
+                <span>
+                  {new Date(project.startedAt).toLocaleDateString("id-ID")}
+                </span>
+              </>
+            )}
+
+            {project.dueDate && (
+              <>
+                <span className="font-medium text-gray-700">Due</span>
+                <span>
+                  {new Date(project.dueDate).toLocaleDateString("id-ID")}
+                </span>
+              </>
+            )}
+
+            {project.status && (
+              <>
+                <span className="font-medium text-gray-700">Status</span>
+                <span className="capitalize font-semibold text-gray-700">
+                  {project.status}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Badges & Extra Info */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span
+              className={`badge ${badgeColor} badge-sm font-semibold text-[0.65rem] border-none px-2 py-0.5`}
             >
               {badgeText}
-            </div>
+            </span>
 
             {collaborationInfo && (
-              <p className="text-black/60 font-semibold text-[0.8em]">
-                <span className="font-medium text-gray-600">
-                  Collaboration:{" "}
-                </span>
+              <span className="text-[0.75rem] text-gray-500">
+                <strong className="font-normal text-gray-400">Collab:</strong>{" "}
                 {collaborationInfo}
-              </p>
+              </span>
             )}
 
             {ownerInfo && (
-              <p className="text-black/60 font-semibold text-[0.8em]">
-                <span className="font-medium text-gray-600">Owner: </span>
+              <span className="text-[0.75rem] text-gray-500">
+                <strong className="font-normal text-gray-400">Owner:</strong>{" "}
                 {ownerInfo}
-              </p>
+              </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-end justify-center flex-col">
-          <h5 className="text-[0.8em] font-semibold text-gray-700">
-            Total Progress
-          </h5>
+        {/* Progress Display */}
+        <div className="flex flex-col items-end shrink-0">
+          <span className="text-[0.65rem] tracking-wider uppercase font-semibold text-gray-700">
+            Progress
+          </span>
           {progressByProject.isLoading ? (
-            <span className="text-[0.7em] text-gray-400">Loading...</span>
+            <span className="text-xs text-gray-400">...</span>
           ) : (
-            <AnimatedPercentage target={progress} />
+            <div className="text-lg font-bold">
+              <AnimatedPercentage target={progress} />
+            </div>
           )}
         </div>
       </div>
@@ -159,7 +224,7 @@ const ProjectCard = ({
   );
 };
 
-const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
+const NewCollaborationTab = ({ workspaceId, currentKuarterId }) => {
   const {
     useWorkspaceProjects,
     useCollaborationRequests,
@@ -416,7 +481,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                 </h4>
                 {ownedOnlyProjects.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    old
+                    New
                     {ownedOnlyProjects.map((project) => (
                       <ProjectCard
                         key={project._id}
@@ -457,6 +522,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                       <ProjectCard
                         key={project._id}
                         project={project}
+                        isAuthorized={isAuthorized}
                         isOwner={true}
                         workspaceId={workspaceId}
                         borderColor="border-blue-500"
@@ -635,4 +701,4 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   );
 };
 
-export default CollaborationTab;
+export default NewCollaborationTab;

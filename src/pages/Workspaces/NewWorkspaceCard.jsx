@@ -13,7 +13,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { Trash } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 
-const WorkspaceCard = ({
+const NewWorkspaceCard = ({
   workspace,
   isSelected,
   onCardClick,
@@ -524,4 +524,4 @@ const WorkspaceCard = ({
   );
 };
 
-export default WorkspaceCard;
+export default NewWorkspaceCard;

@@ -5,15 +5,12 @@ import Layout from "./components/Layout";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
-import Login from "./pages/Login";
 import AcceptPicInvite from "./pages/AcceptPicInvite";
 import AcceptWorkspaceInvite from "./pages/AcceptWorkspaceInvite";
 import Dashboard from "./pages/Dashboard";
 import Kuarter from "./pages/Kuarter/Index";
 import MyWork from "./pages/Workspaces/MyWorkspaces";
 import KuarterDetail from "./pages/Kuarter/KuarterDetail";
-import ForgotPassword from "./pages/ForgotPassword";
-import VerifyResetPassword from "./pages/VerifyResetPassword";
 import AuthPages from "./pages/AuthPages";
 import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -26,7 +23,9 @@ import IndexBooking from "./pages/BookingMeeting/MeetingManagement/Index";
 import IndexMySchedule from "./pages/BookingMeeting/MySchedule/Index";
 import MeetingRecapPage from "./pages/BookingMeeting/MeetingRecap/Index";
 import ScheduleToday from "./pages/BookingMeeting/ScheduleToday";
-
+import AllWorkspace from "./pages/Workspaces/Allworkspace";
+import IndexParty from "./pages/Party/Index";
+import IndexProject from "./pages/Project/Index";
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};
@@ -66,6 +65,13 @@ export default function App() {
                     <Route path="/mywork" element={<MyWork />} />
                     <Route path="/kuarter" element={<Kuarter />} />
                     <Route path="/kuarter/:id" element={<KuarterDetail />} />;
+                    <Route path="/workspaces" element={<AllWorkspace />} />;
+                    <Route path="/party-management" element={<IndexParty />} />;
+                    <Route
+                      path="/project-management"
+                      element={<IndexProject />}
+                    />
+                    ;
                     <Route
                       path="/workspaces/:id"
                       element={<WorkspaceDetailPage />}

@@ -5,11 +5,19 @@ import { useEffect, useState, useContext } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import NewCollaborationTab from "./NewCollaborationTab";
 import CollaborationTab from "./CollaborationTab";
-import WorkspaceChat from "../../components/WorkspaceChat";
 import NotificationBell from "../../components/ui/NotificationBell";
 import { UserPlus } from "lucide-react";
 import toast from "react-hot-toast";
+import { PROJECT_STATUS_OPTIONS } from "../../config/option";
+
+const initialProjectForm = {
+  nama: "",
+  startedAt: "",
+  dueDate: "",
+  status: "draft",
+};
 
 const WorkspaceDetailPage = () => {
   const { WorkspaceDetail, addProjectMutation } = useWorkspace();
@@ -18,7 +26,7 @@ const WorkspaceDetailPage = () => {
   const workspaceQuery = WorkspaceDetail(id);
   const { data, isLoading, isError } = workspaceQuery;
 
-  const [projectName, setProjectName] = useState("");
+  const [projectForm, setProjectForm] = useState(initialProjectForm);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
 
@@ -26,7 +34,6 @@ const WorkspaceDetailPage = () => {
   const navigate = useNavigate();
   const { user, token } = useContext(AuthContext);
   const [isMember, setIsMember] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -41,20 +48,31 @@ const WorkspaceDetailPage = () => {
         (member) =>
           member.user?._id === user._id ||
           member.user === user._id ||
-          member._id === user._id
+          member._id === user._id,
       );
       setIsMember(isOwner || isMemberOfWorkspace);
     }
   }, [data, user]);
 
+  const handleProjectFormChange = (e) => {
+    const { name, value } = e.target;
+    setProjectForm((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleAddProject = (e) => {
     e.preventDefault();
-    addProjectMutation.mutate({
-      workspaceId: id,
-      data: { nama: projectName },
-    });
-    setProjectName("");
-    document.getElementById("addProjectModal").close();
+    addProjectMutation.mutate(
+      {
+        workspaceId: id,
+        data: projectForm,
+      },
+      {
+        onSuccess: () => {
+          setProjectForm(initialProjectForm);
+          document.getElementById("addProjectModal").close();
+        },
+      },
+    );
   };
 
   const handleInviteMember = (e) => {
@@ -75,15 +93,12 @@ const WorkspaceDetailPage = () => {
           toast.success("Member's Invited!");
         },
         onError: (error) => {
-          const message = error.response?.data?.message || "Failed to invite member"
-          toast.error(message)
+          const message =
+            error.response?.data?.message || "Failed to invite member";
+          toast.error(message);
         },
-      }
+      },
     );
-  };
-
-  const toggleChat = () => {
-    setIsChatOpen(!isChatOpen);
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -92,27 +107,84 @@ const WorkspaceDetailPage = () => {
   return (
     <>
       <dialog id="addProjectModal" className="modal">
-        <div className="modal-box bg-white text-black">
-          <h3 className="font-bold text-lg mb-4">Add Project</h3>
+        <div className="modal-box bg-white text-gray-800">
+          <h3 className="font-bold text-lg mb-4 text-gray-800">Add Project</h3>
           <form onSubmit={handleAddProject}>
-            <input
-              type="text"
-              placeholder="Nama Project"
-              className="input input-bordered w-full bg-gray-300 text-black"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              required
-            />
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Nama Project</span>
+              </label>
+              <input
+                type="text"
+                name="nama"
+                placeholder="Nama Project"
+                className="input input-bordered w-full bg-gray-300 text-black"
+                value={projectForm.nama}
+                onChange={handleProjectFormChange}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="form-control w-full mt-4">
+                <label className="label">
+                  <span className="label-text">Started Date</span>
+                </label>
+                <input
+                  type="date"
+                  name="startedAt"
+                  className="input input-bordered w-full bg-gray-300 text-black"
+                  value={projectForm.startedAt}
+                  onChange={handleProjectFormChange}
+                />
+              </div>
+
+              <div className="form-control w-full mt-4">
+                <label className="label">
+                  <span className="label-text">Due Date</span>
+                </label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  className="input input-bordered w-full bg-gray-300 text-black"
+                  value={projectForm.dueDate}
+                  onChange={handleProjectFormChange}
+                />
+              </div>
+            </div>
+
+            <div className="form-control w-full mt-4">
+              <label className="label">
+                <span className="label-text">Status</span>
+              </label>
+              <select
+                name="status"
+                className="text-black p-2 bg-gray-300 rounded-sm w-full capitalize"
+                value={projectForm.status}
+                onChange={handleProjectFormChange}
+              >
+                {PROJECT_STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status}>
+                    {status.trim()}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="modal-action">
-              <button type="submit" className="btn btn-primary">  
-                Save
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={addProjectMutation.isPending}
+              >
+                {addProjectMutation.isPending ? "Menyimpan..." : "Save"}
               </button>
               <button
                 type="button"
                 className="btn"
-                onClick={() =>
-                  document.getElementById("addProjectModal").close()
-                }
+                onClick={() => {
+                  setProjectForm(initialProjectForm);
+                  document.getElementById("addProjectModal").close();
+                }}
               >
                 Cancel
               </button>
@@ -120,6 +192,7 @@ const WorkspaceDetailPage = () => {
           </form>
         </div>
       </dialog>
+
       {/* Invite Member Modal */}
       <dialog id="inviteMemberModal" className="modal">
         <div className="modal-box max-w-2xl w-full">
@@ -225,23 +298,6 @@ const WorkspaceDetailPage = () => {
           </form>
         </div>
       </dialog>
-      
-      {isChatOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
-            backdropFilter: "blur(5px)",
-            zIndex: 999,
-            transition: "opacity 0.3s ease",
-          }}
-          onClick={toggleChat}
-        />
-      )}
 
       <div className="card p-3">
         <div className="flex flex-row justify-between items-center mb-4">
@@ -277,109 +333,6 @@ const WorkspaceDetailPage = () => {
         </div>
         <CollaborationTab workspaceId={id} currentKuarterId={data?.kuarterId} />
       </div>
-      {isMember && user && token && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "2.5rem",
-            right: "2rem",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              position: "relative",
-              width: isChatOpen ? "380px" : "auto",
-              height: isChatOpen ? "550px" : "auto",
-              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-
-            {/* Chat Toggle Button */}
-            
-            {/* <div
-              style={{
-                position: "absolute",
-                top: isChatOpen ? "-40px" : "0",
-                right: isChatOpen ? "9px" : "0",
-                background: "linear-gradient(135deg, #6366F1)",
-                color: "white",
-                padding: "0.6rem 1.5rem",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-                boxShadow: "0 -2px 8px rgba(37, 99, 235, 0.2)",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                borderBottom: isChatOpen
-                  ? "none"
-                  : "1px solid rgba(255, 255, 255, 0.1)",
-                borderRadius: "12px 12px 0 0",
-                zIndex: 1,
-              }}
-              onClick={toggleChat}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(135deg, #0D1164)";
-                if (!isChatOpen) {
-                  e.currentTarget.style.transform = "translateY(-3px)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(135deg, #0D1164 0%, #211832 100%)";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              <span>Chat</span>
-              <span
-                style={{
-                  fontSize: "10px",
-                  transition: "transform 0.3s ease",
-                  transform: isChatOpen ? "rotate(0deg)" : "rotate(180deg)",
-                }}
-              >
-                ▼
-              </span>
-            </div> */}
-
-            {/* Expanded Chat Panel */}
-            {isChatOpen && (
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  background:
-                    "linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%)",
-                  borderRadius: "12px",
-                  boxShadow:
-                    "0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)",
-                  overflow: "hidden",
-                  border: "1px solid rgba(226, 232, 240, 0.8)",
-                  animation: "slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <WorkspaceChat
-                    workspaceId={id}
-                    currentUser={user}
-                    token={token}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         @keyframes slideUp {

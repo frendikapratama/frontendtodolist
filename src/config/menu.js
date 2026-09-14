@@ -36,6 +36,20 @@ export const menuItems = [
     icon: "users",
     requireAdmin: true,
   },
+  {
+    id: "Party Management",
+    label: "Party Management",
+    path: "/party-management",
+    icon: "users",
+    requireAdmin: true,
+  },
+  {
+    id: "Project Management",
+    label: "Project Management",
+    path: "/project-management",
+    icon: "folder",
+    requireAdmin: true,
+  },
 ];
 
 export const menuBooking = [

@@ -39,12 +39,13 @@ export const NotificationProvider = ({ children }) => {
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
 
-      if (Notification.permission === "granted") {
-        new Notification(notification.title, {
-          body: notification.message,
-          icon: "/icon.png",
-        });
-      }
+      // Browser notification disabled per request for bookingmeeting
+      // if (Notification.permission === "granted") {
+      //   new Notification(notification.title, {
+      //     body: notification.message,
+      //     icon: "/icon.png",
+      //   });
+      // }
     });
 
     newSocket.on("notification:comment", (data) => {
@@ -151,15 +152,15 @@ export const NotificationProvider = ({ children }) => {
     newSocket.on("notification:marked-read", ({ notificationId }) => {
       setNotifications((prev) =>
         prev.map((notif) =>
-          notif._id === notificationId ? { ...notif, isRead: true } : notif
-        )
+          notif._id === notificationId ? { ...notif, isRead: true } : notif,
+        ),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     });
 
     newSocket.on("notification:all-marked-read", ({ unreadCount }) => {
       setNotifications((prev) =>
-        prev.map((notif) => ({ ...notif, isRead: true }))
+        prev.map((notif) => ({ ...notif, isRead: true })),
       );
       setUnreadCount(unreadCount);
     });
@@ -253,7 +254,7 @@ export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
     throw new Error(
-      "useNotifications must be used within NotificationProvider"
+      "useNotifications must be used within NotificationProvider",
     );
   }
   return context;

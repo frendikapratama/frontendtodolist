@@ -1,8 +1,7 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { menuItems, menuBooking } from "../config/menu";
 import { useWorkspace } from "../hook/useWorkspace";
-import { useNavigate } from "react-router-dom";
 import GradientText from "../components/ui/GradientText";
 import Profile from "../assets/LogoPlanify.png";
 import ToggleButtonExit from "../components/ui/ToggleButtonExit";
@@ -30,6 +29,7 @@ import {
   House,
   Warehouse,
   ListCheck,
+  X,
 } from "lucide-react";
 import ProfileDialog from "./ui/ProfileDialog";
 
@@ -52,20 +52,20 @@ const iconMap = {
   ListCheck: ListCheck,
 };
 
-export default function Sidebar() {
+export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState(new Set());
   const [showQuartersSection, setShowQuartersSection] = useState(false);
   const [selectedQuarterId, setSelectedQuarterId] = useState(null);
-  const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState({ open: null, profile: null });
-  const { user, logout } = useAuth();
-  const currentPhotoUrl = user.photo
+  const [openDialog, setOpenDialog] = useState({ open: false, profile: null });
+
+  const { user } = useAuth();
+  const currentPhotoUrl = user?.photo
     ? `${import.meta.env.VITE_API_URL}/uploads/users/${user.photo}`
     : "https://placehold.co/400";
   const location = useLocation();
-
   const navigate = useNavigate();
+
   const { workspacesQuery } = useWorkspace();
   const { data: workspaces } = workspacesQuery;
   const { selectedWorkspaceId, setSelectedWorkspaceId } =
@@ -247,15 +247,15 @@ export default function Sidebar() {
         }
         onClick={() => {
           if (window.innerWidth < 1024) {
-            setIsSidebarOpen(false);
+            setIsMobileOpen?.(false);
           }
         }}
       >
         {IconComponent && (
           <IconComponent
-            className={`transition-all duration-300 ease-in-out shrink-0
-            ${isSidebarOpen ? "ml-1 w-5 h-5" : "scale-70 w-5 h-5"}
-          `}
+            className={`transition-all duration-300 ease-in-out shrink-0 ${
+              isSidebarOpen ? "ml-1 w-5 h-5" : "scale-70 w-5 h-5"
+            }`}
           />
         )}
         {isSidebarOpen && (
@@ -275,36 +275,41 @@ export default function Sidebar() {
     const workspaceIds = selectedQuarter.workspace;
     return workspaces?.filter((ws) => workspaceIds.includes(ws._id)) || [];
   };
+
   const relatedWorkspaces = getRelatedWorkspaces();
 
   return (
     <>
-      {/* Overlay untuk mobile */}
-      {/* <div className="lg:hidden fixed top-4 left-4 z-50">
-        <ToggleButtonExit isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      </div> */}
-
-      {isSidebarOpen && (
+      {/* Overlay Gelap Khusus Layar Mobile */}
+      {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-xs"
+          onClick={() => setIsMobileOpen?.(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Wrapper Utama Sidebar */}
       <div
-        className={`fixed lg:sticky lg:top-0 z-40 h-screen transition-all duration-300 ${
+        className={`fixed lg:sticky top-0 z-50 lg:z-40 h-screen transition-all duration-300 ${
+          // Pengaturan Mobile Slide
+          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        } ${
+          // Pengaturan Lebar Desktop (Sesuai kode asli Anda)
           isSidebarOpen ? "w-45" : "w-15"
         }`}
       >
-        <aside className="w-full p-2 h-full bg-[#EFECE3] border-r border-gray-900 flex flex-col shadow-sm">
+        <aside className="w-full p-2 h-full bg-[#EFECE3] border-r border-gray-900 flex flex-col shadow-sm relative">
+          {/* Tombol Close (X) Khusus Mobile */}
+          <button
+            className="lg:hidden absolute top-3 right-3 text-gray-700 hover:text-black p-1"
+            onClick={() => setIsMobileOpen?.(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           {/* Header */}
           <div className="p-3 pb-4 border-b border-gray-200">
-            <div
-              className={`flex items-center transition-all duration-300 ${
-                isSidebarOpen ? "justify-center" : "justify-center"
-              }`}
-            >
+            <div className="flex items-center justify-center transition-all duration-300">
               <img
                 src={Profile}
                 alt="Logo"
@@ -323,7 +328,7 @@ export default function Sidebar() {
                   ]}
                   animationSpeed={3}
                   showBorder={false}
-                  className="custom-class text-2xl transition-opacity duration-300"
+                  className="custom-class text-2xl transition-opacity duration-300 ml-2"
                 >
                   Planify
                 </GradientText>
@@ -337,6 +342,7 @@ export default function Sidebar() {
               {menuItems
                 .filter((item) => !item.requireAdmin || user?.isSystemAdmin)
                 .map((item) => renderMenuItem(item))}
+
               {/* Quarters Section */}
               {kuarters?.length > 0 && (
                 <div className="px-2 pt-2 border-t border-gray-300/60 mt-2">
@@ -367,7 +373,6 @@ export default function Sidebar() {
                                 key={k._id}
                                 className="rounded-lg overflow-hidden transition-all"
                               >
-                                {/* Quarter Card Button */}
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -379,7 +384,7 @@ export default function Sidebar() {
                                       setSelectedWorkspaceId(null);
                                     }
                                     if (window.innerWidth < 1024) {
-                                      setIsSidebarOpen(false);
+                                      setIsMobileOpen?.(false);
                                     }
                                   }}
                                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -414,7 +419,7 @@ export default function Sidebar() {
                                   />
                                 </button>
 
-                                {/* Sub-content Workspace & Project (Accordian Style) */}
+                                {/* Accordion Content */}
                                 {isQuarterActive && (
                                   <div className="ml-3 pl-2.5 my-1 border-l-2 border-gray-300/60 space-y-2">
                                     {relatedWorkspaces.length > 0 ? (
@@ -470,7 +475,7 @@ export default function Sidebar() {
                                                           window.innerWidth <
                                                           1024
                                                         ) {
-                                                          setIsSidebarOpen(
+                                                          setIsMobileOpen?.(
                                                             false,
                                                           );
                                                         }
@@ -541,6 +546,7 @@ export default function Sidebar() {
                   )}
                 </div>
               )}
+
               <div className="flex text-xs justify-start flex-col border-t border-gray-300 mt-2 pt-2">
                 {filteredMenuBooking
                   .filter((item) => !item.requireAdmin || user?.isSystemAdmin)
@@ -548,6 +554,7 @@ export default function Sidebar() {
               </div>
             </div>
           </nav>
+
           {/* Logout Button */}
           {isSidebarOpen && (
             <div className="flex justify-end items-end">
@@ -555,6 +562,7 @@ export default function Sidebar() {
             </div>
           )}
           <div className="w-full h-px bg-gray-300 my-3"></div>
+
           {/* User Profile */}
           <div
             className={`flex items-center pb-1 gap-3 transition-all duration-300 ${
@@ -562,14 +570,12 @@ export default function Sidebar() {
             }`}
           >
             {isSidebarOpen && user && (
-              <p
-                className={`text-black font-semibold text-[1em] ${isSidebarOpen ? "justify-center w-25 truncate" : "justify-end"}`}
-              >
+              <p className="text-black font-semibold text-[1em] justify-center w-25 truncate">
                 {user.username}
               </p>
             )}
             <img
-              className="w-10 h-10 border rounded-full"
+              className="w-10 h-10 border rounded-full cursor-pointer hover:opacity-80 transition-opacity"
               src={currentPhotoUrl}
               alt="Profile"
               onClick={() => setOpenDialog({ open: true, profile: user })}
@@ -578,31 +584,26 @@ export default function Sidebar() {
         </aside>
       </div>
 
-      <div className="z-100">
+      <div className="z-50">
         {openDialog.open && (
           <ProfileDialog
             show={openDialog.open}
             onClose={() => setOpenDialog({ open: false, profile: null })}
-            userId={openDialog.user?._id}
+            userId={openDialog.profile?._id}
             profileData={openDialog.profile}
           />
         )}
       </div>
-      {/* Toggle Button */}
+
+      {/* Toggle Button Desktop */}
       {!openDialog.open && (
-        <div className="fixed bottom-18 left-2 z-40">
+        <div className="hidden lg:block fixed bottom-18 left-2 z-40">
           <ToggleButtonExit
             isOpen={isSidebarOpen}
             setIsOpen={setIsSidebarOpen}
           />
         </div>
       )}
-      {/* <div className="fixed bottom-18 left-2 z-40">
-        <ToggleButtonExit
-          isOpen={isSidebarOpen}
-          setIsOpen={setIsSidebarOpen}
-        />
-      </div> */}
     </>
   );
 }

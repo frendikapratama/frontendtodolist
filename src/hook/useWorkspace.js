@@ -6,6 +6,7 @@ import {
   getWorkspaceById,
   deleteWorkspace,
   updateWorkspace,
+  newCreateWorkspace,
 } from "../services/workspace";
 import toast from "react-hot-toast";
 import { addProjectToWorkspace } from "../services/project";
@@ -16,6 +17,7 @@ export const useWorkspace = (kuarterId = null) => {
   const initialFormData = {
     nama: "",
   };
+
   const [formData, setFormData] = useState(initialFormData);
 
   const resetForm = () => {
@@ -41,6 +43,24 @@ export const useWorkspace = (kuarterId = null) => {
           queryKey: ["kuarter", variables.kuarterId],
         });
       }
+      resetForm();
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        error.response.data.error.forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error("Failed to add division");
+      }
+    },
+  });
+  const newcreateMutation = useMutation({
+    mutationFn: ({ data }) => newCreateWorkspace(data),
+    onSuccess: () => {
+      toast.success("Division created successfully");
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+
       resetForm();
     },
     onError: (error) => {
@@ -147,5 +167,6 @@ export const useWorkspace = (kuarterId = null) => {
     addProjectMutation,
     deleteMutation,
     updateWorkspaceMutation,
+    newcreateMutation,
   };
 };

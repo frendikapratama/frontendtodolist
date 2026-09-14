@@ -9,6 +9,10 @@ export async function createWorkspace(kuarterId, data) {
   const res = await api.post(`workspaces/${kuarterId}`, data);
   return res.data;
 }
+export async function newCreateWorkspace(data) {
+  const res = await api.post(`workspaces`, data);
+  return res.data;
+}
 
 export async function getWorkspaceById(id) {
   const res = await api.get(`workspaces/${id}`);
