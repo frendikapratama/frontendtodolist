@@ -611,7 +611,7 @@ const MeetingRecapPage = () => {
                   <th className="px-4 py-3.5 font-bold">Meeting Type</th>
                   <th className="px-4 py-3.5 font-bold text-center">Status</th>
                   <th className="px-4 py-3.5 font-bold text-center">
-                    Creted At
+                    Created At
                   </th>
                   <th className="px-5 py-3.5 font-bold text-center">
                     Summary Results
