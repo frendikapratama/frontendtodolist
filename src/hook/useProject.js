@@ -14,11 +14,22 @@ export const useProject = () => {
   const [projectManager, setProjectManager] = useState("");
   const [sites, setSites] = useState("");
   const [divisionId, setDivisionId] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   const queryClient = useQueryClient();
 
   const projectQuery = useQuery({
-    queryKey: ["projects", search, status, projectManager, sites, divisionId],
+    queryKey: [
+      "projects",
+      search,
+      status,
+      projectManager,
+      sites,
+      divisionId,
+      page,
+      limit,
+    ],
     queryFn: () =>
       getAllProjects({
         search,
@@ -26,6 +37,8 @@ export const useProject = () => {
         projectManager,
         sites,
         divisionId,
+        page,
+        limit,
       }),
   });
 
@@ -106,6 +119,7 @@ export const useProject = () => {
           groups: updatedProject.groups || oldData.groups || [],
         };
       });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["workspace-projects"] });
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
@@ -145,5 +159,9 @@ export const useProject = () => {
     setSites,
     divisionId,
     setDivisionId,
+    page,
+    setPage,
+    limit,
+    setLimit,
   };
 };

@@ -25,9 +25,9 @@ const STATUS_OPTIONS = [
   "completed",
   "cancelled",
 ];
-const SITES_OPTIONS = ["site 1", "site 2", "site 3"];
+const SITES_OPTIONS = ["PT", "HPC", "PBPG"];
 
-const ROLE_OPTIONS = ["client", "vendor", "partner"];
+const ROLE_OPTIONS = ["client", "vendor"];
 
 const toDateInputValue = (isoString) =>
   isoString ? isoString.slice(0, 10) : "";
@@ -206,7 +206,7 @@ const FormProject = ({ project, onClose }) => {
       startedAt: toISODate(formData.startedAt),
       dueDate: toISODate(formData.dueDate),
       status: formData.status,
-      projectManager: formData.projectManager,
+      projectManager: formData.projectManager || null,
       divisionId: formData.divisionId,
       parties: formData.parties.filter((p) => p.party),
       sites: formData.sites,
@@ -274,7 +274,6 @@ const FormProject = ({ project, onClose }) => {
               value={formData.startedAt}
               onChange={handleChange}
               className="input input-bordered w-full bg-black/60 text-white focus:border-blue-500 focus:outline-none"
-              required
               disabled={mutation.isPending}
             />
           </div>
@@ -290,7 +289,6 @@ const FormProject = ({ project, onClose }) => {
               value={formData.dueDate}
               onChange={handleChange}
               className="input input-bordered w-full bg-black/60 text-white focus:border-blue-500 focus:outline-none"
-              required
               disabled={mutation.isPending}
             />
           </div>
