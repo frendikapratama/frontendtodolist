@@ -26,13 +26,12 @@ const formatMeetingType = (type) => {
   if (!type) return "";
 
   return type
-    .replace(/_/g, " ") // ganti underscore jadi spasi
-    .replace(/-/g, " ") // ganti dash jadi spasi
+    .replace(/_/g, " ")
+    .replace(/-/g, " ")
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 };
-// Mengubah warna status badge agar match dengan tema dark mode transparan
 const STATUS_MAP = {
   scheduled: {
     label: "Scheduled",
@@ -73,7 +72,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// Mengubah StatCard ke gaya dark panel
 const StatCard = ({ icon, label, value }) => (
   <div className="bg-slate-900/40 backdrop-blur-md rounded-xl border border-white/10 p-5 flex items-center gap-4 shadow-xl transition-all duration-200 hover:border-white/20">
     <div className="p-3 bg-white/5 border border-white/5 rounded-xl text-slate-400">
@@ -415,25 +413,6 @@ const MeetingRecapPage = () => {
               )}
               Export Excel
             </button>
-
-            {/* Tombol Refresh */}
-            {/* <button
-              onClick={() => {
-                summaryQ.refetch();
-                resultsQ.refetch();
-              }}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 active:bg-white/15 text-sm font-medium text-white shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap"
-            >
-              <RefreshCw
-                size={14}
-                className={
-                  isFetchingAny
-                    ? "animate-spin text-blue-400"
-                    : "text-slate-400"
-                }
-              />
-              Refresh
-            </button> */}
           </div>
         </div>
       </div>
@@ -631,6 +610,9 @@ const MeetingRecapPage = () => {
                   <th className="px-4 py-3.5 font-bold">Schedule</th>
                   <th className="px-4 py-3.5 font-bold">Meeting Type</th>
                   <th className="px-4 py-3.5 font-bold text-center">Status</th>
+                  <th className="px-4 py-3.5 font-bold text-center">
+                    Creted At
+                  </th>
                   <th className="px-5 py-3.5 font-bold text-center">
                     Summary Results
                   </th>
@@ -700,7 +682,17 @@ const MeetingRecapPage = () => {
                         <td className="px-4 py-4 text-center">
                           <StatusBadge status={meeting.status} />
                         </td>
-                        <td className="px-5 py-4 text-center">
+                        <td className="px-4 py-4">
+                          <div className="flex flex-col whitespace-nowrap text-slate-200 text-xs">
+                            <span className="font-medium">
+                              {dayjs(meeting.createdAt).format("DD MMM YYYY")}
+                            </span>
+                            <span className="text-slate-400 mt-0.5">
+                              {dayjs(meeting.createdAt).format("HH.mm")}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-center font-medium">
                           {resultCount > 0 ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-500/10 text-teal-400 ring-1 ring-teal-500/20">
                               {resultCount} Document{resultCount > 1 ? "s" : ""}

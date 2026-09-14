@@ -428,8 +428,13 @@ const TableMeeting = ({ compact = false }) => {
                     </td>{" "}
                     {!compact && (
                       <td className={sizing.cellPad}>
-                        <div className="flex items text-slate-200 text-xs">
-                          {formatDateTime(meeting.createdAt)}
+                        <div className="flex flex-col whitespace-nowrap text-slate-200 text-xs">
+                          <span className="font-medium">
+                            {dayjs(meeting.createdAt).format("DD MMM YYYY")}
+                          </span>
+                          <span className="font-medium">
+                            {dayjs(meeting.createdAt).format("HH.mm")}
+                          </span>
                         </div>
                       </td>
                     )}
