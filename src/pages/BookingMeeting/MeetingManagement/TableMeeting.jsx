@@ -430,7 +430,7 @@ const TableMeeting = ({ compact = false }) => {
                       </div>
                     </td>
                     <td className={sizing.cellPad}>
-                      <div className="flex items">
+                      <div className="flex items text-slate-200 text-xs">
                         {formatDateTime(meeting.createdAt)}
                       </div>
                     </td>
