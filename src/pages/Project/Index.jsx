@@ -3,6 +3,7 @@ import { useProject } from "../../hook/useProject";
 import { useDivision } from "../../hook/useDivision";
 import { getUsers } from "../../services/userServices";
 import FormProject from "./Form";
+import ProjectDetailModal from "./ProjectDetailModal";
 import {
   Trash2,
   Edit3,
@@ -25,6 +26,8 @@ import {
   ChevronRight,
   Loader2,
   Check,
+  Eye,
+  Receipt,
 } from "lucide-react";
 
 const STATUS_OPTIONS = [
@@ -95,6 +98,7 @@ const IndexProject = () => {
   const [usersList, setUsersList] = useState([]);
   const [isUsersLoading, setIsUsersLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [projectForDetail, setProjectForDetail] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
@@ -159,7 +163,9 @@ const IndexProject = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key !== "Escape") return;
-      if (projectToDelete) {
+      if (projectForDetail) {
+        closeDetailModal();
+      } else if (projectToDelete) {
         closeDeleteModal();
       } else if (isFormOpen) {
         requestCloseFormModal();
@@ -167,7 +173,7 @@ const IndexProject = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFormOpen, projectToDelete, isFormDirty]);
+  }, [isFormOpen, projectToDelete, projectForDetail, isFormDirty]);
 
   const projectList = projectQuery.data?.data || [];
   const summary = projectQuery.data?.summary || {};
@@ -236,6 +242,9 @@ const IndexProject = () => {
 
   const openDeleteModal = (project) => setProjectToDelete(project);
   const closeDeleteModal = () => setProjectToDelete(null);
+
+  const openDetailModal = (project) => setProjectForDetail(project);
+  const closeDetailModal = () => setProjectForDetail(null);
 
   const handleConfirmDelete = () => {
     if (!projectToDelete) return;
@@ -969,6 +978,14 @@ const IndexProject = () => {
 
                     <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/5">
                       <button
+                        onClick={() => openDetailModal(project)}
+                        className="min-h-11 px-3 py-1.5 rounded-lg bg-[#0E7490]/20 text-cyan-300 hover:bg-[#0E7490]/30 text-xs font-medium flex items-center gap-1.5"
+                        title="Lihat Detail & BOQ"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Detail & BOQ</span>
+                      </button>
+                      <button
                         onClick={() => openEditModal(project)}
                         className="min-h-11 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1"
                       >
@@ -1015,9 +1032,14 @@ const IndexProject = () => {
                         className="hover:bg-white/2 transition-colors group"
                       >
                         <td className="py-4 px-4 font-semibold text-white max-w-[200px] truncate">
-                          <span className="group-hover:text-blue-400 transition-colors">
-                            {project.nama}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => openDetailModal(project)}
+                            className="text-left group-hover:text-blue-400 hover:underline transition-colors flex items-center gap-1.5 cursor-pointer"
+                            title="Klik untuk melihat Detail & BOQ"
+                          >
+                            <span className="truncate">{project.nama}</span>
+                          </button>
                         </td>
                         <td className="py-4 px-4">
                           {getStatusBadge(project.status)}
@@ -1092,6 +1114,14 @@ const IndexProject = () => {
                         </td>
                         <td className="py-4 px-4 text-center">
                           <div className="flex items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              title="Lihat Detail & BOQ"
+                              className="p-2 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-[#0E7490]/20 transition-colors cursor-pointer"
+                              onClick={() => openDetailModal(project)}
+                            >
+                              <Receipt className="w-4 h-4" />
+                            </button>
                             <button
                               type="button"
                               title="Edit Proyek"
@@ -1279,6 +1309,19 @@ const IndexProject = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* PROJECT DETAIL & BOQ MODAL */}
+      {projectForDetail && (
+        <ProjectDetailModal
+          project={projectForDetail}
+          onClose={closeDetailModal}
+          onEdit={() => {
+            const p = projectForDetail;
+            closeDetailModal();
+            openEditModal(p);
+          }}
+        />
       )}
     </div>
   );
