@@ -19,6 +19,7 @@ import {
   User,
   Mail,
   Asterisk,
+  Sparkles,
 } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
 import { getUsers } from "../../../services/userServices";
@@ -41,7 +42,10 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
   const getOrganizerId = () => user?._id || user?.id || "";
 
   const { roomsQuery } = useRooms();
-  const { checkAvailabilityMutation, createMeetingMutation } = useMeetings();
+  const { checkAvailabilityMutation, createMeetingMutation, dashboardQuery } =
+    useMeetings();
+  const dashboardDataQuery = dashboardQuery();
+  const dashboardData = dashboardDataQuery.data?.data || [];
 
   const rooms = roomsQuery.data || [];
 
@@ -953,12 +957,37 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             required
           >
             <option value="">Select a room</option>
-            {rooms.map((room) => (
-              <option key={room._id} value={room._id}>
-                {room.nama} — {room.lokasi} (Capacity: {room.kapasitas})
-              </option>
-            ))}
+            {rooms.map((room) => {
+              const rDash = dashboardData.find((d) => String(d._id) === String(room._id));
+              let statusLabel = "";
+              if (rDash?.status === "cleaning_buffer") {
+                statusLabel = " [Cleaning Buffer]";
+              } else if (rDash?.status === "in_progress") {
+                statusLabel = " [In Progress]";
+              }
+              return (
+                <option key={room._id} value={room._id}>
+                  {room.nama} — {room.lokasi} (Capacity: {room.kapasitas}){statusLabel}
+                </option>
+              );
+            })}
           </select>
+          {(() => {
+            const currentSelectedRoom = dashboardData.find(
+              (d) => String(d._id) === String(form.roomId),
+            );
+            if (currentSelectedRoom?.status === "cleaning_buffer") {
+              return (
+                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs">
+                  <Sparkles size={14} className="shrink-0 animate-spin text-violet-400" />
+                  <span>
+                    <strong>Notice:</strong> This room is currently in a 30-minute cleaning buffer ({currentSelectedRoom.message}).
+                  </span>
+                </div>
+              );
+            }
+            return null;
+          })()}
         </div>
 
         {/* Date + Time */}
