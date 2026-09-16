@@ -14,6 +14,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  Sparkles,
 } from "lucide-react";
 import BookingMeetingForm from "./BookingMeetingForm";
 import TableMeeting from "./TableMeeting";
@@ -191,25 +192,33 @@ const IndexBooking = () => {
 
   const dashboardData = dashboardDataQuery.data?.data || [];
 
-  const getRoomStatus = (roomId) => {
-    const roomDashboard = dashboardData.find(
-      (r) => String(r._id) === String(roomId),
-    );
-    if (!roomDashboard) return "Available";
-
-    const bookings = roomDashboard.todaysBookings || [];
-    const hasInProgress = bookings.some((m) => m.status === "in_progress");
-    return hasInProgress ? "In Progress" : "Available";
+  const getRoomDashboard = (roomId) => {
+    return dashboardData.find((r) => String(r._id) === String(roomId));
   };
 
-  const roomsWithStatus = rooms.map((room) => ({
-    ...room,
-    computedStatus: getRoomStatus(room._id),
-  }));
+  const roomsWithStatus = rooms.map((room) => {
+    const roomDashboard = getRoomDashboard(room._id);
+    return {
+      ...room,
+      status: roomDashboard?.status || "available",
+      isAvailable: roomDashboard?.isAvailable ?? true,
+      statusMessage: roomDashboard?.message || "Available Now",
+      bufferUntil: roomDashboard?.bufferUntil,
+      lastMeeting: roomDashboard?.lastMeeting,
+      currentMeeting: roomDashboard?.currentMeeting,
+    };
+  });
 
   const availableRooms = roomsWithStatus.filter(
-    (r) => r.computedStatus === "Available",
+    (r) => r.status === "available" && r.isAvailable,
   ).length;
+  const cleaningRooms = roomsWithStatus.filter(
+    (r) => r.status === "cleaning_buffer",
+  ).length;
+  const inProgressRooms = roomsWithStatus.filter(
+    (r) => r.status === "in_progress",
+  ).length;
+
   const totalCapacity = rooms.reduce((sum, room) => sum + room.kapasitas, 0);
   const avgCapacity =
     totalRooms > 0 ? Math.round(totalCapacity / totalRooms) : 0;
@@ -243,7 +252,7 @@ const IndexBooking = () => {
             value={availableRooms}
             color="bg-emerald-500/10 border-emerald-500/10"
             iconColor="text-emerald-400"
-            subtitle={`${totalRooms - availableRooms} rooms occupied`}
+            subtitle={`${inProgressRooms} in progress${cleaningRooms > 0 ? `, ${cleaningRooms} cleaning` : ""}`}
           />
           <StatCard
             icon={Clock}
@@ -276,17 +285,22 @@ const IndexBooking = () => {
                   </div>
                 )}
                 <div className="absolute top-2 right-2">
-                  {room.computedStatus === "Available" ? (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/90 text-white border border-emerald-400/20 backdrop-blur-md shadow-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping absolute inline-flex opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
-                      Available
+                  {room.status === "cleaning_buffer" ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-violet-500/90 text-white border border-violet-400/30 backdrop-blur-md shadow-sm">
+                      <Sparkles size={12} className="animate-spin text-violet-200" />
+                      Cleaning Buffer
                     </span>
-                  ) : (
+                  ) : room.status === "in_progress" ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500 text-slate-950 border border-amber-400/20 shadow-sm">
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping absolute inline-flex opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-slate-950"></span>
                       In Progress
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/90 text-white border border-emerald-400/20 backdrop-blur-md shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping absolute inline-flex opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                      Available
                     </span>
                   )}
                 </div>
@@ -309,11 +323,36 @@ const IndexBooking = () => {
                 </div>
 
                 <div className="border-t border-white/5 my-2" />
-                {/* Meeting Info - tampil saat in progress atau ada booking hari ini */}
+                {/* Meeting Info - tampil saat cleaning buffer, in progress atau ada booking hari ini */}
                 {(() => {
                   const roomDashboard = dashboardData.find(
                     (r) => String(r._id) === String(room._id),
                   );
+
+                  if (room.status === "cleaning_buffer") {
+                    return (
+                      <div className="flex flex-col gap-1.5 py-2 px-3 rounded-lg border bg-violet-500/10 border-violet-500/25">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles size={13} className="text-violet-400 animate-pulse shrink-0" />
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-violet-300">
+                            Cleaning Buffer
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold text-white truncate leading-tight">
+                          {room.statusMessage || "Room Cleaning in Progress"}
+                        </p>
+                        {room.bufferUntil && (
+                          <div className="flex items-center gap-1 text-violet-300/80">
+                            <Clock size={11} className="shrink-0" />
+                            <span className="text-[11px]">
+                              Available at {new Date(room.bufferUntil).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
                   const bookings = roomDashboard?.todaysBookings || [];
                   const activeMeeting = bookings.find(
                     (m) => m.status === "in_progress",
