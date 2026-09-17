@@ -26,6 +26,7 @@ import ScheduleToday from "./pages/BookingMeeting/ScheduleToday";
 import AllWorkspace from "./pages/Workspaces/Allworkspace";
 import IndexParty from "./pages/Party/Index";
 import IndexProject from "./pages/Project/Index";
+import ProjectManagementDetailPage from "./pages/Project/ProjectManagementDetailPage";
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};
@@ -71,7 +72,10 @@ export default function App() {
                       path="/project-management"
                       element={<IndexProject />}
                     />
-                    ;
+                    <Route
+                      path="/project-management/:id"
+                      element={<ProjectManagementDetailPage />}
+                    />
                     <Route
                       path="/workspaces/:id"
                       element={<WorkspaceDetailPage />}

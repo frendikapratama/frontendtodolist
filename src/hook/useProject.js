@@ -76,6 +76,7 @@ export const useProject = () => {
     mutationFn: (id) => deleteProject(id),
     onSuccess: (_, variables) => {
       toast.success("The project was successfully deleted");
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       queryClient.invalidateQueries({ queryKey: ["workspace-projects"] });
       queryClient.invalidateQueries({ queryKey: ["project", variables] });
