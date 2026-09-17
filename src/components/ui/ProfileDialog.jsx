@@ -317,7 +317,7 @@ const ProfileDialog = ({ show, onClose }) => {
                     {/* New Password */}
                     <motion.div variants={itemVariants}>
                       <label className="block text-sm font-medium mb-1">
-                        New Password{" "}
+                        New Password
                         <span className="text-gray-400">(optional)</span>
                       </label>
                       <div className="relative">

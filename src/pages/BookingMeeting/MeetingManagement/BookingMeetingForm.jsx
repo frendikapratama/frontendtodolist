@@ -419,7 +419,7 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
 
                     <span className="text-blue-400 underline">
                       <a
-                        ref={previewData.meetingLink}
+                        href={previewData.meetingLink}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -958,7 +958,9 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
           >
             <option value="">Select a room</option>
             {rooms.map((room) => {
-              const rDash = dashboardData.find((d) => String(d._id) === String(room._id));
+              const rDash = dashboardData.find(
+                (d) => String(d._id) === String(room._id),
+              );
               let statusLabel = "";
               if (rDash?.status === "cleaning_buffer") {
                 statusLabel = " [Cleaning Buffer]";
@@ -967,7 +969,8 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
               }
               return (
                 <option key={room._id} value={room._id}>
-                  {room.nama} — {room.lokasi} (Capacity: {room.kapasitas}){statusLabel}
+                  {room.nama} — {room.lokasi} (Capacity: {room.kapasitas})
+                  {statusLabel}
                 </option>
               );
             })}
@@ -979,9 +982,13 @@ const BookingMeetingForm = ({ defaultRoomId = "", onSuccess, onClose }) => {
             if (currentSelectedRoom?.status === "cleaning_buffer") {
               return (
                 <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs">
-                  <Sparkles size={14} className="shrink-0 animate-spin text-violet-400" />
+                  <Sparkles
+                    size={14}
+                    className="shrink-0 animate-spin text-violet-400"
+                  />
                   <span>
-                    <strong>Notice:</strong> This room is currently in a 30-minute cleaning buffer ({currentSelectedRoom.message}).
+                    <strong>Notice:</strong> This room is currently in a
+                    30-minute cleaning buffer ({currentSelectedRoom.message}).
                   </span>
                 </div>
               );
