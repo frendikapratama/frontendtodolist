@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 const chatApi = {
   async getWorkspaceMessages(workspaceId, page = 1, limit = 50) {
     const res = await api.get(
-      `/chat/workspace/${workspaceId}?page=${page}&limit=${limit}`
+      `/chat/workspace/${workspaceId}?page=${page}&limit=${limit}`,
     );
     return res.data.data;
   },
@@ -118,15 +118,15 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
 
     newSocket.on("chat:edited", (message) => {
       setMessages((prev) =>
-        prev.map((msg) => (msg._id === message._id ? message : msg))
+        prev.map((msg) => (msg._id === message._id ? message : msg)),
       );
     });
 
     newSocket.on("chat:deleted", ({ messageId, deletedBy }) => {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, isDeleted: true, deletedBy } : msg
-        )
+          msg._id === messageId ? { ...msg, isDeleted: true, deletedBy } : msg,
+        ),
       );
     });
 
@@ -135,7 +135,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         prev.map((msg) => {
           if (msg._id === messageId) {
             const alreadyRead = msg.readBy?.some(
-              (r) => r.user === userId || r.user._id === userId
+              (r) => r.user === userId || r.user._id === userId,
             );
             if (!alreadyRead) {
               return {
@@ -145,7 +145,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
             }
           }
           return msg;
-        })
+        }),
       );
     });
 
@@ -171,7 +171,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
         setMessages(data);
       } catch (error) {
         // alert("Failed to load messages");
-        toast.error('Failed to load message')
+        toast.error("Failed to load message");
       } finally {
         setIsLoading(false);
       }
@@ -208,7 +208,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     if (!newMessage.trim() && !selectedFile) return;
     if (!socket || !isConnected) {
       // alert("Not connected to chat server");
-      toast.error('Not connected to chat server')
+      toast.error("Not connected to chat server");
       return;
     }
 
@@ -239,7 +239,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
       }
     } catch (error) {
       // alert("Failed to send message");
-      toast.error('Failed to send message');
+      toast.error("Failed to send message");
     }
   };
 
@@ -248,7 +248,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
         // alert("File size must be less than 10MB");
-        toast.error('File size must be less than 10MB')
+        toast.error("File size must be less than 10MB");
         return;
       }
       setSelectedFile(file);
@@ -292,13 +292,13 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
           prev.map((msg) =>
             msg._id === selectedMessage._id
               ? { ...msg, isDeleted: true, deletedBy: currentUser.username }
-              : msg
-          )
+              : msg,
+          ),
         );
       }
     } catch (error) {
       console.error("Error unsending message:", error);
-      toast.error('Failed to unsend message')
+      toast.error("Failed to unsend message");
       // alert("Failed to unsend message");
     }
 
@@ -389,13 +389,13 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
                   backgroundColor: msg.isDeleted
                     ? "#F3F4F6"
                     : msg.sender._id === currentUser._id
-                    ? "#6366F1"
-                    : "#EEF2FF",
+                      ? "#6366F1"
+                      : "#EEF2FF",
                   color: msg.isDeleted
                     ? "#9CA3AF"
                     : msg.sender._id === currentUser._id
-                    ? "white"
-                    : "#1F2937",
+                      ? "white"
+                      : "#1F2937",
                   fontStyle: msg.isDeleted ? "italic" : "normal",
                   animation: "fadeIn 0.5s ease-in-out",
                 }}
@@ -481,7 +481,7 @@ const WorkspaceChat = ({ workspaceId, currentUser, token }) => {
 
       {typingUsers.length > 0 && (
         <div style={styles.typingIndicator}>
-          {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
+          {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}
           typing...
         </div>
       )}
@@ -767,7 +767,7 @@ styleSheet.insertRule(
     }
   }
 `,
-  styleSheet.cssRules.length
+  styleSheet.cssRules.length,
 );
 
 export default WorkspaceChat;

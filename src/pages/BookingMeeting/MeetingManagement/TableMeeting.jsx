@@ -339,7 +339,7 @@ const TableMeeting = ({ compact = false }) => {
                   className={`font-semibold tracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
                 >
                   Status
-                </th>{" "}
+                </th>
                 {!compact && (
                   <th
                     className={`font-semibold tracking-wider text-slate-300 ${sizing.cellPad} ${sizing.headText}`}
@@ -425,7 +425,7 @@ const TableMeeting = ({ compact = false }) => {
                       <div className="flex items">
                         <StatusBadge status={meeting.status} />
                       </div>
-                    </td>{" "}
+                    </td>
                     {!compact && (
                       <td className={sizing.cellPad}>
                         <div className="flex flex-col whitespace-nowrap text-slate-200 text-xs">

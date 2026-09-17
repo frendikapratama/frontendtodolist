@@ -363,7 +363,7 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
                     className="btn btn-ghost btn-sm text-slate-400"
                   >
                     Cancel
-                  </button>{" "}
+                  </button>
                   <button
                     type="submit"
                     className="btn btn-primary btn-sm"
