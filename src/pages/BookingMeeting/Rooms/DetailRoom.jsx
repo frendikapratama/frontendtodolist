@@ -9,17 +9,20 @@ import GradientText from "../../../components/ui/GradientText";
 import dayjs from "dayjs";
 import {
   MapPin,
-  Users,
   Clock,
   Calendar,
   AlertCircle,
   Hourglass,
   ArrowLeft,
   Check,
+  Users,
+  CalendarDays,
   Building2,
 } from "lucide-react";
+import { API_URL } from "../../../api/axios";
 
 export default function RoomDetailPage() {
+  const BASE_URL = API_URL;
   const { roomId } = useReactParams();
   const navigate = useReactNavigate();
 
@@ -34,6 +37,15 @@ export default function RoomDetailPage() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    return d.toLocaleString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   // Loading State
   if (isLoading) {
@@ -112,7 +124,7 @@ export default function RoomDetailPage() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       {/* Footer Copyright */}
-      <h1 className="fixed bottom-3 right-4 text-[10px] text-blue-200/40 z-50 pointer-events-none">
+      <h1 className="fixed bottom-2 right-4 text-xs text-blue-200 z-50 pointer-events-none">
         © 2026 Developed by IT Aldo | PT. Alkindo Naratama Tbk. | All rights
         reserved.
       </h1>
@@ -132,7 +144,7 @@ export default function RoomDetailPage() {
             </GradientText>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold text-blue-100/90 tracking-wide">
+          <div className="flex items-center gap-2 sm:gap-3 text-sm font-semibold text-blue-100/90 tracking-wide">
             <span className="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
               <Calendar size={14} className="text-cyan-300" />
               {dayjs().format("DD MMMM YYYY")}
@@ -146,159 +158,155 @@ export default function RoomDetailPage() {
 
         {/* Content Body Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-5 grow overflow-hidden">
-          {/* LEFT SIDE (8 cols) */}
-          <div className="lg:col-span-8 flex flex-col justify-between space-y-4 overflow-y-auto pr-1">
-            {/* Room Title Header & Badges */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-                  <Building2 size={24} className="text-cyan-400/80" />
-                  {room?.nama || "Meeting Room"}
-                </h1>
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-200/80 mt-1">
-                  <MapPin size={14} className="text-cyan-400" />
-                  <span>{room?.lokasi || "Location not set"}</span>
+          {/* LEFT SIDE */}
+          <div className="lg:col-span-8 flex flex-col gap-5 overflow-y-auto pr-1">
+            {/* ROOM HEADER */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Room Icon */}
+                <div className="shrink-0 w-12 h-12 rounded-2xl  border border-blue-400/15 flex items-center justify-center">
+                  <Building2 size={32} className="text-cyan-400" />
+                </div>
+
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white truncate capitalize">
+                    {room?.nama || "Meeting Room"}
+                  </h1>
+
+                  <div className="flex items-center gap-1.5 mt-1 text-sm text-blue-200/60">
+                    <MapPin size={14} className="text-cyan-400 shrink-0" />
+
+                    <span className="truncate">
+                      {room?.lokasi || "Location not set"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Status Badges */}
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
-                  {/* Color Indicator */}
+              {/* ROOM STATUS */}
+              <div className="flex items-center gap-3 shrink-0">
+                <div
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full  `}
+                >
                   <span
-                    className={`w-2.5 h-2.5 rounded-full ${
+                    className={`w-2 h-2 rounded-full ${
                       status === "BUFFER"
-                        ? "bg-amber-500 animate-pulse"
+                        ? "bg-amber-700 animate-pulse"
                         : !isAvailable
-                          ? "bg-rose-500 animate-ping"
-                          : "bg-emerald-500"
+                          ? "bg-rose-700 animate-pulse"
+                          : "bg-emerald-700"
                     }`}
                   />
 
-                  {/* Status Text */}
                   <span
-                    className={
+                    className={`text-sm font-bold tracking-wide uppercase ${
                       status === "BUFFER"
                         ? "text-amber-600"
                         : !isAvailable
                           ? "text-rose-600"
                           : "text-emerald-600"
-                    }
+                    }`}
                   >
                     {status || (!isAvailable ? "IN PROGRESS" : "AVAILABLE")}
                   </span>
-                </span>
+                </div>
 
                 {/* Remaining Minutes */}
                 {Boolean(remainingMinutes) && Number(remainingMinutes) > 0 && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-300">
-                    <Hourglass
-                      size={13}
-                      className="text-cyan-300 animate-pulse"
-                    />
-                    {remainingMinutes} Minutes Remaining
-                  </span>
+                  <div className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-cyan-300">
+                    <Hourglass size={13} className="animate-pulse" />
+
+                    <span>{remainingMinutes} min left</span>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* CURRENT MEETING CARD */}
-            <div className="bg-slate-800/40 border border-white/10 rounded-2xl p-5 relative overflow-hidden backdrop-blur-md flex flex-col justify-between shrink-0 shadow-lg">
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-[11px] font-bold tracking-wider text-cyan-400 uppercase">
+            {/* ROOM IMAGE */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 shadow-xl">
+              <img
+                src={`${BASE_URL}/uploads/rooms/${room.photo}`}
+                alt={room.nama}
+                className="w-full h-72 sm:h-80 object-cover"
+              />
+              {/* Subtle image overlay */}
+              <div className="absolute inset-0 bg-linear-to-t from-slate-950/30 via-transparent to-transparent pointer-events-none" />
+            </div>
+
+            {/* CURRENT MEETING */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/45 backdrop-blur-md shadow-lg shrink-0">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-cyan-400/10 border border-cyan-400/15 flex items-center justify-center">
+                    <Users size={16} className="text-cyan-400" />
+                  </div>
+
+                  <span className="text-xl font-bold tracking-[0.12em] text-cyan-400 uppercase">
                     Current Meeting
-                  </span>
-                  <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-cyan-400/10 text-cyan-300 border border-cyan-400/20 font-medium">
-                    Active Session
                   </span>
                 </div>
 
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-400/10 border border-cyan-400/15 text-sm font-semibold text-cyan-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  Active Session
+                </span>
+              </div>
+
+              {/* Meeting Content */}
+              <div className="px-5 pb-5 pt-4">
                 {currentMeeting ? (
-                  <>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-1">
+                  <div>
+                    <h2 className="text-lg sm:text-2xl font-bold text-white tracking-tight">
                       {currentMeeting.title}
                     </h2>
-                    <p className="text-xs sm:text-sm text-blue-200/70 mb-4 flex items-center gap-1.5">
-                      <span>Organized by:</span>
-                      <strong className="text-blue-100 font-semibold">
+
+                    <p className="text-sm text-blue-200/60 mt-1.5 flex items-center gap-1.5">
+                      <span>Organizer: </span>
+
+                      <strong className="text-blue-100 font-medium capitalize">
                         {currentMeeting.organizerId?.username ||
                           currentMeeting.organizer ||
                           "Super Admin"}
                       </strong>
                     </p>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-white/5 text-cyan-300 font-semibold text-lg sm:text-xl">
-                      <span className="flex items-center gap-2">
-                        <Clock size={18} className="text-cyan-400" />
-                        {new Date(currentMeeting.startTime).toLocaleTimeString(
-                          [],
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          },
-                        )}{" "}
-                        –{" "}
-                        {new Date(currentMeeting.endTime).toLocaleTimeString(
-                          [],
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          },
-                        )}
-                      </span>
-                      <span className="text-xs font-normal text-blue-200/60">
+                    {/* Meeting Meta */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5 pt-4 border-t border-white/5">
+                      <div className="flex items-center gap-2 text-cyan-300">
+                        <div className="w-8 h-8 rounded-lg bg-cyan-400/10 flex items-center justify-center">
+                          <Clock size={15} className="text-cyan-400" />
+                        </div>
+
+                        <span className="text-sm sm:text-base font-semibold">
+                          {formatTime(currentMeeting.startTime)} –{" "}
+                          {formatTime(currentMeeting.endTime)}
+                        </span>
+                      </div>
+
+                      <span className="text-sm text-cyan-400">
+                        Today{" "}
                         {dayjs(currentMeeting.startTime).format("D MMMM YYYY")}
                       </span>
                     </div>
-                  </>
+                  </div>
                 ) : (
-                  <div className="py-6 text-center text-blue-200/50">
-                    <p className="text-base font-medium text-blue-100/80">
+                  /* Empty State */
+                  <div className="min-h-[145px] flex flex-col items-center justify-center text-center">
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-400/10 flex items-center justify-center mb-3">
+                      <CalendarDays size={22} className="text-blue-300/60" />
+                    </div>
+
+                    <p className="text-base font-semibold text-blue-100/90">
                       No Current Meeting
                     </p>
-                    <p className="text-xs text-blue-200/50 mt-1">
+
+                    <p className="text-xs text-blue-200/45 mt-1">
                       The room is empty and ready to use
                     </p>
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* ROOM SPECIFICATIONS */}
-            <div className="bg-slate-800/40 border border-white/10 rounded-2xl p-5 backdrop-blur-md shadow-lg">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold text-blue-100/90 uppercase tracking-wider">
-                  Room Specifications
-                </h3>
-                <div className="flex items-center gap-1.5 text-xs text-cyan-300 font-medium bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
-                  <Users size={14} />
-                  <span>Capacity: {room?.kapasitas || 0} People</span>
-                </div>
-              </div>
-
-              {room?.facilities && room.facilities.length > 0 ? (
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {room.facilities.map((fac, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl text-xs text-blue-100 transition"
-                    >
-                      <Check size={13} className="text-cyan-400 shrink-0" />
-                      <span>{fac.nama}</span>
-                      <span className="text-cyan-300 font-bold text-[10px] bg-cyan-400/10 px-1.5 py-0.5 rounded border border-cyan-400/20">
-                        {fac.total}x
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-blue-200/50 italic">
-                  No facilities registered
-                </p>
-              )}
             </div>
           </div>
 
@@ -307,36 +315,53 @@ export default function RoomDetailPage() {
             <div className="flex flex-col h-full overflow-hidden">
               {/* NEXT MEETING */}
               <div className="pb-4 mb-4 border-b border-white/10 shrink-0">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-[11px] font-bold tracking-wider text-cyan-400 uppercase">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-lg font-bold tracking-wider text-cyan-400 uppercase">
                     Next Meeting
                   </span>
-                  <Calendar size={14} className="text-blue-300/60" />
                 </div>
 
                 {nextMeeting ? (
-                  <div className="bg-slate-900/50 border border-white/10 rounded-xl p-3.5">
-                    <div className="flex items-center justify-between text-xs text-cyan-300 font-semibold mb-1">
-                      <span>
-                        {nextMeeting.startTimeLabel || "18:00"} –{" "}
-                        {nextMeeting.endTimeLabel || "18:45"}
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-slate-900/30 p-2.5 transition hover:bg-slate-900/50">
+                    {/* LEFT */}
+                    <div className="min-w-0 max-w-[65%]">
+                      <h5 className="line-clamp-3 text-base font-semibold text-white">
+                        {nextMeeting.title}
+                      </h5>
+
+                      <p className="mt-2 truncate text-sm text-blue-200">
+                        Organizer:{" "}
+                        <span className="font-medium text-blue-100 capitalize">
+                          {nextMeeting.organizer || "Admin"}
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* RIGHT */}
+                    <div className="shrink-0 text-right">
+                      <span className="mt-1 flex items-center justify-end gap-1 text-sm font-medium text-cyan-300">
+                        {nextMeeting.startTime
+                          ? dayjs(nextMeeting.startTime).isSame(dayjs(), "day")
+                            ? "Today"
+                            : dayjs(nextMeeting.startTime).format("DD MMM YYYY")
+                          : nextMeeting.date || "Today"}
                       </span>
-                      <span className="text-[10px] text-blue-200/60 font-normal">
-                        {nextMeeting.date || "Today"}
+
+                      <span className="mt-1 flex items-center justify-end gap-1 text-xs font-medium text-cyan-300">
+                        <Clock size={10} className="text-cyan-400" />
+
+                        {nextMeeting.startTime
+                          ? `${formatTime(nextMeeting.startTime)} - ${formatTime(
+                              nextMeeting.endTime,
+                            )}`
+                          : nextMeeting.startTimeLabel
+                            ? `${nextMeeting.startTimeLabel} - ${nextMeeting.endTimeLabel}`
+                            : nextMeeting.date || "-"}
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold text-white mb-1 truncate">
-                      {nextMeeting.title}
-                    </h4>
-                    <p className="text-[11px] text-blue-200/60 truncate">
-                      By:{" "}
-                      <span className="text-blue-100 font-medium">
-                        {nextMeeting.organizer || "Admin"}
-                      </span>
-                    </p>
                   </div>
                 ) : (
-                  <div className="p-3 text-center text-xs text-blue-200/40 bg-slate-900/30 rounded-xl border border-white/5">
+                  <div className="py-8 text-center text-xs text-blue-200/40 border border-dashed border-white/10 rounded-xl">
                     No upcoming meetings today
                   </div>
                 )}
@@ -344,7 +369,7 @@ export default function RoomDetailPage() {
 
               {/* UPCOMING LIST */}
               <div className="grow overflow-y-auto pr-1 flex flex-col">
-                <h4 className="text-[11px] font-bold tracking-wider text-blue-200/60 uppercase mb-3 shrink-0">
+                <h4 className="text-lg font-bold tracking-wider text-cyan-400 uppercase mb-3 shrink-0">
                   Upcoming Schedule
                 </h4>
 
@@ -353,22 +378,38 @@ export default function RoomDetailPage() {
                     {upcomingMeetings.map((item, idx) => (
                       <div
                         key={item._id || idx}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 border border-white/5 transition"
+                        className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-slate-900/30 p-2.5 transition hover:bg-slate-900/50"
                       >
-                        <div className="max-w-[65%]">
-                          <h5 className="text-xs font-semibold text-white truncate">
+                        <div className="min-w-0 max-w-[65%]">
+                          <h5 className="line-clamp-3 text-base font-semibold text-white">
                             {item.title}
                           </h5>
-                          <p className="text-[10px] text-blue-200/50 truncate">
-                            Organizer: {item.organizer || "-"}
+
+                          <p className="mt-2 truncate text-sm text-blue-200">
+                            Organizer:{" "}
+                            <span className="font-medium text-blue-100 capitalize">
+                              {item.organizer || "Admin"}
+                            </span>
                           </p>
                         </div>
-                        <div className="text-right shrink-0">
-                          <span className="text-[11px] font-medium text-cyan-300 flex items-center justify-end gap-1">
+
+                        <div className="shrink-0 text-right">
+                          {/* <span className="text-sm text-cyan-500 font-medium"> */}{" "}
+                          <span className="mt-1 flex items-center justify-end gap-1 text-sm font-medium text-cyan-300">
+                            {item.startTime
+                              ? dayjs(item.startTime).isSame(dayjs(), "day")
+                                ? "Today"
+                                : dayjs(item.startTime).format("DD MMM YYYY")
+                              : item.date || "Today"}
+                          </span>
+                          <span className="mt-1 flex items-center justify-end gap-1 text-xs font-medium text-cyan-300">
                             <Clock size={10} className="text-cyan-400" />
-                            {item.startTimeLabel
-                              ? `${item.startTimeLabel} - ${item.endTimeLabel}`
-                              : item.date}
+
+                            {item.startTime
+                              ? `${formatTime(item.startTime)} - ${formatTime(item.endTime)}`
+                              : item.startTimeLabel
+                                ? `${item.startTimeLabel} - ${item.endTimeLabel}`
+                                : item.date || "-"}
                           </span>
                         </div>
                       </div>
