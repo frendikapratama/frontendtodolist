@@ -37,6 +37,11 @@ export async function updateRoom(id, data) {
   return res.data.data;
 }
 
+export async function getDetailRoom(id) {
+  const res = await api.get(`rooms/${id}`);
+  return res.data.data;
+}
+
 export async function deleteRoom(id) {
   const res = await api.delete(`rooms/${id}`);
   return res.data.data;
