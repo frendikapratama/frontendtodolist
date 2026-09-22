@@ -169,14 +169,14 @@ export default function RoomDetailPage() {
                 </div>
 
                 <div className="min-w-0">
-                  <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white truncate capitalize">
+                  <h1 className="line-clamp-4 text-xl sm:text-2xl font-bold tracking-tight text-white truncate capitalize">
                     {room?.nama || "Meeting Room"}
                   </h1>
 
                   <div className="flex items-center gap-1.5 mt-1 text-sm text-blue-200/60">
                     <MapPin size={14} className="text-cyan-400 shrink-0" />
 
-                    <span className="truncate">
+                    <span className="truncate capitalize">
                       {room?.lokasi || "Location not set"}
                     </span>
                   </div>
@@ -199,7 +199,7 @@ export default function RoomDetailPage() {
                   />
 
                   <span
-                    className={`text-sm font-bold tracking-wide uppercase ${
+                    className={`text-sm font-bold tracking-wide capitalize ${
                       status === "BUFFER"
                         ? "text-amber-600"
                         : !isAvailable
@@ -242,7 +242,7 @@ export default function RoomDetailPage() {
                     <Users size={16} className="text-cyan-400" />
                   </div>
 
-                  <span className="text-xl font-bold tracking-[0.12em] text-cyan-400 uppercase">
+                  <span className="text-xl font-bold tracking-[0.12em] text-cyan-400 capitalize">
                     Current Meeting
                   </span>
                 </div>
@@ -316,7 +316,7 @@ export default function RoomDetailPage() {
               {/* NEXT MEETING */}
               <div className="pb-4 mb-4 border-b border-white/10 shrink-0">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-bold tracking-wider text-cyan-400 uppercase">
+                  <span className="text-lg font-bold tracking-wider text-cyan-400 capitalize">
                     Next Meeting
                   </span>
                 </div>
@@ -369,7 +369,7 @@ export default function RoomDetailPage() {
 
               {/* UPCOMING LIST */}
               <div className="grow overflow-y-auto pr-1 flex flex-col">
-                <h4 className="text-lg font-bold tracking-wider text-cyan-400 uppercase mb-3 shrink-0">
+                <h4 className="text-lg font-bold tracking-wider text-cyan-400 capitalize mb-3 shrink-0">
                   Upcoming Schedule
                 </h4>
 
