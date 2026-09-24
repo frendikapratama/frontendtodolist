@@ -244,7 +244,7 @@ const FormProject = ({ project, onClose }) => {
         {/* Project Name */}
         <div className="form-control w-full">
           <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-gray-200">
+            <span className="label-text text-sm font-medium text-slate-700">
               Project Name
             </span>
           </label>
@@ -253,7 +253,7 @@ const FormProject = ({ project, onClose }) => {
             name="nama"
             value={formData.nama}
             onChange={handleChange}
-            className="input input-bordered w-full bg-black/60 text-white focus:border-blue-500 focus:outline-none"
+            className="input input-bordered w-full bg-white text-slate-900 focus:border-[#0E7490] focus:outline-none"
             placeholder="Enter project name"
             required
             disabled={mutation.isPending}
@@ -264,7 +264,7 @@ const FormProject = ({ project, onClose }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="form-control w-full">
             <label className="label pb-1">
-              <span className="label-text text-sm font-medium text-gray-200">
+              <span className="label-text text-sm font-medium text-slate-700">
                 Start Date
               </span>
             </label>
@@ -273,13 +273,13 @@ const FormProject = ({ project, onClose }) => {
               name="startedAt"
               value={formData.startedAt}
               onChange={handleChange}
-              className="input input-bordered w-full bg-black/60 text-white focus:border-blue-500 focus:outline-none"
+              className="input input-bordered w-full bg-white text-slate-900 focus:border-[#0E7490] focus:outline-none"
               disabled={mutation.isPending}
             />
           </div>
           <div className="form-control w-full">
             <label className="label pb-1">
-              <span className="label-text text-sm font-medium text-gray-200">
+              <span className="label-text text-sm font-medium text-slate-700">
                 Due Date
               </span>
             </label>
@@ -288,7 +288,7 @@ const FormProject = ({ project, onClose }) => {
               name="dueDate"
               value={formData.dueDate}
               onChange={handleChange}
-              className="input input-bordered w-full bg-black/60 text-white focus:border-blue-500 focus:outline-none"
+              className="input input-bordered w-full bg-white text-slate-900 focus:border-[#0E7490] focus:outline-none"
               disabled={mutation.isPending}
             />
           </div>
@@ -297,7 +297,7 @@ const FormProject = ({ project, onClose }) => {
         {/* Status */}
         <div className="form-control w-full">
           <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-gray-200">
+            <span className="label-text text-sm font-medium text-slate-700">
               Status
             </span>
           </label>
@@ -305,7 +305,7 @@ const FormProject = ({ project, onClose }) => {
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="select select-bordered w-full bg-black/60 text-white capitalize focus:border-blue-500 focus:outline-none"
+            className="select select-bordered w-full bg-white text-slate-900 capitalize focus:border-[#0E7490] focus:outline-none"
             disabled={mutation.isPending}
           >
             {STATUS_OPTIONS.map((s) => (
@@ -319,13 +319,13 @@ const FormProject = ({ project, onClose }) => {
         {/* PROJECT MANAGER — single select */}
         <div className="form-control w-full">
           <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-gray-200">
+            <span className="label-text text-sm font-medium text-slate-700">
               Project Manager
             </span>
           </label>
 
           {selectedManager ? (
-            <div className="flex items-center justify-between gap-3 bg-black/60 border border-white/10 rounded-lg px-3.5 py-2.5">
+            <div className="flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-lg px-3.5 py-2.5">
               <div className="flex items-center gap-3 min-w-0">
                 {selectedManager.photo ? (
                   <img
@@ -334,16 +334,16 @@ const FormProject = ({ project, onClose }) => {
                     className="w-8 h-8 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-blue-600/30 text-blue-300 flex items-center justify-center text-xs font-semibold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-cyan-50 text-[#0E7490] flex items-center justify-center text-xs font-semibold shrink-0">
                     {selectedManager.username?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm text-white font-medium truncate">
+                  <p className="text-sm text-slate-900 font-medium truncate">
                     {selectedManager.username}
                   </p>
                   {selectedManager.email && (
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-xs text-slate-500 truncate">
                       {selectedManager.email}
                     </p>
                   )}
@@ -353,7 +353,7 @@ const FormProject = ({ project, onClose }) => {
                 type="button"
                 onClick={clearProjectManager}
                 disabled={mutation.isPending}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0"
                 title="Ganti project manager"
               >
                 <X className="w-4 h-4" />
@@ -373,7 +373,7 @@ const FormProject = ({ project, onClose }) => {
         {/* DIVISIONS — Dropdown Multi-Select */}
         <div className="form-control w-full" ref={divisionDropdownRef}>
           <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-gray-200">
+            <span className="label-text text-sm font-medium text-slate-700">
               Divisions
             </span>
           </label>
@@ -383,32 +383,32 @@ const FormProject = ({ project, onClose }) => {
               type="button"
               onClick={() => setIsDivisionDropdownOpen((prev) => !prev)}
               disabled={mutation.isPending}
-              className="w-full flex items-center justify-between input input-bordered bg-black/60 text-white text-left font-normal focus:border-blue-500"
+                className="w-full flex items-center justify-between input input-bordered bg-white text-slate-900 text-left font-normal focus:border-[#0E7490]"
             >
-              <span className="text-sm text-gray-300 truncate">
+              <span className="text-sm text-slate-600 truncate">
                 {formData.divisionId.length === 0
                   ? "Pilih divisi..."
                   : `${formData.divisionId.length} divisi dipilih`}
               </span>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <ChevronDown className="w-4 h-4 text-slate-500" />
             </button>
 
             {isDivisionDropdownOpen && (
-              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-gray-900 border border-white/10 rounded-xl shadow-xl overflow-hidden p-2 space-y-2">
+              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden p-2 space-y-2">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                   <input
                     type="text"
                     value={divisionSearch}
                     onChange={(e) => setDivisionSearch(e.target.value)}
                     placeholder="Cari divisi..."
-                    className="w-full bg-black/50 text-white text-xs pl-9 pr-3 py-2 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white text-slate-900 text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-[#0E7490]"
                   />
                 </div>
 
                 <div className="max-h-48 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
                   {filteredDivisions.length === 0 ? (
-                    <p className="text-xs text-gray-500 p-2 text-center">
+                    <p className="text-xs text-slate-400 p-2 text-center">
                       Divisi tidak ditemukan.
                     </p>
                   ) : (
@@ -420,16 +420,16 @@ const FormProject = ({ project, onClose }) => {
                           onClick={() => toggleDivision(d._id)}
                           className={`flex items-center justify-between p-2 rounded-lg text-xs cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-blue-600/20 text-blue-200"
-                              : "text-gray-300 hover:bg-white/5"
+                              ? "bg-cyan-50 text-[#0E7490]"
+                              : "text-slate-600 hover:bg-slate-50"
                           }`}
                         >
                           <span className="font-medium">{d.name}</span>
                           <div
                             className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                               isSelected
-                                ? "bg-blue-600 border-blue-500"
-                                : "border-white/20"
+                                ? "bg-[#0E7490] border-[#0E7490]"
+                                : "border-slate-200"
                             }`}
                           >
                             {isSelected && (
@@ -450,7 +450,7 @@ const FormProject = ({ project, onClose }) => {
               {selectedDivisions.map((d) => (
                 <span
                   key={d._id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-blue-600/20 text-blue-200 border border-blue-500/30"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-cyan-50 text-[#0E7490] border border-cyan-100"
                 >
                   {d.name}
                   <button
@@ -469,7 +469,7 @@ const FormProject = ({ project, onClose }) => {
         {/* SITES — Checkbox Card Grid */}
         <div className="form-control w-full">
           <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-gray-200">
+            <span className="label-text text-sm font-medium text-slate-700">
               Sites
             </span>
           </label>
@@ -480,10 +480,10 @@ const FormProject = ({ project, onClose }) => {
               return (
                 <label
                   key={s}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${
                     isChecked
-                      ? "bg-blue-600/15 border-blue-500/50 text-white"
-                      : "bg-black/40 border-white/10 text-gray-400 hover:border-white/20 hover:text-gray-200"
+                      ? "bg-cyan-50 border-cyan-200 text-[#0E7490]"
+                      : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-200 hover:text-slate-700"
                   }`}
                 >
                   <input
@@ -507,7 +507,7 @@ const FormProject = ({ project, onClose }) => {
         {/* PARTIES */}
         <div className="form-control w-full">
           <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-gray-200">
+            <span className="label-text text-sm font-medium text-slate-700">
               Parties
             </span>
           </label>
@@ -515,14 +515,14 @@ const FormProject = ({ project, onClose }) => {
             {formData.parties.map((p, index) => (
               <div
                 key={index}
-                className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-black/40 p-2 rounded-lg border border-white/5"
+                className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-slate-50 p-2 rounded-lg border border-slate-100"
               >
                 <select
                   value={p.party}
                   onChange={(e) =>
                     handlePartyChange(index, "party", e.target.value)
                   }
-                  className="select select-bordered select-sm flex-1 bg-black/60 text-white text-xs focus:border-blue-500 focus:outline-none"
+                  className="select select-bordered select-sm flex-1 bg-white text-slate-900 text-xs focus:border-[#0E7490] focus:outline-none"
                   disabled={mutation.isPending}
                 >
                   <option value="" disabled>
@@ -540,7 +540,7 @@ const FormProject = ({ project, onClose }) => {
                   onChange={(e) =>
                     handlePartyChange(index, "role", e.target.value)
                   }
-                  className="select select-bordered select-sm w-full sm:w-36 bg-black/60 text-white text-xs capitalize focus:border-blue-500 focus:outline-none"
+                  className="select select-bordered select-sm w-full sm:w-36 bg-white text-slate-900 text-xs capitalize focus:border-[#0E7490] focus:outline-none"
                   disabled={mutation.isPending}
                 >
                   {ROLE_OPTIONS.map((r) => (
@@ -565,7 +565,7 @@ const FormProject = ({ project, onClose }) => {
             <button
               type="button"
               onClick={addPartyRow}
-              className="btn btn-xs sm:btn-sm bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border-blue-500/30 w-full sm:w-auto mt-1"
+              className="btn btn-xs sm:btn-sm bg-cyan-50 hover:bg-cyan-50 text-[#0E7490] border-cyan-100 w-full sm:w-auto mt-1"
               disabled={mutation.isPending}
             >
               + Add Party
@@ -574,10 +574,10 @@ const FormProject = ({ project, onClose }) => {
         </div>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
           <button
             type="button"
-            className="btn btn-sm sm:btn-md bg-transparent hover:bg-white/10 border-white/20 text-gray-300"
+            className="btn btn-sm sm:btn-md bg-transparent hover:bg-slate-100 border-slate-200 text-slate-600"
             onClick={handleCancel}
             disabled={mutation.isPending}
           >

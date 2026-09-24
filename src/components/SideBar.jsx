@@ -52,6 +52,13 @@ const iconMap = {
   ListCheck: ListCheck,
 };
 
+// Kumpulkan semua path dari menuBooking (termasuk children)
+const bookingPaths = menuBooking
+  .flatMap((item) =>
+    item.children ? item.children.map((child) => child.path) : [item.path],
+  )
+  .filter(Boolean);
+
 export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState(new Set());
@@ -65,6 +72,12 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
     : "https://placehold.co/400";
   const location = useLocation();
   const navigate = useNavigate();
+
+  // true jika halaman aktif termasuk menuBooking
+  const isBookingPage = bookingPaths.some(
+    (path) =>
+      location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
 
   const { workspacesQuery } = useWorkspace();
   const { data: workspaces } = workspacesQuery;
@@ -238,7 +251,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
           ${isChild ? "pl-8" : ""}
           ${
             isActive
-              ? "bg-[#0E7490] text-white shadow-sm"
+              ? "bg-cyan-700/10 text-cyan-700 font-bold border border-cyan-700/20"
               : isChild
                 ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
@@ -298,7 +311,11 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
           isSidebarOpen ? "w-45" : "w-15"
         }`}
       >
-        <aside className="w-full p-2 h-full bg-[#EFECE3] border-r border-gray-900 flex flex-col shadow-sm relative">
+        <aside
+          className={`w-full p-2 h-full  flex flex-col shadow-sm relative transition-colors duration-300 ${
+            isBookingPage ? "bg-[#EFECE3]" : "bg-slate-100"
+          }`}
+        >
           {/* Tombol Close (X) Khusus Mobile */}
           <button
             className="lg:hidden absolute top-3 right-3 text-gray-700 hover:text-black p-1"

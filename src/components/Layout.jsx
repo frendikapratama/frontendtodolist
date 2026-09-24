@@ -1,30 +1,67 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./SideBar";
 import RecentlyUpdates from "../components/ui/RecentlyUpdates";
 import { useRecentUpdates } from "../context/RecentlyContext";
 import { Menu } from "lucide-react";
+import { menuBooking } from "../config/menu";
+
+// Kumpulkan semua path dari menuBooking (termasuk children)
+const bookingPaths = menuBooking
+  .flatMap((item) =>
+    item.children ? item.children.map((child) => child.path) : [item.path],
+  )
+  .filter(Boolean);
 
 const Layout = () => {
   const { isOpen } = useRecentUpdates();
-  // State khusus untuk mengontrol drawer di layar mobile
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // true jika halaman aktif termasuk menuBooking
+  const isBookingPage = bookingPaths.some(
+    (path) =>
+      location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#1D546C]">
-      {/* Sidebar Navigation */}
+    <div
+      className={`flex h-screen w-screen overflow-hidden ${
+        isBookingPage ? "bg-[#1D546C]" : "bg-slate-100"
+      }`}
+    >
       <Sidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
 
       {/* Main Content Container */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-linear-to-tl from-[#1A3D64] to-[#1D546C] relative">
-        {/* Topbar Khusus Mobile (Sembunyi di Desktop) */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-[#1A3D64] text-white border-b border-white/10 shrink-0">
+      <div
+        className={`flex-1 flex flex-col h-full overflow-hidden relative ${
+          isBookingPage
+            ? "bg-linear-to-tl from-[#1A3D64] to-[#1D546C]"
+            : "bg-slate-100"
+        }`}
+      >
+        {/* Topbar Mobile */}
+        <header
+          className={`lg:hidden flex items-center justify-between px-4 py-3 border-b shrink-0 ${
+            isBookingPage
+              ? "bg-[#1A3D64] text-white border-white/10"
+              : "bg-white text-gray-900 border-gray-200"
+          }`}
+        >
           <button
             onClick={() => setIsMobileOpen(true)}
-            className="p-1.5 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+            className={`p-1.5 rounded-lg transition-colors ${
+              isBookingPage
+                ? "bg-white/10 hover:bg-white/20"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
             aria-label="Open Menu"
           >
-            <Menu className="w-6 h-6 text-white" />
+            <Menu
+              className={`w-6 h-6 ${
+                isBookingPage ? "text-white" : "text-gray-800"
+              }`}
+            />
           </button>
           <span className="font-semibold text-lg tracking-wide">Planify</span>
           <div className="w-6" />
@@ -42,7 +79,6 @@ const Layout = () => {
         </main>
       </div>
 
-      {/* Right Slide-over Panel */}
       <RecentlyUpdates />
     </div>
   );

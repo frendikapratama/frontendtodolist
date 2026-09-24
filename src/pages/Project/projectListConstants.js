@@ -11,31 +11,31 @@ export const PROJECT_SITE_OPTIONS = ["site 1", "site 2", "site 3"];
 
 export const PROJECT_STATUS_STYLES = {
   draft: {
-    style: "bg-slate-800 text-slate-300 border-slate-700",
+    style: "bg-slate-100 text-slate-600 border-slate-200",
     label: "Draft",
   },
   planning: {
-    style: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    style: "bg-violet-50 text-violet-700 border-violet-100",
     label: "Planning",
   },
   "in progress": {
-    style: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    style: "bg-cyan-50 text-[#0E7490] border-cyan-100",
     label: "In Progress",
   },
   "in-progress": {
-    style: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    style: "bg-cyan-50 text-[#0E7490] border-cyan-100",
     label: "In Progress",
   },
   hold: {
-    style: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    style: "bg-amber-50 text-amber-700 border-amber-100",
     label: "Hold",
   },
   completed: {
-    style: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    style: "bg-emerald-50 text-emerald-700 border-emerald-100",
     label: "Completed",
   },
   cancelled: {
-    style: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+    style: "bg-rose-50 text-rose-700 border-rose-100",
     label: "Cancelled",
   },
 };
