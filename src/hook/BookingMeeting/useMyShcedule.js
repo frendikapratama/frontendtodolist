@@ -14,6 +14,8 @@ export const useMySchedule = () => {
   const [items, setItems] = useState([]);
   const queryClient = useQueryClient();
   const { socket } = useContext(AuthContext);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Reset ke page 1 lalu refetch dari page 1 (dipakai saat ada event socket)
   const resetAndRefetch = () => {
@@ -42,9 +44,17 @@ export const useMySchedule = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, queryClient]);
 
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const myScheduleQuery = useQuery({
-    queryKey: ["mySchedule", page, limit],
-    queryFn: () => mySchedule(page, limit),
+    queryKey: ["mySchedule", page, limit, debouncedSearch],
+    queryFn: () => mySchedule(page, limit, debouncedSearch),
     keepPreviousData: true,
   });
 
@@ -85,5 +95,7 @@ export const useMySchedule = () => {
     isFetchingMore: myScheduleQuery.isFetching && page > 1,
     isInitialLoading: myScheduleQuery.isLoading && page === 1,
     endMeetingMutation,
+    search,
+    setSearch,
   };
 };
