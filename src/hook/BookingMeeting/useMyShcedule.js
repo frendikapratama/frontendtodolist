@@ -2,7 +2,12 @@ import {
   mySchedule,
   endMeeting,
 } from "../../services/BookingMeeting/mySchedule";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { getSocket } from "../../config/socket";
@@ -55,15 +60,16 @@ export const useMySchedule = () => {
   const myScheduleQuery = useQuery({
     queryKey: ["mySchedule", page, limit, debouncedSearch],
     queryFn: () => mySchedule(page, limit, debouncedSearch),
-    keepPreviousData: true,
+    // keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   // Gabungkan hasil page baru ke accumulated items
   useEffect(() => {
-    if (!myScheduleQuery.data) return;
+    if (!myScheduleQuery.data || myScheduleQuery.isPlaceholderData) return;
     const newItems = myScheduleQuery.data.schedule || [];
     setItems((prev) => (page === 1 ? newItems : [...prev, ...newItems]));
-  }, [myScheduleQuery.data, page]);
+  }, [myScheduleQuery.data, myScheduleQuery.isPlaceholderData, page]);
 
   const pagination = myScheduleQuery.data?.pagination;
   const totalItems = pagination?.total || 0;
