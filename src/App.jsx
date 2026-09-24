@@ -43,6 +43,7 @@ export default function App() {
                 <Route path="/schedule-today" element={<ScheduleToday />} />
                 <Route path="/forgot-password" element={<AuthPages />} />
                 <Route path="/verify-reset-password" element={<AuthPages />} />
+                <Route path="/room/:roomId" element={<RoomDetailPage />} />
                 <Route path="/" element={<Navigate to="/login" />} />
                 <Route path="/login" element={<AuthPages />} />
                 <Route
@@ -53,7 +54,6 @@ export default function App() {
                   path="/accept-workspace-invite"
                   element={<AcceptWorkspaceInvite />}
                 />
-
                 <Route element={<ProtectedRoute />}>
                   <Route element={<Layout />}>
                     <Route

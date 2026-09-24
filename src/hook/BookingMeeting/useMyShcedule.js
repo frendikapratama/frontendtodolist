@@ -2,7 +2,12 @@ import {
   mySchedule,
   endMeeting,
 } from "../../services/BookingMeeting/mySchedule";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { getSocket } from "../../config/socket";
@@ -14,6 +19,8 @@ export const useMySchedule = () => {
   const [items, setItems] = useState([]);
   const queryClient = useQueryClient();
   const { socket } = useContext(AuthContext);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Reset ke page 1 lalu refetch dari page 1 (dipakai saat ada event socket)
   const resetAndRefetch = () => {
@@ -42,18 +49,27 @@ export const useMySchedule = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, queryClient]);
 
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const myScheduleQuery = useQuery({
-    queryKey: ["mySchedule", page, limit],
-    queryFn: () => mySchedule(page, limit),
-    keepPreviousData: true,
+    queryKey: ["mySchedule", page, limit, debouncedSearch],
+    queryFn: () => mySchedule(page, limit, debouncedSearch),
+    // keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   // Gabungkan hasil page baru ke accumulated items
   useEffect(() => {
-    if (!myScheduleQuery.data) return;
+    if (!myScheduleQuery.data || myScheduleQuery.isPlaceholderData) return;
     const newItems = myScheduleQuery.data.schedule || [];
     setItems((prev) => (page === 1 ? newItems : [...prev, ...newItems]));
-  }, [myScheduleQuery.data, page]);
+  }, [myScheduleQuery.data, myScheduleQuery.isPlaceholderData, page]);
 
   const pagination = myScheduleQuery.data?.pagination;
   const totalItems = pagination?.total || 0;
@@ -85,5 +101,7 @@ export const useMySchedule = () => {
     isFetchingMore: myScheduleQuery.isFetching && page > 1,
     isInitialLoading: myScheduleQuery.isLoading && page === 1,
     endMeetingMutation,
+    search,
+    setSearch,
   };
 };

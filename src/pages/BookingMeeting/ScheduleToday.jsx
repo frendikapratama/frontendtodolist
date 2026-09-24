@@ -1,51 +1,12 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import api from "../../api/axios";
-import { AuthContext } from "../../context/AuthContext";
-import logo from "../../assets/LogoPlanify.png";
 import GradientText from "../../components/ui/GradientText";
-import toast from "react-hot-toast";
-import TableMeeting from "./MeetingManagement/TableMeeting";
 import TableMeetingToday from "./MeetingManagement/Tablemeetingtoday";
 import dayjs from "dayjs";
-import {
-  Calendar,
-  Clock,
-  User,
-  Lock,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 
 export default function ScheduleToday() {
-  const { login } = useContext(AuthContext);
-  const [email, setEmail] = useState("");
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [currentStep, setCurrentStep] = useState("login");
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  // States for verify-reset-password
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [verifyError, setVerifyError] = useState("");
-  const [verifySuccess, setVerifySuccess] = useState("");
-  const [countdown, setCountdown] = useState(60);
-  const [canResend, setCanResend] = useState(false);
-  const inputRefs = useRef([]);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [time, setTime] = useState(dayjs().format("HH:mm:ss"));
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  // Handlers untuk OTP input
   useEffect(() => {
     const timer = setInterval(() => {
       setTime(dayjs().format("HH:mm:ss"));
@@ -53,17 +14,6 @@ export default function ScheduleToday() {
 
     return () => clearInterval(timer);
   }, []);
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleKey = (e) => {
-    if (e.key === "Enter") {
-      handleLoginSubmit(e);
-    }
-  };
 
   return (
     <div className="h-screen w-screen max-h-screen overflow-hidden flex items-center justify-center bg-linear-to-tl from-[#1A3D64] to-[#1D546C] p-4 relative select-none">

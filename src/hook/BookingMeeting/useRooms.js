@@ -5,6 +5,7 @@ import {
   deleteRoom,
   updateRoom,
   getSchedule,
+  getDetailRoom,
 } from "../../services/BookingMeeting/rooms";
 import toast from "react-hot-toast";
 
@@ -75,12 +76,23 @@ export const useRooms = () => {
     });
   };
 
+  const useDetailRoom = (roomId) => {
+    return useQuery({
+      queryKey: ["room-detail", roomId],
+      queryFn: () => getDetailRoom(roomId),
+      enabled: !!roomId,
+      refetchInterval: 10000,
+      refetchOnWindowFocus: true,
+    });
+  };
+
   return {
     roomsQuery,
     createMutation,
     updateMutation,
     deleteMutation,
     useSchedule,
+    useDetailRoom,
   };
 };
 
