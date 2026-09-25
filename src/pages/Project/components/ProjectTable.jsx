@@ -1,3 +1,5 @@
+﻿import { useState } from "react";
+import { createPortal } from "react-dom";
 import {
   AlertCircle,
   Building2,
@@ -6,216 +8,447 @@ import {
   ChevronRight,
   Edit3,
   Eye,
-  FolderKanban,
+  FolderOpen,
   MapPin,
-  Receipt,
   Trash2,
-  UserCheck,
+  X,
 } from "lucide-react";
 import { PROJECT_STATUS_STYLES } from "../projectListConstants";
 import { formatProjectDate } from "../projectListUtils";
 
 const StatusBadge = ({ status }) => {
-  const statusDefinition = PROJECT_STATUS_STYLES[status?.toLowerCase()];
-  if (!statusDefinition)
+  const def = PROJECT_STATUS_STYLES[status?.toLowerCase()];
+  if (!def)
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border bg-slate-100 text-slate-500 border-dashed border-slate-600">
-        <AlertCircle className="w-3 h-3" />
-        {status ? `Unknown: ${status}` : "Tanpa Status"}
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]">
+        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+        {status || "-"}
       </span>
     );
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${statusDefinition.style}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border ${def.style}`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
-      {statusDefinition.label}
+      {def.label}
     </span>
   );
 };
 
-const ProjectParties = ({ parties }) => {
-  const clients = parties?.filter((party) => party.role === "client") || [];
-  const vendors = parties?.filter((party) => party.role === "vendor") || [];
-  if (!clients.length && !vendors.length)
-    return <span className="text-slate-500">-</span>;
-  const renderParty = (party, role, color) => (
+const PhotoPreviewModal = ({ src, alt, onClose }) => {
+  if (!src) return null;
+  return createPortal(
     <div
-      key={party._id}
-      className="flex items-center gap-1.5 text-slate-600 truncate"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
-      <Building2 className={`hidden md:block w-3 h-3 shrink-0 ${color}`} />
-      <span className={`md:hidden ${color}`}>{role}:</span>
-      <span className="truncate">{party.party?.name || "-"}</span>
+      <div
+        className="relative max-w-lg w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-[#475569] hover:text-rose-600 shadow-md flex items-center justify-center transition-colors cursor-pointer"
+          title="Tutup"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <img
+          src={src}
+          alt={alt}
+          className="w-full max-h-[80vh] object-contain rounded-xl  shadow-2xl "
+        />
+        {alt && (
+          <p className="text-center text-white text-sm font-medium mt-3">
+            {alt}
+          </p>
+        )}
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
+const PmAvatar = ({ name, divisi, photo }) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  if (!name)
+    return (
+      <div className="flex items-center justify-center w-full">
+        <span className="text-[#94A3B8] text-xs">-</span>
+      </div>
+    );
+
+  const initials = name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0]?.toUpperCase())
+    .join("");
+
+  const photoUrl = photo ? `${API_BASE_URL}/uploads/users/${photo}` : null;
+
+  return (
+    <div className="flex items-center gap-2.5">
+      {photoUrl ? (
+        <button
+          type="button"
+          onClick={() => setPreviewOpen(true)}
+          title="Lihat Foto"
+          className="shrink-0 rounded-full cursor-pointer transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] focus:ring-offset-1"
+        >
+          <img
+            src={photoUrl}
+            alt={name}
+            className="w-7 h-7 rounded-full object-cover border border-[#CFFAFE]"
+          />
+        </button>
+      ) : (
+        <div className="w-7 h-7 rounded-full bg-[#ECFEFF] text-[#0891B2] flex items-center justify-center text-[10px] font-bold shrink-0 border border-[#CFFAFE]">
+          {initials}
+        </div>
+      )}
+      <div className="min-w-0">
+        <div className="text-[13px] font-medium text-[#0F172A] truncate max-w-[110px]">
+          {name}
+        </div>
+        <div className="text-[11px] text-[#94A3B8]"> {divisi}</div>
+      </div>
+
+      {previewOpen && (
+        <PhotoPreviewModal
+          src={photoUrl}
+          alt={name}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
     </div>
   );
-  return (
-    <div className="flex items-start gap-2 text-slate-500 md:block md:space-y-1">
-      <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5 md:hidden" />
-      <div className="space-y-1 min-w-0 md:space-y-1">
-        {clients.map((party) =>
-          renderParty(party, "Client", "text-emerald-400"),
-        )}
-        {vendors.map((party) => renderParty(party, "Vendor", "text-amber-400"))}
+};
+
+const ProjectParties = ({ parties }) => {
+  const clients = parties?.filter((p) => p.role === "client") || [];
+  const vendors = parties?.filter((p) => p.role === "vendor") || [];
+  if (!clients.length && !vendors.length)
+    return (
+      <div className="flex items-center justify-center w-full">
+        <span className="text-[#94A3B8] text-xs">-</span>
       </div>
+    );
+  return (
+    <div className="space-y-1.5">
+      {clients.map((p) => (
+        <div key={p._id} className="flex items-center gap-1.5">
+          <Building2 className="w-3 h-3 shrink-0 text-[#06B6D4]" />
+          <span className="text-[12px] text-[#475569] truncate max-w-[130px]">
+            {p.party?.name || "-"}
+          </span>
+        </div>
+      ))}
+      {vendors.map((p) => (
+        <div key={p._id} className="flex items-center gap-1.5">
+          <Building2 className="w-3 h-3 shrink-0 text-[#94A3B8]" />
+          <span className="text-[12px] text-[#475569] truncate max-w-[130px]">
+            {p.party?.name || "-"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const ScopeTags = ({ sites }) => {
+  if (!sites?.length)
+    return (
+      <div className="flex items-center justify-center w-full">
+        <span className="text-[#94A3B8] text-xs">-</span>
+      </div>
+    );
+  const visible = sites.slice(0, 2);
+  const extra = sites.length - 2;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map((site, i) => (
+        <span
+          key={i}
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-[#475569] bg-[#F1F5F9] border border-[#E2E8F0] font-medium capitalize"
+        >
+          <MapPin className="w-2.5 h-2.5 text-[#94A3B8]" />
+          {site}
+        </span>
+      ))}
+      {extra > 0 && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] text-[#94A3B8] bg-[#F8FAFC] border border-[#E2E8F0] font-medium">
+          +{extra}
+        </span>
+      )}
+    </div>
+  );
+};
+
+const Timeline = ({ startedAt, dueDate }) => {
+  const start = formatProjectDate(startedAt);
+  const end = formatProjectDate(dueDate);
+  // Calculate days
+  let days = null;
+  if (startedAt && dueDate) {
+    const diff = new Date(dueDate) - new Date(startedAt);
+    days = Math.round(diff / (1000 * 60 * 60 * 24));
+  }
+
+  const isEmpty = (v) => !v || v === "-";
+
+  if (isEmpty(start) && isEmpty(end)) {
+    return (
+      <div style={{ width: "100%", textAlign: "center" }}>
+        <span className="text-[#94A3B8] text-xs font-extrabold">--</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0.5">
+      <div className="flex items-center gap-1.5">
+        <Calendar className="w-3. h-3.5 text-[#06B6D4] shrink-0" />
+        <span className="text-[12px] text-[#475569] whitespace-nowrap">
+          {start || "-"} – {end || "-"}
+        </span>
+      </div>
+      {days !== null && days > 0 && (
+        <div className="text-[11px] text-[#94A3B8] pl-5">{days} hari</div>
+      )}
     </div>
   );
 };
 
 const ProjectRow = ({ project, onView, onEdit, onDelete }) => (
-  <tr className="block md:table-row p-4 md:p-0 space-y-3 md:space-y-0 hover:bg-slate-50 transition-colors group">
-    <td className="block md:table-cell py-0 md:py-4 px-0 md:px-4 font-semibold text-slate-900">
-      <div className="flex items-start justify-between gap-2 md:block">
-        <button
-          type="button"
-          onClick={() => onView(project)}
-          className="text-left group-hover:text-[#0E7490] hover:underline transition-colors flex items-center gap-1.5 cursor-pointer min-w-0"
-          title="Klik untuk melihat Detail & BOQ"
-        >
-          <span className="truncate md:max-w-[200px]">{project.nama}</span>
-        </button>
-        <div className="shrink-0 md:hidden">
-          <StatusBadge status={project.status} />
+  <tr className="group border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FAFC] transition-colors duration-100">
+    {/* Nama Proyek */}
+    <td className="py-5 px-5 align-middle">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-[#ECFEFF] border border-[#CFFAFE] flex items-center justify-center shrink-0">
+          <FolderOpen className="w-4 h-4 text-[#0891B2]" />
+        </div>
+        <div className="min-w-0">
+          <button
+            type="button"
+            onClick={() => onView(project)}
+            className="text-left text-[13px] font-semibold text-[#0F172A] hover:text-[#0891B2] transition-colors cursor-pointer leading-tight"
+            title="Lihat Detail & BOQ"
+          >
+            <span className="block truncate max-w-[200px]">{project.nama}</span>
+          </button>
+          {project.kode && (
+            <span className="text-[11px] text-[#94A3B8] font-normal">
+              {project.kode}
+            </span>
+          )}
         </div>
       </div>
     </td>
-    <td className="hidden md:table-cell py-4 px-4">
+
+    {/* Status */}
+    <td className="py-5 px-4 align-middle">
       <StatusBadge status={project.status} />
     </td>
-    {project.projectManager ? (
-      <td className="block md:table-cell py-0 md:py-4 px-0 md:px-4">
-        <div className="flex items-center gap-1.5 text-slate-700">
-          <UserCheck className="w-3.5 h-3.5 text-[#0E7490] shrink-0" />
-          <span className="font-medium truncate md:max-w-[120px]">
-            {project.projectManager.username}
-          </span>
-        </div>
-      </td>
-    ) : (
-      <td className="hidden md:table-cell py-4 px-4">
-        <span className="text-slate-500">-</span>
-      </td>
-    )}
-    <td className="block md:table-cell py-0 md:py-4 px-0 md:px-4 md:max-w-[180px]">
+
+    {/* Project Manager */}
+    <td className="py-5 px-4 align-middle">
+      <PmAvatar
+        name={project.projectManager?.username}
+        divisi={project.projectManager?.divisi}
+        photo={project.projectManager?.photo}
+      />
+    </td>
+
+    {/* Klien & Vendor */}
+    <td className="py-5 px-4 align-middle">
       <ProjectParties parties={project.parties} />
     </td>
-    <td className="block md:table-cell py-0 md:py-4 px-0 md:px-4">
-      {project.sites?.length ? (
-        <div className="flex flex-wrap items-center gap-1 md:gap-1.5 md:max-w-[200px]">
-          {project.sites.map((site, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center gap-1 bg-slate-50 hover:bg-slate-100 px-2 py-0.5 rounded text-[10px] md:text-[11px] text-slate-600 capitalize border border-slate-100 font-medium transition-colors"
-            >
-              <MapPin className="w-3 h-3 text-slate-500" />
-              {site}
-            </span>
-          ))}
-        </div>
-      ) : (
-        <span className="text-[10px] md:text-xs text-slate-500">-</span>
-      )}
+
+    {/* Scope */}
+    <td className="py-5 px-4 align-middle">
+      <ScopeTags sites={project.sites} />
     </td>
-    <td className="block md:table-cell py-0 md:py-4 px-0 md:px-4 whitespace-nowrap md:text-slate-500">
-      <div className="flex items-center gap-1.5 text-slate-500">
-        <Calendar className="w-3.5 h-3.5 text-[#0E7490] shrink-0" />
-        <span>
-          {formatProjectDate(project.startedAt)} –{" "}
-          {formatProjectDate(project.dueDate)}
-        </span>
-      </div>
+
+    {/* Timeline */}
+    <td className="py-5 px-4 align-middle">
+      <Timeline startedAt={project.startedAt} dueDate={project.dueDate} />
     </td>
-    <td className="block md:table-cell py-0 md:py-4 px-0 md:px-4 md:text-center pt-2 md:pt-4 border-t border-slate-100 md:border-t-0">
-      <div className="flex items-center justify-end md:justify-center gap-2 md:gap-1">
+
+    {/* Aksi */}
+    <td className="py-5 px-4 align-middle">
+      <div className="flex items-center gap-1">
+        {/* View */}
         <button
           type="button"
           title="Lihat Detail & BOQ"
           onClick={() => onView(project)}
-          className="min-h-11 md:min-h-0 px-3 md:px-0 py-1.5 md:p-2 rounded-lg bg-[#0E7490]/20 md:bg-transparent text-cyan-300 hover:bg-[#0E7490]/30 md:hover:bg-[#0E7490]/20 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+          className="p-2 rounded-lg text-[#475569] hover:text-[#0891B2] hover:bg-[#ECFEFF] transition-colors cursor-pointer"
         >
-          <Receipt className="hidden md:block w-4 h-4" />
-          <Eye className="w-3.5 h-3.5 md:hidden" />
-          <span className="md:hidden">Detail & BOQ</span>
+          <Eye className="w-4 h-4" />
         </button>
+
+        {/* Edit */}
         <button
           type="button"
           title="Edit Proyek"
           onClick={() => onEdit(project)}
-          className="min-h-11 md:min-h-0 px-3 md:px-0 py-1.5 md:p-2 rounded-lg bg-slate-100 md:bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200 md:hover:bg-amber-500/10 md:hover:text-amber-300 text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
+          className="p-2 rounded-lg text-[#475569] hover:text-[#0891B2] hover:bg-[#ECFEFF] transition-colors cursor-pointer"
         >
-          <Edit3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-          <span className="md:hidden">Edit</span>
+          <Edit3 className="w-4 h-4" />
         </button>
+
+        {/* Delete */}
         <button
           type="button"
           title="Hapus Proyek"
           onClick={() => onDelete(project)}
-          className="min-h-11 md:min-h-0 px-3 md:px-0 py-1.5 md:p-2 rounded-lg bg-rose-50 md:bg-transparent text-rose-600 hover:bg-rose-100 text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
+          className="p-2 rounded-lg text-[#94A3B8] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
         >
-          <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-          <span className="md:hidden">Hapus</span>
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
     </td>
   </tr>
 );
 
+const SkeletonRow = () => (
+  <tr className="border-b border-[#F1F5F9]">
+    <td className="py-5 px-5">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-[#F1F5F9] animate-pulse shrink-0" />
+        <div className="space-y-1.5">
+          <div className="w-36 h-3.5 bg-[#F1F5F9] rounded animate-pulse" />
+          <div className="w-16 h-2.5 bg-[#F1F5F9] rounded animate-pulse" />
+        </div>
+      </div>
+    </td>
+    <td className="py-5 px-4">
+      <div className="w-20 h-6 bg-[#F1F5F9] rounded-md animate-pulse" />
+    </td>
+    <td className="py-5 px-4">
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 rounded-full bg-[#F1F5F9] animate-pulse shrink-0" />
+        <div className="space-y-1.5">
+          <div className="w-24 h-3 bg-[#F1F5F9] rounded animate-pulse" />
+          <div className="w-16 h-2.5 bg-[#F1F5F9] rounded animate-pulse" />
+        </div>
+      </div>
+    </td>
+    <td className="py-5 px-4">
+      <div className="space-y-1.5">
+        <div className="w-28 h-3 bg-[#F1F5F9] rounded animate-pulse" />
+        <div className="w-24 h-3 bg-[#F1F5F9] rounded animate-pulse" />
+      </div>
+    </td>
+    <td className="py-5 px-4">
+      <div className="flex gap-1">
+        <div className="w-16 h-5 bg-[#F1F5F9] rounded animate-pulse" />
+        <div className="w-8 h-5 bg-[#F1F5F9] rounded animate-pulse" />
+      </div>
+    </td>
+    <td className="py-5 px-4">
+      <div className="space-y-1.5">
+        <div className="w-32 h-3 bg-[#F1F5F9] rounded animate-pulse" />
+        <div className="w-12 h-2.5 bg-[#F1F5F9] rounded animate-pulse" />
+      </div>
+    </td>
+    <td className="py-5 px-4">
+      <div className="flex gap-1">
+        <div className="w-8 h-8 bg-[#F1F5F9] rounded-lg animate-pulse" />
+        <div className="w-8 h-8 bg-[#F1F5F9] rounded-lg animate-pulse" />
+        <div className="w-8 h-8 bg-[#F1F5F9] rounded-lg animate-pulse" />
+      </div>
+    </td>
+  </tr>
+);
+
 const Pagination = ({
-  projectCount,
   totalProjects,
   limit,
-  onLimitChange,
   page,
   totalPages,
   onPageChange,
-}) => (
-  <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-    <div className="flex items-center gap-3">
-      <span>
-        Menampilkan{" "}
-        <span className="text-slate-900 font-medium">{projectCount}</span> dari{" "}
-        <span className="text-slate-900 font-medium">{totalProjects}</span> total
-        proyek.
-      </span>
-      <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-500 pl-3 border-l border-slate-200">
-        <span>Baris per hal:</span>
-        <select
-          value={limit}
-          onChange={(event) => onLimitChange(Number(event.target.value))}
-          className="bg-white text-slate-700 border border-slate-200 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-[#0E7490] cursor-pointer"
+}) => {
+  const from = totalProjects === 0 ? 0 : (page - 1) * limit + 1;
+  const to = Math.min(page * limit, totalProjects);
+  return (
+    <div className="px-5 py-4 border-t border-[#F1F5F9] flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="flex items-center gap-4 text-[12px] text-[#475569]">
+        <span>
+          Menampilkan{" "}
+          <span className="text-[#0F172A] font-semibold">
+            {from}–{to}
+          </span>{" "}
+          dari{" "}
+          <span className="text-[#0F172A] font-semibold">{totalProjects}</span>{" "}
+          proyek
+        </span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          disabled={page <= 1}
+          onClick={() => onPageChange(Math.max(page - 1, 1))}
+          className="p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          title="Halaman Sebelumnya"
         >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-        </select>
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        {/* Page numbers */}
+        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+          let p;
+          if (totalPages <= 5) {
+            p = i + 1;
+          } else if (page <= 3) {
+            p = i + 1;
+          } else if (page >= totalPages - 2) {
+            p = totalPages - 4 + i;
+          } else {
+            p = page - 2 + i;
+          }
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPageChange(p)}
+              className={`w-8 h-8 rounded-lg text-[12px] font-medium transition-colors ${
+                p === page
+                  ? "bg-[#06B6D4] text-white border border-[#06B6D4]"
+                  : "border border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F1F5F9]"
+              }`}
+            >
+              {p}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(Math.min(page + 1, totalPages))}
+          className="p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          title="Halaman Selanjutnya"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        disabled={page <= 1}
-        onClick={() => onPageChange(Math.max(page - 1, 1))}
-        className="p-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:text-slate-600 disabled:hover:bg-white disabled:cursor-not-allowed transition-colors"
-        title="Halaman Sebelumnya"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-      <span className="text-slate-700 font-medium px-2">
-        Hal {page} dari {totalPages}
-      </span>
-      <button
-        type="button"
-        disabled={page >= totalPages}
-        onClick={() => onPageChange(Math.min(page + 1, totalPages))}
-        className="p-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:text-slate-600 disabled:hover:bg-white disabled:cursor-not-allowed transition-colors"
-        title="Halaman Selanjutnya"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
-    </div>
-  </div>
-);
+  );
+};
+
+const TABLE_HEADERS = [
+  { key: "nama", label: "NAMA PROYEK" },
+  { key: "status", label: "STATUS" },
+  { key: "pm", label: "PROJECT MANAGER" },
+  { key: "parties", label: "KLIEN & VENDOR" },
+  { key: "scope", label: "SCOPE" },
+  { key: "timeline", label: "TIMELINE" },
+  { key: "aksi", label: "AKSI", center: true },
+];
 
 const ProjectTable = ({
   query,
@@ -233,83 +466,93 @@ const ProjectTable = ({
   setPage,
   totalPages,
 }) => (
-  <main className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm shadow-slate-900/[0.04]">
+  <section className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-sm">
     {query.isLoading ? (
-      <div className="p-6 space-y-4">
-        {[1, 2, 3].map((number) => (
-          <div
-            key={number}
-            className="h-16 w-full bg-slate-100 rounded-xl animate-pulse"
-          />
-        ))}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+            <tr>
+              {TABLE_HEADERS.map((h) => (
+                <th
+                  key={h.key}
+                  className={`py-3.5 px-4 md:px-5 text-[11px] font-semibold text-[#94A3B8] tracking-[0.06em] whitespace-nowrap ${h.center ? "text-center" : "text-left"}`}
+                >
+                  {h.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <SkeletonRow key={n} />
+            ))}
+          </tbody>
+        </table>
       </div>
     ) : query.isError ? (
-      <div className="p-12 text-center space-y-3">
-        <AlertCircle className="w-10 h-10 text-rose-600 mx-auto" />
-        <h3 className="text-slate-900 font-medium text-base">
+      <div className="p-16 text-center space-y-3">
+        <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
+        <h3 className="text-[#0F172A] font-semibold text-base">
           Gagal memuat data proyek
         </h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+        <p className="text-[13px] text-[#475569] max-w-sm mx-auto">
           {query.error?.response?.data?.message ||
             query.error?.message ||
             "Terjadi kesalahan tak terduga. Periksa koneksi internet Anda lalu coba lagi."}
         </p>
         <button
           onClick={() => query.refetch()}
-          className="mt-2 min-h-10 px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs text-slate-900 font-medium transition-colors"
+          className="mt-2 min-h-10 px-5 py-2 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-sm text-[#0F172A] font-medium transition-colors"
         >
           Coba Lagi
         </button>
       </div>
     ) : projects.length === 0 ? (
-      <div className="p-12 text-center space-y-3">
-        <FolderKanban className="w-12 h-12 text-slate-600 mx-auto" />
-        <h3 className="text-slate-700 font-medium text-base">
-          {hasActiveFilters ? "Proyek tidak ditemukan" : "Belum ada proyek"}
+      <div className="p-16 text-center space-y-3">
+        <div className="w-14 h-14 rounded-2xl bg-[#ECFEFF] flex items-center justify-center mx-auto">
+          <FolderOpen className="w-7 h-7 text-[#0891B2]" />
+        </div>
+        <h3 className="text-[#0F172A] font-semibold text-lg">
+          {hasActiveFilters ? "Proyek tidak ditemukan" : "Belum Ada Proyek"}
         </h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+        <p className="text-[13px] text-[#475569] max-w-sm mx-auto">
           {hasActiveFilters
             ? "Coba hapus kata kunci pencarian atau reset filter."
-            : "Buat proyek pertama untuk mulai memantau progres tim."}
+            : "Mulai dengan membuat proyek pertama Anda."}
         </p>
         {hasActiveFilters ? (
           <button
             onClick={onResetFilters}
-            className="mt-2 min-h-10 px-4 py-2 rounded-lg bg-slate-100 text-xs text-slate-700 hover:bg-slate-200 font-medium transition-colors"
+            className="mt-2 min-h-10 px-5 py-2 rounded-xl bg-[#F1F5F9] text-sm text-[#475569] hover:bg-[#E2E8F0] font-medium transition-colors"
           >
             Reset Filter
           </button>
         ) : (
           <button
             onClick={onCreateProject}
-            className="mt-2 min-h-10 px-4 py-2 rounded-lg bg-[#0E7490] text-xs text-white hover:bg-[#155e75] font-medium transition-colors"
+            className="mt-2 inline-flex items-center gap-2 min-h-10 px-5 py-2 rounded-xl bg-[#06B6D4] text-sm text-white hover:bg-[#0891B2] font-medium transition-colors"
           >
-            + Buat Proyek
+            + Buat Proyek Baru
           </button>
         )}
       </div>
     ) : (
       <>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600 block md:table">
-            <thead className="hidden md:table-header-group bg-slate-50 text-slate-500 uppercase font-semibold text-[11px] tracking-wider border-b border-slate-200">
-              <tr className="md:table-row">
-                {[
-                  "Nama Proyek",
-                  "Status",
-                  "Project Manager",
-                  "Klien & Vendor",
-                  "Scope",
-                  "Timeline",
-                ].map((heading) => (
-                  <th key={heading} className="py-3.5 px-4">
-                    {heading}
+          <table className="w-full text-left">
+            <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+              <tr>
+                {TABLE_HEADERS.map((h) => (
+                  <th
+                    key={h.key}
+                    className={`py-3.5 px-4 md:px-5 text-[11px] font-semibold text-[#94A3B8] tracking-[0.06em] whitespace-nowrap ${h.center ? "text-center" : "text-left"}`}
+                  >
+                    {h.label}
                   </th>
                 ))}
-                <th className="py-3.5 px-4 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="block md:table-row-group divide-y divide-slate-100 md:divide-y">
+            <tbody>
               {projects.map((project) => (
                 <ProjectRow
                   key={project._id}
@@ -322,21 +565,17 @@ const ProjectTable = ({
             </tbody>
           </table>
         </div>
+
         <Pagination
-          projectCount={projects.length}
           totalProjects={totalProjects}
           limit={limit}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
           page={page}
           totalPages={totalPages}
           onPageChange={setPage}
         />
       </>
     )}
-  </main>
+  </section>
 );
 
 export default ProjectTable;

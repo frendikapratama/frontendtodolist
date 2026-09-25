@@ -17,9 +17,10 @@ import {
 } from "../projectListUtils";
 
 const ActiveFilterChip = ({ label, value, onRemove, valueClassName = "" }) => (
-  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs text-slate-700">
-    {label}: <strong className={`text-slate-900 ${valueClassName}`}>{value}</strong>
-    <button onClick={onRemove} className="hover:text-rose-600 ml-0.5">
+  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#ECFEFF] border border-[#CFFAFE] text-xs text-[#0891B2]">
+    {label}:{" "}
+    <strong className={`text-[#0891B2] ${valueClassName}`}>{value}</strong>
+    <button onClick={onRemove} className="hover:text-rose-500 ml-0.5">
       <X className="w-3 h-3" />
     </button>
   </span>
@@ -49,7 +50,7 @@ const SearchableFilter = ({
         type="button"
         onClick={onToggle}
         disabled={isLoading}
-        className="w-full min-h-10 text-left bg-white text-slate-700 text-xs pl-3 pr-8 rounded-lg border border-slate-200 hover:border-slate-300 focus:outline-none focus:border-[#0E7490] flex items-center justify-between transition-colors disabled:opacity-60"
+        className="w-full min-h-10 text-left bg-white text-[#475569] text-xs pl-3 pr-8 rounded-xl border border-[#E2E8F0] hover:border-[#94A3B8] focus:outline-none focus:border-[#06B6D4] flex items-center justify-between transition-colors disabled:opacity-60"
       >
         <span className="truncate">
           {isLoading ? "Memuat data..." : displayValue || emptyLabel}
@@ -84,7 +85,7 @@ const SearchableFilter = ({
                 value={searchValue}
                 onChange={(event) => onSearchChange(event.target.value)}
                 autoFocus
-                className="w-full bg-white text-slate-900 text-xs pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-[#0E7490] placeholder:text-slate-500"
+                className="w-full bg-white text-[#0F172A] text-xs pl-8 pr-7 py-1.5 rounded-lg border border-[#E2E8F0] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#94A3B8]"
               />
               {searchValue && (
                 <button
@@ -101,7 +102,7 @@ const SearchableFilter = ({
             <button
               type="button"
               onClick={() => onSelect("")}
-              className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-slate-50 transition-colors ${!value ? "text-[#0E7490] font-semibold bg-cyan-50" : "text-slate-600"}`}
+        className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#F8FAFC] transition-colors ${!value ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#475569]"}`}
             >
               <span>{emptyLabel}</span>
               {!value && <Check className="w-3.5 h-3.5 text-[#0E7490]" />}
@@ -122,7 +123,7 @@ const SearchableFilter = ({
                     key={item._id}
                     type="button"
                     onClick={() => onSelect(item._id)}
-                    className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-slate-50 transition-colors ${isSelected ? "text-[#0E7490] font-semibold bg-cyan-50" : "text-slate-700"}`}
+                    className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#F8FAFC] transition-colors ${isSelected ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#475569]"}`}
                   >
                     <div className="truncate">
                       <div className="truncate">{itemName}</div>
@@ -208,10 +209,10 @@ const ProjectFilters = ({ state }) => {
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="Cari nama proyek atau PM..."
+            placeholder="Cari berdasarkan nama proyek..."
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
-            className="w-full min-h-11 bg-white text-slate-900 placeholder:text-slate-500 text-sm pl-10 pr-10 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#0E7490] transition-colors"
+            className="w-full min-h-11 bg-white text-[#0F172A] placeholder:text-[#94A3B8] text-sm pl-10 pr-10 py-2 rounded-xl border border-[#E2E8F0] focus:outline-none focus:border-[#06B6D4] transition-colors"
           />
           {(isSearchPending || projectQuery.isFetching) &&
             !searchInput === false && (
@@ -230,7 +231,7 @@ const ProjectFilters = ({ state }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`min-h-11 px-4 py-2 rounded-xl border text-xs sm:text-sm font-medium flex items-center gap-2 justify-center transition-colors cursor-pointer ${hasActiveFilters ? "bg-cyan-50 border-cyan-200 text-[#0E7490]" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"}`}
+            className={`min-h-11 px-4 py-2 rounded-xl border text-xs sm:text-sm font-medium flex items-center gap-2 justify-center transition-colors cursor-pointer ${hasActiveFilters ? "bg-[#ECFEFF] border-[#CFFAFE] text-[#0891B2]" : "bg-white border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9]"}`}
           >
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filter Data</span>
@@ -288,7 +289,7 @@ const ProjectFilters = ({ state }) => {
         </div>
       )}
       {isFilterOpen && (
-        <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="p-4 bg-white border border-[#E2E8F0] rounded-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
               Filter Sekunder
@@ -309,7 +310,7 @@ const ProjectFilters = ({ state }) => {
                 <select
                   value={status}
                   onChange={(event) => setFilter(setStatus, event.target.value)}
-                  className="w-full min-h-10 appearance-none bg-white text-slate-700 text-xs pl-3 pr-8 rounded-lg border border-slate-200 focus:outline-none focus:border-[#0E7490]"
+                  className="w-full min-h-10 appearance-none bg-white text-[#475569] text-xs pl-3 pr-8 rounded-xl border border-[#E2E8F0] focus:outline-none focus:border-[#06B6D4]"
                 >
                   <option value="">Semua Status</option>
                   {PROJECT_STATUS_OPTIONS.map((option) => (
@@ -329,7 +330,7 @@ const ProjectFilters = ({ state }) => {
                 <select
                   value={sites}
                   onChange={(event) => setFilter(setSites, event.target.value)}
-                  className="w-full min-h-10 appearance-none bg-white text-slate-700 text-xs pl-3 pr-8 rounded-lg border border-slate-200 focus:outline-none focus:border-[#0E7490]"
+                  className="w-full min-h-10 appearance-none bg-white text-[#475569] text-xs pl-3 pr-8 rounded-xl border border-[#E2E8F0] focus:outline-none focus:border-[#06B6D4]"
                 >
                   <option value="">Semua Site</option>
                   {PROJECT_SITE_OPTIONS.map((site) => (

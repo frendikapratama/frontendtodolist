@@ -27,7 +27,7 @@ const Layout = () => {
   return (
     <div
       className={`flex h-screen w-screen overflow-hidden ${
-        isBookingPage ? "bg-[#1D546C]" : "bg-slate-100"
+        isBookingPage ? "bg-[#1D546C]" : "bg-[#F8FAFC]"
       }`}
     >
       <Sidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
@@ -37,7 +37,7 @@ const Layout = () => {
         className={`flex-1 flex flex-col h-full overflow-hidden relative ${
           isBookingPage
             ? "bg-linear-to-tl from-[#1A3D64] to-[#1D546C]"
-            : "bg-slate-100"
+            : "bg-[#F8FAFC]"
         }`}
       >
         {/* Topbar Mobile */}
@@ -45,7 +45,7 @@ const Layout = () => {
           className={`lg:hidden flex items-center justify-between px-4 py-3 border-b shrink-0 ${
             isBookingPage
               ? "bg-[#1A3D64] text-white border-white/10"
-              : "bg-white text-gray-900 border-gray-200"
+              : "bg-white text-[#0F172A] border-[#E2E8F0]"
           }`}
         >
           <button
@@ -53,13 +53,13 @@ const Layout = () => {
             className={`p-1.5 rounded-lg transition-colors ${
               isBookingPage
                 ? "bg-white/10 hover:bg-white/20"
-                : "bg-gray-100 hover:bg-gray-200"
+                : "bg-[#F1F5F9] hover:bg-[#E2E8F0]"
             }`}
             aria-label="Open Menu"
           >
             <Menu
               className={`w-6 h-6 ${
-                isBookingPage ? "text-white" : "text-gray-800"
+                isBookingPage ? "text-white" : "text-[#0F172A]"
               }`}
             />
           </button>

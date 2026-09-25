@@ -199,8 +199,8 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
             onClick={() => toggleSubmenu(item.id)}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group ${
               active
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                ? "bg-cyan-50 text-[#0891B2]"
+                : "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
             }`}
           >
             <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -208,8 +208,8 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
                 <IconComponent
                   className={`w-5 h-5 shrink-0 ${
                     active
-                      ? "text-blue-600"
-                      : "text-gray-500 group-hover:text-blue-600"
+                      ? "text-[#0891B2]"
+                      : "text-[#94A3B8] group-hover:text-[#0891B2]"
                   }`}
                 />
               )}
@@ -225,36 +225,36 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
             </div>
             {isSidebarOpen &&
               (isExpanded ? (
-                <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                <ChevronDown className="w-4 h-4 text-[#94A3B8] shrink-0" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                <ChevronRight className="w-4 h-4 text-[#94A3B8] shrink-0" />
               ))}
           </button>
 
           {isExpanded && isSidebarOpen && (
-            <div className="ml-4 space-y-1 border-l-2 border-gray-100 pl-2">
+            <div className="ml-4 space-y-1 border-l-2 border-[#E2E8F0] pl-2">
               {item.children.map((child) => renderMenuItem(child, true))}
             </div>
           )}
         </div>
       );
     }
-
     return (
       <NavLink
         key={item.id}
         to={item.path}
         className={({ isActive }) =>
           `
-          flex rounded-lg mt-2 transition-all duration-300 group
+          flex rounded-lg mt-1 
           ${isSidebarOpen ? "justify-start items-center px-2 py-2" : "ml-2 justify-center items-center w-7 h-7"}
           ${isChild ? "pl-8" : ""}
+          transition-colors duration-150
           ${
             isActive
-              ? "bg-cyan-700/10 text-cyan-700 font-bold border border-cyan-700/20"
+              ? "bg-[#ECFEFF] text-[#0891B2] font-semibold"
               : isChild
-                ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                : "text-gray-700 hover:text-gray-900 hover:bg-blue-50"
+                ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
+                : "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
           }
         `
         }
@@ -272,7 +272,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
           />
         )}
         {isSidebarOpen && (
-          <span className="ml-3 font-medium whitespace-normal wrap-break-word transition-all duration-300 ease-in-out">
+          <span className="ml-3 font-medium whitespace-normal wrap-break-word">
             {item.label}
           </span>
         )}
@@ -312,8 +312,8 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
         }`}
       >
         <aside
-          className={`w-full p-2 h-full  flex flex-col shadow-sm relative transition-colors duration-300 ${
-            isBookingPage ? "bg-[#EFECE3]" : "bg-slate-100"
+          className={`w-full p-2 h-full flex flex-col shadow-sm relative transition-colors duration-300 border-r ${
+            isBookingPage ? "bg-[#EFECE3] border-[#D4CFC3]" : "bg-white border-[#E2E8F0]"
           }`}
         >
           {/* Tombol Close (X) Khusus Mobile */}
@@ -325,7 +325,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
           </button>
 
           {/* Header */}
-          <div className="p-3 pb-4 border-b border-gray-200">
+          <div className={`p-3 pb-4 border-b ${isBookingPage ? "border-[#D4CFC3]" : "border-[#E2E8F0]"}`}>
             <div className="flex items-center justify-center transition-all duration-300">
               <img
                 src={Profile}
@@ -362,7 +362,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
 
               {/* Quarters Section */}
               {kuarters?.length > 0 && (
-                <div className="px-2 pt-2 border-t border-gray-300/60 mt-2">
+                <div className="px-2 pt-2 border-t border-[#E2E8F0] mt-2">
                   {isSidebarOpen ? (
                     <>
                       {/* Toggle Head Section */}
@@ -564,7 +564,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
                 </div>
               )}
 
-              <div className="flex text-xs justify-start flex-col border-t border-gray-300 mt-2 pt-2">
+              <div className="flex text-xs justify-start flex-col border-t border-[#E2E8F0] mt-2 pt-2">
                 {filteredMenuBooking
                   .filter((item) => !item.requireAdmin || user?.isSystemAdmin)
                   .map((item) => renderMenuItem(item))}
@@ -578,7 +578,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
               <LogoutButton />
             </div>
           )}
-          <div className="w-full h-px bg-gray-300 my-3"></div>
+          <div className={`w-full h-px my-3 ${isBookingPage ? "bg-[#D4CFC3]" : "bg-[#E2E8F0]"}`}></div>
 
           {/* User Profile */}
           <div

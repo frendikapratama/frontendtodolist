@@ -15,8 +15,9 @@ export const useProject = () => {
   const [sites, setSites] = useState("");
   const [divisionId, setDivisionId] = useState("");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  // const [limit, setLimit] = useState(10);
 
+  const [limit] = useState(25); // dulu: const [limit, setLimit] = useState(10);
   const queryClient = useQueryClient();
 
   const projectQuery = useQuery({
@@ -163,6 +164,6 @@ export const useProject = () => {
     page,
     setPage,
     limit,
-    setLimit,
+    // setLimit,
   };
 };

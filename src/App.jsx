@@ -27,6 +27,7 @@ import AllWorkspace from "./pages/Workspaces/Allworkspace";
 import IndexParty from "./pages/Party/Index";
 import IndexProject from "./pages/Project/Index";
 import ProjectManagementDetailPage from "./pages/Project/ProjectManagementDetailPage";
+import RoomDetailPage from "./pages/BookingMeeting/Rooms/DetailRoom";
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};

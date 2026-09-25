@@ -49,8 +49,8 @@ const IndexProject = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/70 px-4 py-6 font-sans text-slate-800 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-[#0F172A]">
+      <div className="mx-auto max-w-[1440px] space-y-6">
         <ProjectListHeader
           summary={summary}
           onCreateProject={openCreateModal}
