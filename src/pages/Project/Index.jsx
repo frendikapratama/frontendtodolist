@@ -7,6 +7,8 @@ import {
 } from "./components/ProjectModals";
 import ProjectTable from "./components/ProjectTable";
 import { useProjectListPage } from "./hooks/useProjectListPage";
+import { getProjectById } from "../../services/project";
+import { useQueryClient } from "@tanstack/react-query";
 
 const IndexProject = () => {
   const navigate = useNavigate();
@@ -36,8 +38,22 @@ const IndexProject = () => {
     setPage,
   } = projectListPage;
 
+  const queryClient = useQueryClient();
+
+  const prefetchProjectDetail = (project) => {
+    queryClient.prefetchQuery({
+      queryKey: ["project", project._id],
+      queryFn: () => getProjectById(project._id),
+      staleTime: 30 * 1000,
+    });
+  };
+
   const openProjectDetail = (project) => {
     navigate(`/project-management/${project._id}`);
+  };
+
+  const openProjectTasks = (project) => {
+    navigate(`/project/${project._id}`);
   };
 
   const confirmProjectDeletion = () => {
@@ -63,6 +79,8 @@ const IndexProject = () => {
           onResetFilters={resetFilters}
           onCreateProject={openCreateModal}
           onViewProject={openProjectDetail}
+          onOpenProject={openProjectTasks}
+          onPrefetchDetail={prefetchProjectDetail}
           onEditProject={openEditModal}
           onDeleteProject={openDeleteModal}
           totalProjects={totalProjects}

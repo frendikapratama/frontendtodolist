@@ -41,14 +41,14 @@ export const menuItems = [
     label: "Party Management",
     path: "/party-management",
     icon: "users",
-    requireAdmin: true,
+    // requireAdmin: true,
   },
   {
     id: "Project Management",
     label: "Project Management",
     path: "/project-management",
     icon: "folder",
-    requireAdmin: true,
+    // requireAdmin: true,
   },
 ];
 

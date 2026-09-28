@@ -7,6 +7,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
   PROJECT_SITE_OPTIONS,
   PROJECT_STATUS_OPTIONS,
@@ -63,7 +64,7 @@ const SearchableFilter = ({
                 event.stopPropagation();
                 onClear();
               }}
-              className="p-0.5 text-slate-500 hover:text-slate-900"
+              className="p-0.5 text-slate-500 hover:text-cyan-900"
               title="Hapus pilihan"
             >
               <X className="w-3 h-3" />
@@ -102,7 +103,7 @@ const SearchableFilter = ({
             <button
               type="button"
               onClick={() => onSelect("")}
-        className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#F8FAFC] transition-colors ${!value ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#475569]"}`}
+              className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#F8FAFC] transition-colors ${!value ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#475569]"}`}
             >
               <span>{emptyLabel}</span>
               {!value && <Check className="w-3.5 h-3.5 text-[#0E7490]" />}
@@ -146,6 +147,62 @@ const SearchableFilter = ({
     </div>
   </div>
 );
+
+const SelectableFilter = ({ label, emptyLabel, value, options, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef(null);
+  const selectedLabel = options.find((option) => option.value === value)?.label;
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event) => {
+      if (!rootRef.current?.contains(event.target)) setIsOpen(false);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+  }, []);
+
+  return (
+    <div className="space-y-1" ref={rootRef}>
+      <label className="text-xs text-slate-500 font-medium">{label}</label>
+      <div className="relative">
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((open) => !open)}
+          className="w-full min-h-10 text-left bg-white text-[#475569] text-xs pl-3 pr-8 rounded-xl border border-[#E2E8F0] hover:border-[#94A3B8] focus:outline-none focus:border-[#06B6D4] flex items-center justify-between transition-colors"
+        >
+          <span className="truncate">{selectedLabel || emptyLabel}</span>
+          <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </button>
+        {isOpen && (
+          <div role="listbox" className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
+            <button
+              type="button"
+              role="option"
+              aria-selected={!value}
+              onClick={() => { onSelect(""); setIsOpen(false); }}
+              className={`w-full px-3 py-2 text-left text-xs hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors ${!value ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#334155]"}`}
+            >{emptyLabel}</button>
+            {options.map((option) => {
+              const selected = value === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  onClick={() => { onSelect(option.value); setIsOpen(false); }}
+                  className={`w-full px-3 py-2 text-left text-xs hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors ${selected ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#334155]"}`}
+                >{option.label}</button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const ProjectFilters = ({ state }) => {
   const {
@@ -302,46 +359,20 @@ const ProjectFilters = ({ state }) => {
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500 font-medium">
-                Status Proyek
-              </label>
-              <div className="relative">
-                <select
-                  value={status}
-                  onChange={(event) => setFilter(setStatus, event.target.value)}
-                  className="w-full min-h-10 appearance-none bg-white text-[#475569] text-xs pl-3 pr-8 rounded-xl border border-[#E2E8F0] focus:outline-none focus:border-[#06B6D4]"
-                >
-                  <option value="">Semua Status</option>
-                  {PROJECT_STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500 font-medium">
-                Lokasi Site
-              </label>
-              <div className="relative">
-                <select
-                  value={sites}
-                  onChange={(event) => setFilter(setSites, event.target.value)}
-                  className="w-full min-h-10 appearance-none bg-white text-[#475569] text-xs pl-3 pr-8 rounded-xl border border-[#E2E8F0] focus:outline-none focus:border-[#06B6D4]"
-                >
-                  <option value="">Semua Site</option>
-                  {PROJECT_SITE_OPTIONS.map((site) => (
-                    <option key={site} value={site} className="capitalize">
-                      {site.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
+            <SelectableFilter
+              label="Status Proyek"
+              emptyLabel="Semua Status"
+              value={status}
+              options={PROJECT_STATUS_OPTIONS}
+              onSelect={(value) => setFilter(setStatus, value)}
+            />
+            <SelectableFilter
+              label="Lokasi Site"
+              emptyLabel="Semua Site"
+              value={sites}
+              options={PROJECT_SITE_OPTIONS.map((site) => ({ value: site, label: site.toUpperCase() }))}
+              onSelect={(value) => setFilter(setSites, value)}
+            />
             <SearchableFilter
               label="Project Manager"
               emptyLabel="Semua PM"

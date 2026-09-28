@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AlertCircle,
@@ -12,6 +12,7 @@ import {
   MapPin,
   Trash2,
   X,
+  ArrowUpRight,
 } from "lucide-react";
 import { PROJECT_STATUS_STYLES } from "../projectListConstants";
 import { formatProjectDate } from "../projectListUtils";
@@ -160,7 +161,7 @@ const ProjectParties = ({ parties }) => {
   );
 };
 
-const ScopeTags = ({ sites }) => {
+const SitesTags = ({ sites }) => {
   if (!sites?.length)
     return (
       <div className="flex items-center justify-center w-full">
@@ -224,7 +225,14 @@ const Timeline = ({ startedAt, dueDate }) => {
   );
 };
 
-const ProjectRow = ({ project, onView, onEdit, onDelete }) => (
+const ProjectRow = ({
+  project,
+  onView,
+  onOpenProject,
+  onPrefetchDetail,
+  onEdit,
+  onDelete,
+}) => (
   <tr className="group border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FAFC] transition-colors duration-100">
     {/* Nama Proyek */}
     <td className="py-5 px-5 align-middle">
@@ -269,9 +277,9 @@ const ProjectRow = ({ project, onView, onEdit, onDelete }) => (
       <ProjectParties parties={project.parties} />
     </td>
 
-    {/* Scope */}
+    {/* Sites */}
     <td className="py-5 px-4 align-middle">
-      <ScopeTags sites={project.sites} />
+      <SitesTags sites={project.sites} />
     </td>
 
     {/* Timeline */}
@@ -282,6 +290,18 @@ const ProjectRow = ({ project, onView, onEdit, onDelete }) => (
     {/* Aksi */}
     <td className="py-5 px-4 align-middle">
       <div className="flex items-center gap-1">
+        <button
+          type="button"
+          title="Buka Halaman Task Proyek"
+          onClick={() =>
+            onOpenProject ? onOpenProject(project) : onView(project)
+          }
+          onMouseEnter={() => onPrefetchDetail?.(project)}
+          onFocus={() => onPrefetchDetail?.(project)}
+          className="p-2 rounded-lg text-[#475569] hover:text-[#0891B2] hover:bg-[#ECFEFF] transition-colors cursor-pointer"
+        >
+          <ArrowUpRight className="w-4 h-4" />
+        </button>
         {/* View */}
         <button
           type="button"
@@ -445,7 +465,7 @@ const TABLE_HEADERS = [
   { key: "status", label: "STATUS" },
   { key: "pm", label: "PROJECT MANAGER" },
   { key: "parties", label: "KLIEN & VENDOR" },
-  { key: "scope", label: "SCOPE" },
+  { key: "sites", label: "SITES" },
   { key: "timeline", label: "TIMELINE" },
   { key: "aksi", label: "AKSI", center: true },
 ];
@@ -457,20 +477,21 @@ const ProjectTable = ({
   onResetFilters,
   onCreateProject,
   onViewProject,
+  onOpenProject,
+  onPrefetchDetail,
   onEditProject,
   onDeleteProject,
   totalProjects,
   limit,
-  setLimit,
   page,
   setPage,
   totalPages,
 }) => (
-  <section className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-sm">
+  <section className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden shadow-sm">
     {query.isLoading ? (
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+      <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
+        <table className="w-full text-left">
+          <thead className="sticky top-0 z-10 bg-cyan-200 border-b border-cyan-400">
             <tr>
               {TABLE_HEADERS.map((h) => (
                 <th
@@ -538,14 +559,14 @@ const ProjectTable = ({
       </div>
     ) : (
       <>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
           <table className="w-full text-left">
-            <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+            <thead className="sticky top-0 z-10 bg-cyan-200 border-b border-cyan-400">
               <tr>
                 {TABLE_HEADERS.map((h) => (
                   <th
                     key={h.key}
-                    className={`py-3.5 px-4 md:px-5 text-[11px] font-semibold text-[#94A3B8] tracking-[0.06em] whitespace-nowrap ${h.center ? "text-center" : "text-left"}`}
+                    className={`py-3.5 px-4 md:px-5 text-[11px] font-bold text-slate-600 tracking-[0.06em] whitespace-nowrap ${h.center ? "text-center" : "text-left"}`}
                   >
                     {h.label}
                   </th>
@@ -558,6 +579,8 @@ const ProjectTable = ({
                   key={project._id}
                   project={project}
                   onView={onViewProject}
+                  onOpenProject={onOpenProject}
+                  onPrefetchDetail={onPrefetchDetail}
                   onEdit={onEditProject}
                   onDelete={onDeleteProject}
                 />
@@ -565,7 +588,6 @@ const ProjectTable = ({
             </tbody>
           </table>
         </div>
-
         <Pagination
           totalProjects={totalProjects}
           limit={limit}

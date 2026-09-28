@@ -11,9 +11,6 @@ const ProjectListHeader = ({ onCreateProject }) => {
         >
           Daftar Proyek
         </h1>
-        <p className="text-sm text-[#475569]">
-          Pantau progres, alokasi waktu, dan tenggat waktu seluruh proyek aktif.
-        </p>
       </div>
 
       <button

@@ -7,7 +7,7 @@ export const PROJECT_STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
-export const PROJECT_SITE_OPTIONS = ["site 1", "site 2", "site 3"];
+export const PROJECT_SITE_OPTIONS = ["PT", "HPC", "PBPG"];
 
 export const PROJECT_STATUS_STYLES = {
   draft: {

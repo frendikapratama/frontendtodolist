@@ -4,7 +4,7 @@ import { useParty } from "../../hook/useParty";
 import { useDivision } from "../../hook/useDivision";
 import { getUsers } from "../../services/userServices";
 import UserSearchSelect from "../../components/Usersearchselect";
-import { X, Check, ChevronDown, Search } from "lucide-react";
+import { X, Check, ChevronDown, Search, Plus } from "lucide-react";
 
 const INITIAL_FORM_STATE = {
   nama: "",
@@ -26,7 +26,6 @@ const STATUS_OPTIONS = [
   "cancelled",
 ];
 const SITES_OPTIONS = ["PT", "HPC", "PBPG"];
-
 const ROLE_OPTIONS = ["client", "vendor"];
 
 const toDateInputValue = (isoString) =>
@@ -225,8 +224,6 @@ const FormProject = ({ project, onClose }) => {
     });
   };
 
-  const handleCancel = () => onClose();
-
   const partyList = partyQuery?.data || [];
   const divisionList = divisionQuery?.data || [];
 
@@ -239,73 +236,65 @@ const FormProject = ({ project, onClose }) => {
   );
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="bg-white rounded-xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Project Name */}
-        <div className="form-control w-full">
-          <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-slate-700">
-              Project Name
-            </span>
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-[#0F172A]">
+            Project Name <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
             name="nama"
             value={formData.nama}
             onChange={handleChange}
-            className="input input-bordered w-full bg-white text-slate-900 focus:border-[#0E7490] focus:outline-none"
+            className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] placeholder-[#94A3B8] transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
             placeholder="Enter project name"
             required
             disabled={mutation.isPending}
           />
         </div>
 
-        {/* Dates */}
+        {/* Dates Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="form-control w-full">
-            <label className="label pb-1">
-              <span className="label-text text-sm font-medium text-slate-700">
-                Start Date
-              </span>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-[#0F172A]">
+              Start Date
             </label>
             <input
               type="date"
               name="startedAt"
               value={formData.startedAt}
               onChange={handleChange}
-              className="input input-bordered w-full bg-white text-slate-900 focus:border-[#0E7490] focus:outline-none"
+              className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
               disabled={mutation.isPending}
             />
           </div>
-          <div className="form-control w-full">
-            <label className="label pb-1">
-              <span className="label-text text-sm font-medium text-slate-700">
-                Due Date
-              </span>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-[#0F172A]">
+              Due Date
             </label>
             <input
               type="date"
               name="dueDate"
               value={formData.dueDate}
               onChange={handleChange}
-              className="input input-bordered w-full bg-white text-slate-900 focus:border-[#0E7490] focus:outline-none"
+              className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
               disabled={mutation.isPending}
             />
           </div>
         </div>
 
         {/* Status */}
-        <div className="form-control w-full">
-          <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-slate-700">
-              Status
-            </span>
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-[#0F172A]">
+            Status
           </label>
           <select
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="select select-bordered w-full bg-white text-slate-900 capitalize focus:border-[#0E7490] focus:outline-none"
+            className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] capitalize transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
             disabled={mutation.isPending}
           >
             {STATUS_OPTIONS.map((s) => (
@@ -316,16 +305,13 @@ const FormProject = ({ project, onClose }) => {
           </select>
         </div>
 
-        {/* PROJECT MANAGER — single select */}
-        <div className="form-control w-full">
-          <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-slate-700">
-              Project Manager
-            </span>
+        {/* Project Manager */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-[#0F172A]">
+            Project Manager
           </label>
-
           {selectedManager ? (
-            <div className="flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-lg px-3.5 py-2.5">
+            <div className="flex items-center justify-between gap-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-2.5">
               <div className="flex items-center gap-3 min-w-0">
                 {selectedManager.photo ? (
                   <img
@@ -334,16 +320,16 @@ const FormProject = ({ project, onClose }) => {
                     className="w-8 h-8 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-cyan-50 text-[#0E7490] flex items-center justify-center text-xs font-semibold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#ECFEFF] text-[#0891B2] flex items-center justify-center text-xs font-semibold shrink-0">
                     {selectedManager.username?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm text-slate-900 font-medium truncate">
+                  <p className="text-sm font-medium text-[#0F172A] truncate">
                     {selectedManager.username}
                   </p>
                   {selectedManager.email && (
-                    <p className="text-xs text-slate-500 truncate">
+                    <p className="text-xs text-[#475569] truncate">
                       {selectedManager.email}
                     </p>
                   )}
@@ -353,7 +339,7 @@ const FormProject = ({ project, onClose }) => {
                 type="button"
                 onClick={clearProjectManager}
                 disabled={mutation.isPending}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0"
+                className="p-1.5 rounded-md text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#E2E8F0] transition-colors shrink-0"
                 title="Ganti project manager"
               >
                 <X className="w-4 h-4" />
@@ -370,45 +356,48 @@ const FormProject = ({ project, onClose }) => {
           )}
         </div>
 
-        {/* DIVISIONS — Dropdown Multi-Select */}
-        <div className="form-control w-full" ref={divisionDropdownRef}>
-          <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-slate-700">
-              Divisions
-            </span>
+        {/* Divisions Multi-Select Dropdown */}
+        <div className="space-y-1.5" ref={divisionDropdownRef}>
+          <label className="block text-sm font-medium text-[#0F172A]">
+            Divisions
           </label>
-
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsDivisionDropdownOpen((prev) => !prev)}
               disabled={mutation.isPending}
-                className="w-full flex items-center justify-between input input-bordered bg-white text-slate-900 text-left font-normal focus:border-[#0E7490]"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] text-left transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2]"
             >
-              <span className="text-sm text-slate-600 truncate">
+              <span
+                className={
+                  formData.divisionId.length === 0
+                    ? "text-[#94A3B8]"
+                    : "text-[#0F172A]"
+                }
+              >
                 {formData.divisionId.length === 0
                   ? "Pilih divisi..."
                   : `${formData.divisionId.length} divisi dipilih`}
               </span>
-              <ChevronDown className="w-4 h-4 text-slate-500" />
+              <ChevronDown className="w-4 h-4 text-[#94A3B8]" />
             </button>
 
             {isDivisionDropdownOpen && (
-              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden p-2 space-y-2">
+              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg overflow-hidden p-2 space-y-2">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                   <input
                     type="text"
                     value={divisionSearch}
                     onChange={(e) => setDivisionSearch(e.target.value)}
                     placeholder="Cari divisi..."
-                    className="w-full bg-white text-slate-900 text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-[#0E7490]"
+                    className="w-full bg-[#F8FAFC] text-[#0F172A] text-xs pl-9 pr-3 py-2 rounded-md border border-[#E2E8F0] focus:outline-none focus:border-[#0891B2]"
                   />
                 </div>
 
                 <div className="max-h-48 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
                   {filteredDivisions.length === 0 ? (
-                    <p className="text-xs text-slate-400 p-2 text-center">
+                    <p className="text-xs text-[#94A3B8] p-2 text-center">
                       Divisi tidak ditemukan.
                     </p>
                   ) : (
@@ -418,18 +407,18 @@ const FormProject = ({ project, onClose }) => {
                         <div
                           key={d._id}
                           onClick={() => toggleDivision(d._id)}
-                          className={`flex items-center justify-between p-2 rounded-lg text-xs cursor-pointer transition-colors ${
+                          className={`flex items-center justify-between p-2 rounded-md text-xs cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-cyan-50 text-[#0E7490]"
-                              : "text-slate-600 hover:bg-slate-50"
+                              ? "bg-[#ECFEFF] text-[#0891B2]"
+                              : "text-[#475569] hover:bg-[#F1F5F9]"
                           }`}
                         >
                           <span className="font-medium">{d.name}</span>
                           <div
                             className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                               isSelected
-                                ? "bg-[#0E7490] border-[#0E7490]"
-                                : "border-slate-200"
+                                ? "bg-[#0891B2] border-[#0891B2]"
+                                : "border-[#CBD5E1] bg-white"
                             }`}
                           >
                             {isSelected && (
@@ -445,18 +434,19 @@ const FormProject = ({ project, onClose }) => {
             )}
           </div>
 
+          {/* Selected Badges */}
           {selectedDivisions.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2.5">
+            <div className="flex flex-wrap gap-1.5 pt-1">
               {selectedDivisions.map((d) => (
                 <span
                   key={d._id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-cyan-50 text-[#0E7490] border border-cyan-100"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#ECFEFF] text-[#0891B2] border border-[#CFFAFE]"
                 >
                   {d.name}
                   <button
                     type="button"
                     onClick={() => toggleDivision(d._id)}
-                    className="hover:text-white transition-colors"
+                    className="text-[#0891B2] hover:text-[#06B6D4] transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -466,24 +456,21 @@ const FormProject = ({ project, onClose }) => {
           )}
         </div>
 
-        {/* SITES — Checkbox Card Grid */}
-        <div className="form-control w-full">
-          <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-slate-700">
-              Sites
-            </span>
+        {/* Sites - Checkboxes */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-[#0F172A]">
+            Sites
           </label>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 mt-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
             {SITES_OPTIONS.map((s) => {
               const isChecked = formData.sites.includes(s);
               return (
                 <label
                   key={s}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${
+                  className={`flex items-center gap-2.5 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
                     isChecked
-                      ? "bg-cyan-50 border-cyan-200 text-[#0E7490]"
-                      : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-200 hover:text-slate-700"
+                      ? "bg-[#ECFEFF] border-[#CFFAFE] text-[#0891B2]"
+                      : "bg-[#F8FAFC] border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]"
                   }`}
                 >
                   <input
@@ -492,37 +479,33 @@ const FormProject = ({ project, onClose }) => {
                     value={s}
                     checked={isChecked}
                     onChange={handleChange}
-                    className="checkbox checkbox-xs checkbox-primary rounded"
+                    className="w-4 h-4 rounded accent-[#0891B2] cursor-pointer"
                     disabled={mutation.isPending}
                   />
-                  <span className="text-xs font-medium capitalize">
-                    {s.replace(/\b\w/g, (char) => char.toUpperCase())}
-                  </span>
+                  <span className="text-xs font-medium uppercase">{s}</span>
                 </label>
               );
             })}
           </div>
         </div>
 
-        {/* PARTIES */}
-        <div className="form-control w-full">
-          <label className="label pb-1">
-            <span className="label-text text-sm font-medium text-slate-700">
-              Parties
-            </span>
+        {/* Parties */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-[#0F172A]">
+            Parties
           </label>
-          <div className="space-y-2 mt-1">
+          <div className="space-y-2">
             {formData.parties.map((p, index) => (
               <div
                 key={index}
-                className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-slate-50 p-2 rounded-lg border border-slate-100"
+                className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0]"
               >
                 <select
                   value={p.party}
                   onChange={(e) =>
                     handlePartyChange(index, "party", e.target.value)
                   }
-                  className="select select-bordered select-sm flex-1 bg-white text-slate-900 text-xs focus:border-[#0E7490] focus:outline-none"
+                  className="flex-1 px-3 py-1.5 bg-white text-[#0F172A] text-xs rounded-md border border-[#E2E8F0] focus:outline-none focus:border-[#0891B2]"
                   disabled={mutation.isPending}
                 >
                   <option value="" disabled>
@@ -540,7 +523,7 @@ const FormProject = ({ project, onClose }) => {
                   onChange={(e) =>
                     handlePartyChange(index, "role", e.target.value)
                   }
-                  className="select select-bordered select-sm w-full sm:w-36 bg-white text-slate-900 text-xs capitalize focus:border-[#0E7490] focus:outline-none"
+                  className="w-full sm:w-32 px-3 py-1.5 bg-white text-[#0F172A] text-xs rounded-md border border-[#E2E8F0] capitalize focus:outline-none focus:border-[#0891B2]"
                   disabled={mutation.isPending}
                 >
                   {ROLE_OPTIONS.map((r) => (
@@ -553,11 +536,11 @@ const FormProject = ({ project, onClose }) => {
                 <button
                   type="button"
                   onClick={() => removePartyRow(index)}
-                  className="btn btn-xs sm:btn-sm bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-500/30 self-end sm:self-auto"
+                  className="p-1.5 text-[#94A3B8] hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors self-end sm:self-auto"
                   disabled={mutation.isPending || formData.parties.length === 1}
                   title="Remove Party"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             ))}
@@ -565,38 +548,38 @@ const FormProject = ({ project, onClose }) => {
             <button
               type="button"
               onClick={addPartyRow}
-              className="btn btn-xs sm:btn-sm bg-cyan-50 hover:bg-cyan-50 text-[#0E7490] border-cyan-100 w-full sm:w-auto mt-1"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#0891B2] bg-[#ECFEFF] hover:bg-[#CFFAFE] border border-[#CFFAFE] rounded-md transition-colors"
               disabled={mutation.isPending}
             >
-              + Add Party
+              <Plus className="w-3.5 h-3.5" /> Add Party
             </button>
           </div>
         </div>
 
-        {/* Form Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-3 pt-5 border-t border-[#E2E8F0]">
           <button
             type="button"
-            className="btn btn-sm sm:btn-md bg-transparent hover:bg-slate-100 border-slate-200 text-slate-600"
-            onClick={handleCancel}
+            className="px-4 py-2 text-sm font-medium text-[#475569] bg-white hover:bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg transition-colors disabled:opacity-50"
+            onClick={onClose}
             disabled={mutation.isPending}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="btn btn-sm sm:btn-md btn-primary px-6"
+            className="px-5 py-2 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#06B6D4] rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
             disabled={mutation.isPending}
           >
             {mutation.isPending ? (
               <>
-                <span className="loading loading-spinner loading-xs"></span>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 Saving...
               </>
             ) : isEditMode ? (
-              "Update"
+              "Update Project"
             ) : (
-              "Save"
+              "Save Project"
             )}
           </button>
         </div>
