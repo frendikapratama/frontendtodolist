@@ -544,7 +544,6 @@ const FormProject = ({ project, onClose }) => {
                 </button>
               </div>
             ))}
-
             <button
               type="button"
               onClick={addPartyRow}
