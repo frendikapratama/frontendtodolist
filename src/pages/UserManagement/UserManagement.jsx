@@ -82,9 +82,7 @@ export default function UserManagement() {
       ? workspace.divisionId
       : [workspace.divisionId];
     const divisionNames = divisions
-      .map((division) =>
-        typeof division === "string" ? "" : division?.name,
-      )
+      .map((division) => (typeof division === "string" ? "" : division?.name))
       .filter(Boolean);
 
     return {
@@ -187,7 +185,9 @@ export default function UserManagement() {
       const response = await getUserById(user._id);
       if (response?.success && response?.data) {
         setUserWorkspacesList(
-          Array.isArray(response.data.workspaces) ? response.data.workspaces : [],
+          Array.isArray(response.data.workspaces)
+            ? response.data.workspaces
+            : [],
         );
       }
     } catch (err) {
@@ -737,11 +737,19 @@ export default function UserManagement() {
                     onChange={(e) => setNewWorkspaceId(e.target.value)}
                   >
                     <option value="">Select a Workspace...</option>
-                    {allWorkspaces.filter((ws) => ws?._id).map((ws) => (
-                      <option key={ws._id} value={ws._id}>
-                        {ws.divisionId?.map?.((division) => division?.name).filter(Boolean).join(", ") || ws.name || ws.nama || "Unknown Workspace"}
-                      </option>
-                    ))}
+                    {allWorkspaces
+                      .filter((ws) => ws?._id)
+                      .map((ws) => (
+                        <option key={ws._id} value={ws._id}>
+                          {ws.divisionId
+                            ?.map?.((division) => division?.name)
+                            .filter(Boolean)
+                            .join(", ") ||
+                            ws.name ||
+                            ws.nama ||
+                            "Unknown Workspace"}
+                        </option>
+                      ))}
                   </select>
                   <select
                     className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-800 min-w-[150px] focus:outline-none focus:ring-2 focus:ring-cyan-700"
@@ -788,7 +796,8 @@ export default function UserManagement() {
                       >
                         <div className="flex flex-col gap-1">
                           <span className="font-semibold text-slate-800">
-                            {workspaceDetails.displayName || "Unknown Workspace"}
+                            {workspaceDetails.displayName ||
+                              "Unknown Workspace"}
                           </span>
                           <span className="text-xs text-slate-500 flex items-center gap-2">
                             Role:{" "}
