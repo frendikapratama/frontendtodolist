@@ -73,6 +73,26 @@ export default function UserManagement() {
   const [newWorkspaceRole, setNewWorkspaceRole] = useState("member");
   const [userWorkspacesList, setUserWorkspacesList] = useState([]);
 
+  const getWorkspaceDetails = (item) => {
+    if (!item || typeof item !== "object") return null;
+    const workspace = item.workspaceId || item.workspace || item;
+    if (!workspace || typeof workspace !== "object") return null;
+
+    const divisions = Array.isArray(workspace.divisionId)
+      ? workspace.divisionId
+      : [workspace.divisionId];
+    const divisionNames = divisions
+      .map((division) => (typeof division === "string" ? "" : division?.name))
+      .filter(Boolean);
+
+    return {
+      ...workspace,
+      _id: workspace._id || item.workspaceId?._id || item.workspace,
+      userRole: item.userRole || item.role || workspace.userRole,
+      displayName: divisionNames.join(", ") || workspace.name || workspace.nama,
+    };
+  };
+
   const selectedDepartemen = DEPARTEMEN_DIVISI.find(
     (d) => d.departemenId === formData.departemen,
   );
@@ -164,7 +184,11 @@ export default function UserManagement() {
     try {
       const response = await getUserById(user._id);
       if (response?.success && response?.data) {
-        setUserWorkspacesList(response.data.workspaces || []);
+        setUserWorkspacesList(
+          Array.isArray(response.data.workspaces)
+            ? response.data.workspaces
+            : [],
+        );
       }
     } catch (err) {
       toast.error("Failed to load user workspaces");
@@ -713,11 +737,19 @@ export default function UserManagement() {
                     onChange={(e) => setNewWorkspaceId(e.target.value)}
                   >
                     <option value="">Select a Workspace...</option>
-                    {allWorkspaces.map((ws) => (
-                      <option key={ws._id} value={ws._id}>
-                        {ws.nama}
-                      </option>
-                    ))}
+                    {allWorkspaces
+                      .filter((ws) => ws?._id)
+                      .map((ws) => (
+                        <option key={ws._id} value={ws._id}>
+                          {ws.divisionId
+                            ?.map?.((division) => division?.name)
+                            .filter(Boolean)
+                            .join(", ") ||
+                            ws.name ||
+                            ws.nama ||
+                            "Unknown Workspace"}
+                        </option>
+                      ))}
                   </select>
                   <select
                     className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-800 min-w-[150px] focus:outline-none focus:ring-2 focus:ring-cyan-700"
@@ -753,17 +785,19 @@ export default function UserManagement() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  {userWorkspacesList.map((wsItem) => {
-                    const workspaceDetails = wsItem;
-                    const isOwner = wsItem.userRole === "owner";
+                  {userWorkspacesList.map((wsItem, index) => {
+                    const workspaceDetails = getWorkspaceDetails(wsItem);
+                    if (!workspaceDetails) return null;
+                    const isOwner = workspaceDetails.userRole === "owner";
                     return (
                       <div
-                        key={workspaceDetails._id || Math.random()}
+                        key={workspaceDetails._id || `workspace-${index}`}
                         className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200"
                       >
                         <div className="flex flex-col gap-1">
                           <span className="font-semibold text-slate-800">
-                            {workspaceDetails.nama || "Unknown Workspace"}
+                            {workspaceDetails.displayName ||
+                              "Unknown Workspace"}
                           </span>
                           <span className="text-xs text-slate-500 flex items-center gap-2">
                             Role:{" "}
@@ -774,7 +808,7 @@ export default function UserManagement() {
                             ) : (
                               <select
                                 className="p-1 rounded border border-slate-300 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-cyan-700"
-                                value={wsItem.userRole || "member"}
+                                value={workspaceDetails.userRole || "member"}
                                 onChange={(e) =>
                                   handleUpdateRoleUserWorkspace(
                                     workspaceDetails._id,
