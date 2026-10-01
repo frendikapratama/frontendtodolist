@@ -173,17 +173,27 @@ const SelectableFilter = ({ label, emptyLabel, value, options, onSelect }) => {
           className="w-full min-h-10 text-left bg-white text-[#475569] text-xs pl-3 pr-8 rounded-xl border border-[#E2E8F0] hover:border-[#94A3B8] focus:outline-none focus:border-[#06B6D4] flex items-center justify-between transition-colors"
         >
           <span className="truncate">{selectedLabel || emptyLabel}</span>
-          <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
         </button>
         {isOpen && (
-          <div role="listbox" className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
+          <div
+            role="listbox"
+            className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden py-1"
+          >
             <button
               type="button"
               role="option"
               aria-selected={!value}
-              onClick={() => { onSelect(""); setIsOpen(false); }}
+              onClick={() => {
+                onSelect("");
+                setIsOpen(false);
+              }}
               className={`w-full px-3 py-2 text-left text-xs hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors ${!value ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#334155]"}`}
-            >{emptyLabel}</button>
+            >
+              {emptyLabel}
+            </button>
             {options.map((option) => {
               const selected = value === option.value;
               return (
@@ -192,9 +202,14 @@ const SelectableFilter = ({ label, emptyLabel, value, options, onSelect }) => {
                   type="button"
                   role="option"
                   aria-selected={selected}
-                  onClick={() => { onSelect(option.value); setIsOpen(false); }}
+                  onClick={() => {
+                    onSelect(option.value);
+                    setIsOpen(false);
+                  }}
                   className={`w-full px-3 py-2 text-left text-xs hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors ${selected ? "text-[#0891B2] font-semibold bg-[#ECFEFF]" : "text-[#334155]"}`}
-                >{option.label}</button>
+                >
+                  {option.label}
+                </button>
               );
             })}
           </div>
@@ -370,7 +385,10 @@ const ProjectFilters = ({ state }) => {
               label="Lokasi Site"
               emptyLabel="Semua Site"
               value={sites}
-              options={PROJECT_SITE_OPTIONS.map((site) => ({ value: site, label: site.toUpperCase() }))}
+              options={PROJECT_SITE_OPTIONS.map((site) => ({
+                value: site,
+                label: site.toUpperCase(),
+              }))}
               onSelect={(value) => setFilter(setSites, value)}
             />
             <SearchableFilter

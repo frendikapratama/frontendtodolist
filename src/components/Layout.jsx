@@ -27,28 +27,41 @@ const Layout = () => {
   return (
     <div
       className={`flex h-screen w-screen overflow-hidden ${
-        isBookingPage ? "bg-[#1D546C]" : "bg-[#F8FAFC]"
+        // isBookingPage ? "bg-[#1D546C]" : "bg-[#F8FAFC]"
+        isBookingPage ? "bg-[#1D546C]" : "bg-[#1D546C]"
       }`}
     >
       <Sidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
 
       {/* Main Content Container */}
       <div
+        // className={`flex-1 flex flex-col h-full overflow-hidden relative ${
+        //   isBookingPage
+        //     ? "bg-linear-to-tl from-[#1A3D64] to-[#1D546C]"
+        //     : "bg-[#F8FAFC]"
+        // }`}
         className={`flex-1 flex flex-col h-full overflow-hidden relative ${
           isBookingPage
             ? "bg-linear-to-tl from-[#1A3D64] to-[#1D546C]"
-            : "bg-[#F8FAFC]"
+            : "bg-linear-to-tl from-[#1A3D64] to-[#1D546C]"
         }`}
       >
         {/* Topbar Mobile */}
-        <header
+        {/* <header
           className={`lg:hidden flex items-center justify-between px-4 py-3 border-b shrink-0 ${
             isBookingPage
               ? "bg-[#1A3D64] text-white border-white/10"
               : "bg-white text-[#0F172A] border-[#E2E8F0]"
           }`}
+        > */}
+        <header
+          className={`lg:hidden flex items-center justify-between px-4 py-3 border-b shrink-0 ${
+            isBookingPage
+              ? "bg-[#1A3D64] text-white border-white/10"
+              : "bg-[#1A3D64] text-white border-white/10"
+          }`}
         >
-          <button
+          {/* <button
             onClick={() => setIsMobileOpen(true)}
             className={`p-1.5 rounded-lg transition-colors ${
               isBookingPage
@@ -56,10 +69,24 @@ const Layout = () => {
                 : "bg-[#F1F5F9] hover:bg-[#E2E8F0]"
             }`}
             aria-label="Open Menu"
+          > */}
+          <button
+            onClick={() => setIsMobileOpen(true)}
+            className={`p-1.5 rounded-lg transition-colors ${
+              isBookingPage
+                ? "bg-white/10 hover:bg-white/20"
+                : "bg-white/10 hover:bg-white/20"
+            }`}
+            aria-label="Open Menu"
           >
-            <Menu
+            {/* <Menu
               className={`w-6 h-6 ${
                 isBookingPage ? "text-white" : "text-[#0F172A]"
+              }`}
+            /> */}
+            <Menu
+              className={`w-6 h-6 ${
+                isBookingPage ? "text-white" : "text-white"
               }`}
             />
           </button>
@@ -73,7 +100,7 @@ const Layout = () => {
             isOpen ? "lg:mr-96" : "mr-0"
           }`}
         >
-          <div className="p-4 sm:p-6 lg:p-8 min-h-full">
+          <div className="p-4 sm:p-6 lg:p-5 min-h-full">
             <Outlet />
           </div>
         </main>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AlertCircle,
+  ArrowUpRight,
   Building2,
   Calendar,
   ChevronLeft,
@@ -9,33 +10,121 @@ import {
   Edit3,
   Eye,
   FolderOpen,
-  MapPin,
   Trash2,
   X,
-  ArrowUpRight,
 } from "lucide-react";
 import { PROJECT_STATUS_STYLES } from "../projectListConstants";
 import { formatProjectDate } from "../projectListUtils";
 
+// ── Status badge ────────────────────────────────────────────────────────────
+const STATUS_DARK = {
+  draft: {
+    dot: "bg-[#06B6D4]",
+    text: "text-[#0891B2]",
+    bg: "bg-[#ECFEFF] border-[#CFFAFE]",
+    label: "Draft",
+  },
+  planning: {
+    dot: "bg-violet-500",
+    text: "text-violet-600",
+    bg: "bg-violet-50 border-violet-200",
+    label: "Planning",
+  },
+  "in progress": {
+    dot: "bg-emerald-500",
+    text: "text-emerald-700",
+    bg: "bg-emerald-50 border-emerald-200",
+    label: "Aktif",
+  },
+  "in-progress": {
+    dot: "bg-emerald-500",
+    text: "text-emerald-700",
+    bg: "bg-emerald-50 border-emerald-200",
+    label: "Aktif",
+  },
+  aktif: {
+    dot: "bg-emerald-500",
+    text: "text-emerald-700",
+    bg: "bg-emerald-50 border-emerald-200",
+    label: "Aktif",
+  },
+  hold: {
+    dot: "bg-amber-500",
+    text: "text-amber-700",
+    bg: "bg-amber-50 border-amber-200",
+    label: "Hold",
+  },
+  review: {
+    dot: "bg-amber-500",
+    text: "text-amber-700",
+    bg: "bg-amber-50 border-amber-200",
+    label: "Review",
+  },
+  completed: {
+    dot: "bg-slate-400",
+    text: "text-slate-600",
+    bg: "bg-slate-100 border-slate-200",
+    label: "Selesai",
+  },
+  selesai: {
+    dot: "bg-slate-400",
+    text: "text-slate-600",
+    bg: "bg-slate-100 border-slate-200",
+    label: "Selesai",
+  },
+  cancelled: {
+    dot: "bg-rose-500",
+    text: "text-rose-600",
+    bg: "bg-rose-50 border-rose-200",
+    label: "Cancelled",
+  },
+};
+
 const StatusBadge = ({ status }) => {
-  const def = PROJECT_STATUS_STYLES[status?.toLowerCase()];
-  if (!def)
+  const key = status?.toLowerCase();
+  const def = STATUS_DARK[key];
+  const fallback = def ? null : PROJECT_STATUS_STYLES[key];
+
+  if (!def && !fallback) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]">
-        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-500 border border-[#E2E8F0]">
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
         {status || "-"}
       </span>
     );
+  }
+
+  // Fallback dari PROJECT_STATUS_STYLES (bisa berupa string class atau object)
+  if (!def) {
+    const isString = typeof fallback === "string";
+    const cls = isString
+      ? fallback
+      : `${fallback.bg || "bg-slate-100 border-slate-200"} ${fallback.text || "text-slate-600"}`;
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold border ${cls}`}
+      >
+        {!isString && (
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${fallback.dot || "bg-slate-400"}`}
+          />
+        )}
+        {(!isString && fallback.label) || status}
+      </span>
+    );
+  }
+
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border ${def.style}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold border ${def.bg} ${def.text}`}
     >
-      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+      <span className={`w-1.5 h-1.5 rounded-full ${def.dot}`} />
       {def.label}
     </span>
   );
 };
 
+// ── Photo preview modal ─────────────────────────────────────────────────────
 const PhotoPreviewModal = ({ src, alt, onClose }) => {
   if (!src) return null;
   return createPortal(
@@ -52,18 +141,17 @@ const PhotoPreviewModal = ({ src, alt, onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-[#475569] hover:text-rose-600 shadow-md flex items-center justify-center transition-colors cursor-pointer"
-          title="Tutup"
+          className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border border-[#E2E8F0] text-slate-500 hover:text-rose-500 shadow-lg flex items-center justify-center transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
         <img
           src={src}
           alt={alt}
-          className="w-full max-h-[80vh] object-contain rounded-xl  shadow-2xl "
+          className="w-full max-h-[80vh] object-contain rounded-xl shadow-2xl"
         />
         {alt && (
-          <p className="text-center text-white text-sm font-medium mt-3">
+          <p className="text-center text-white/90 text-sm font-medium mt-3">
             {alt}
           </p>
         )}
@@ -73,52 +161,69 @@ const PhotoPreviewModal = ({ src, alt, onClose }) => {
   );
 };
 
+// ── Project letter avatar ───────────────────────────────────────────────────
+const ProjectAvatar = ({ name }) => {
+  const letter = name?.charAt(0)?.toUpperCase() || "P";
+  const palettes = [
+    "bg-[#ECFEFF] text-[#0891B2]",
+    "bg-blue-50 text-blue-600",
+    "bg-violet-50 text-violet-600",
+    "bg-emerald-50 text-emerald-600",
+    "bg-amber-50 text-amber-600",
+    "bg-pink-50 text-pink-600",
+  ];
+  const idx = (name?.charCodeAt(0) || 0) % palettes.length;
+  return (
+    <div
+      className={`w-10 h-10 rounded-xl ${palettes[idx]} flex items-center justify-center text-[15px] font-bold shrink-0 shadow-sm`}
+    >
+      {letter}
+    </div>
+  );
+};
+
+// ── PM Avatar ───────────────────────────────────────────────────────────────
 const PmAvatar = ({ name, divisi, photo }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
-  if (!name)
-    return (
-      <div className="flex items-center justify-center w-full">
-        <span className="text-[#94A3B8] text-xs">-</span>
-      </div>
-    );
+  if (!name) return <span className="text-slate-400 text-xs">-</span>;
 
   const initials = name
     .split(" ")
     .slice(0, 2)
     .map((n) => n[0]?.toUpperCase())
     .join("");
-
   const photoUrl = photo ? `${API_BASE_URL}/uploads/users/${photo}` : null;
 
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-2">
       {photoUrl ? (
         <button
           type="button"
           onClick={() => setPreviewOpen(true)}
-          title="Lihat Foto"
-          className="shrink-0 rounded-full cursor-pointer transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] focus:ring-offset-1"
+          className="shrink-0 rounded-full cursor-pointer hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-[#06B6D4]/50"
         >
           <img
             src={photoUrl}
             alt={name}
-            className="w-7 h-7 rounded-full object-cover border border-[#CFFAFE]"
+            className="w-7 h-7 rounded-full object-cover border-2 border-[#E2E8F0]"
           />
         </button>
       ) : (
-        <div className="w-7 h-7 rounded-full bg-[#ECFEFF] text-[#0891B2] flex items-center justify-center text-[10px] font-bold shrink-0 border border-[#CFFAFE]">
+        <div className="w-7 h-7 rounded-full bg-[#ECFEFF] border border-[#CFFAFE] text-[#0891B2] flex items-center justify-center text-[10px] font-bold shrink-0">
           {initials}
         </div>
       )}
       <div className="min-w-0">
-        <div className="text-[13px] font-medium text-[#0F172A] truncate max-w-[110px]">
+        <div className="text-[12px] font-medium text-black truncate max-w-[100px]">
           {name}
         </div>
-        <div className="text-[11px] text-[#94A3B8]"> {divisi}</div>
+        {divisi && (
+          <div className="text-[10px] text-gray-600 truncate max-w-[100px]">
+            {divisi}
+          </div>
+        )}
       </div>
-
       {previewOpen && (
         <PhotoPreviewModal
           src={photoUrl}
@@ -130,59 +235,55 @@ const PmAvatar = ({ name, divisi, photo }) => {
   );
 };
 
+// ── Klien & Vendor ──────────────────────────────────────────────────────────
 const ProjectParties = ({ parties }) => {
   const clients = parties?.filter((p) => p.role === "client") || [];
   const vendors = parties?.filter((p) => p.role === "vendor") || [];
   if (!clients.length && !vendors.length)
     return (
-      <div className="flex items-center justify-center w-full">
-        <span className="text-[#94A3B8] text-xs">-</span>
-      </div>
+      <span className="flex text-white text-xs justify-center ">Empty</span>
     );
   return (
-    <div className="space-y-1.5">
-      {clients.map((p) => (
+    <div className="space-y-0.5">
+      {[...clients, ...vendors].slice(0, 2).map((p) => (
         <div key={p._id} className="flex items-center gap-1.5">
-          <Building2 className="w-3 h-3 shrink-0 text-[#06B6D4]" />
-          <span className="text-[12px] text-[#475569] truncate max-w-[130px]">
-            {p.party?.name || "-"}
+          <Building2
+            className={`w-3 h-3 shrink-0 ${p.role === "client" ? "text-[#0891B2]" : "text-slate-400"}`}
+          />
+          <span className="text-[12px] text-black truncate max-w-[110px]">
+            {p.party?.name || "Empty"}
           </span>
         </div>
       ))}
-      {vendors.map((p) => (
-        <div key={p._id} className="flex items-center gap-1.5">
-          <Building2 className="w-3 h-3 shrink-0 text-[#94A3B8]" />
-          <span className="text-[12px] text-[#475569] truncate max-w-[130px]">
-            {p.party?.name || "-"}
-          </span>
+      {parties?.length > 2 && (
+        <div className="text-[11px] text-gray-600">
+          +{parties.length - 2} lainnya
         </div>
-      ))}
+      )}
     </div>
   );
 };
 
+// ── Sites ───────────────────────────────────────────────────────────────────
 const SitesTags = ({ sites }) => {
   if (!sites?.length)
     return (
-      <div className="flex items-center justify-center w-full">
-        <span className="text-[#94A3B8] text-xs">-</span>
-      </div>
+      <span className="flex text-white text-xs justify-center ">Empty</span>
     );
-  const visible = sites.slice(0, 2);
-  const extra = sites.length - 2;
+  const visible = sites.slice(0, 3);
+  const extra = sites.length - 3;
   return (
     <div className="flex flex-wrap gap-1">
       {visible.map((site, i) => (
         <span
           key={i}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-[#475569] bg-[#F1F5F9] border border-[#E2E8F0] font-medium capitalize"
+          className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold text-[#475569] bg-slate-100 border border-[#E2E8F0] uppercase tracking-widest"
         >
-          <MapPin className="w-2.5 h-2.5 text-[#94A3B8]" />
           {site}
         </span>
       ))}
       {extra > 0 && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] text-[#94A3B8] bg-[#F8FAFC] border border-[#E2E8F0] font-medium">
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] text-slate-500 bg-slate-50 border border-[#E2E8F0]">
           +{extra}
         </span>
       )}
@@ -190,42 +291,29 @@ const SitesTags = ({ sites }) => {
   );
 };
 
+// ── Timeline ────────────────────────────────────────────────────────────────
 const Timeline = ({ startedAt, dueDate }) => {
   const start = formatProjectDate(startedAt);
   const end = formatProjectDate(dueDate);
-  // Calculate days
-  let days = null;
-  if (startedAt && dueDate) {
-    const diff = new Date(dueDate) - new Date(startedAt);
-    days = Math.round(diff / (1000 * 60 * 60 * 24));
-  }
-
   const isEmpty = (v) => !v || v === "-";
-
-  if (isEmpty(start) && isEmpty(end)) {
+  if (isEmpty(start) && isEmpty(end))
     return (
-      <div style={{ width: "100%", textAlign: "center" }}>
-        <span className="text-[#94A3B8] text-xs font-extrabold">--</span>
-      </div>
+      <span className="flex text-white text-xs justify-center ">Empty</span>
     );
-  }
-
   return (
     <div className="space-y-0.5">
       <div className="flex items-center gap-1.5">
-        <Calendar className="w-3. h-3.5 text-[#06B6D4] shrink-0" />
-        <span className="text-[12px] text-[#475569] whitespace-nowrap">
+        <Calendar className="w-3 h-3 text-[#0891B2] shrink-0" />
+        <span className="text-[12px] text-black whitespace-nowrap">
           {start || "-"} – {end || "-"}
         </span>
       </div>
-      {days !== null && days > 0 && (
-        <div className="text-[11px] text-[#94A3B8] pl-5">{days} hari</div>
-      )}
     </div>
   );
 };
 
-const ProjectRow = ({
+// ── Project Card ─────────────────────────────────────────────────────────────
+const ProjectCard = ({
   project,
   onView,
   onOpenProject,
@@ -233,160 +321,168 @@ const ProjectRow = ({
   onEdit,
   onDelete,
 }) => (
-  <tr className="group border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FAFC] transition-colors duration-100">
-    {/* Nama Proyek */}
-    <td className="py-5 px-5 align-middle">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#ECFEFF] border border-[#CFFAFE] flex items-center justify-center shrink-0">
-          <FolderOpen className="w-4 h-4 text-[#0891B2]" />
-        </div>
-        <div className="min-w-0">
-          <button
-            type="button"
-            onClick={() => onView(project)}
-            className="text-left text-[13px] font-semibold text-[#0F172A] hover:text-[#0891B2] transition-colors cursor-pointer leading-tight"
-            title="Lihat Detail & BOQ"
-          >
-            <span className="block truncate max-w-[200px]">{project.nama}</span>
-          </button>
-          {project.kode && (
-            <span className="text-[11px] text-[#94A3B8] font-normal">
-              {project.kode}
-            </span>
-          )}
-        </div>
+  <div
+    className="group relative flex items-center gap-4 px-5 py-4 text-black bg-white/40 shadow-xl rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]"
+    onMouseEnter={() => onPrefetchDetail?.(project)}
+  >
+    {/* Avatar */}
+    <Calendar />
+    {/* Nama Proyek — flex-1 agar menyerap ruang */}
+    <div className="flex flex-col min-w-0 flex-1">
+      <span className="text-[13px] font-semibold text-black/90 leading-snug line-clamp-2 max-w-[220px]">
+        {project.nama}
+      </span>
+      {project.kode && (
+        <span className="text-[11px] text-slate-500 mt-0.5">
+          ID: {project.kode}
+        </span>
+      )}
+    </div>
+
+    {/* Divider kolom — hidden di mobile, flex di ≥ lg */}
+    <div className="hidden lg:flex items-center gap-6 shrink-0">
+      {/* Status */}
+      <div className="w-[100px] min-w-0">
+        <StatusBadge status={project.status} />
       </div>
-    </td>
 
-    {/* Status */}
-    <td className="py-5 px-4 align-middle">
-      <StatusBadge status={project.status} />
-    </td>
-
-    {/* Project Manager */}
-    <td className="py-5 px-4 align-middle">
-      <PmAvatar
-        name={project.projectManager?.username}
-        divisi={project.projectManager?.divisi}
-        photo={project.projectManager?.photo}
-      />
-    </td>
-
-    {/* Klien & Vendor */}
-    <td className="py-5 px-4 align-middle">
-      <ProjectParties parties={project.parties} />
-    </td>
-
-    {/* Sites */}
-    <td className="py-5 px-4 align-middle">
-      <SitesTags sites={project.sites} />
-    </td>
-
-    {/* Timeline */}
-    <td className="py-5 px-4 align-middle">
-      <Timeline startedAt={project.startedAt} dueDate={project.dueDate} />
-    </td>
-
-    {/* Aksi */}
-    <td className="py-5 px-4 align-middle">
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          title="Buka Halaman Task Proyek"
-          onClick={() =>
-            onOpenProject ? onOpenProject(project) : onView(project)
-          }
-          onMouseEnter={() => onPrefetchDetail?.(project)}
-          onFocus={() => onPrefetchDetail?.(project)}
-          className="p-2 rounded-lg text-[#475569] hover:text-[#0891B2] hover:bg-[#ECFEFF] transition-colors cursor-pointer"
-        >
-          <ArrowUpRight className="w-4 h-4" />
-        </button>
-        {/* View */}
-        <button
-          type="button"
-          title="Lihat Detail & BOQ"
-          onClick={() => onView(project)}
-          className="p-2 rounded-lg text-[#475569] hover:text-[#0891B2] hover:bg-[#ECFEFF] transition-colors cursor-pointer"
-        >
-          <Eye className="w-4 h-4" />
-        </button>
-
-        {/* Edit */}
-        <button
-          type="button"
-          title="Edit Proyek"
-          onClick={() => onEdit(project)}
-          className="p-2 rounded-lg text-[#475569] hover:text-[#0891B2] hover:bg-[#ECFEFF] transition-colors cursor-pointer"
-        >
-          <Edit3 className="w-4 h-4" />
-        </button>
-
-        {/* Delete */}
-        <button
-          type="button"
-          title="Hapus Proyek"
-          onClick={() => onDelete(project)}
-          className="p-2 rounded-lg text-[#94A3B8] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+      {/* Project Manager */}
+      <div className="w-[140px] min-w-0">
+        <PmAvatar
+          name={project.projectManager?.username}
+          divisi={project.projectManager?.divisi}
+          photo={project.projectManager?.photo}
+        />
       </div>
-    </td>
-  </tr>
+
+      {/* Klien & Vendor */}
+      <div className="w-[130px] min-w-0">
+        <ProjectParties parties={project.parties} />
+      </div>
+
+      {/* Sites */}
+      <div className="w-[90px] min-w-0">
+        <SitesTags sites={project.sites} />
+      </div>
+
+      {/* Timeline */}
+      <div className="w-40 min-w-0">
+        <Timeline startedAt={project.startedAt} dueDate={project.dueDate} />
+      </div>
+    </div>
+
+    {/* Actions */}
+    <div className="flex items-center gap-0.5 shrink-0 ml-auto pl-2">
+      <button
+        type="button"
+        title="Buka Halaman Task Proyek"
+        onClick={() =>
+          onOpenProject ? onOpenProject(project) : onView(project)
+        }
+        className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 transition-colors cursor-pointer"
+      >
+        <ArrowUpRight className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        title="Lihat Detail & BOQ"
+        onClick={() => onView(project)}
+        className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 transition-colors cursor-pointer"
+      >
+        <Eye className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        title="Edit Proyek"
+        onClick={() => onEdit(project)}
+        className="p-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-white/50 transition-colors cursor-pointer"
+      >
+        <Edit3 className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        title="Hapus Proyek"
+        onClick={() => onDelete(project)}
+        className="p-2 rounded-lg text-gray-700 hover:text-red-600 hover:bg-white/50 transition-colors cursor-pointer"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
 );
 
-const SkeletonRow = () => (
-  <tr className="border-b border-[#F1F5F9]">
-    <td className="py-5 px-5">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#F1F5F9] animate-pulse shrink-0" />
-        <div className="space-y-1.5">
-          <div className="w-36 h-3.5 bg-[#F1F5F9] rounded animate-pulse" />
-          <div className="w-16 h-2.5 bg-[#F1F5F9] rounded animate-pulse" />
-        </div>
-      </div>
-    </td>
-    <td className="py-5 px-4">
-      <div className="w-20 h-6 bg-[#F1F5F9] rounded-md animate-pulse" />
-    </td>
-    <td className="py-5 px-4">
+// ── Skeleton Card ────────────────────────────────────────────────────────────
+const SkeletonCard = () => (
+  <div className="flex items-center gap-4 px-5 py-4 bg-white/40 shadow-xl rounded-2xl">
+    <div className="w-10 h-10 rounded-xl bg-white/50 animate-pulse shrink-0" />
+    <div className="flex-1 space-y-2">
+      <div className="w-48 h-3.5 bg-white/50 rounded animate-pulse" />
+      <div className="w-24 h-2.5 bg-white/30 rounded animate-pulse" />
+    </div>
+    <div className="hidden lg:flex items-center gap-6">
+      <div className="w-20 h-6 bg-white/50 rounded-lg animate-pulse" />
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-full bg-[#F1F5F9] animate-pulse shrink-0" />
+        <div className="w-7 h-7 rounded-full bg-white/50 animate-pulse" />
         <div className="space-y-1.5">
-          <div className="w-24 h-3 bg-[#F1F5F9] rounded animate-pulse" />
-          <div className="w-16 h-2.5 bg-[#F1F5F9] rounded animate-pulse" />
+          <div className="w-20 h-2.5 bg-white/50 rounded animate-pulse" />
+          <div className="w-14 h-2 bg-white/30 rounded animate-pulse" />
         </div>
       </div>
-    </td>
-    <td className="py-5 px-4">
       <div className="space-y-1.5">
-        <div className="w-28 h-3 bg-[#F1F5F9] rounded animate-pulse" />
-        <div className="w-24 h-3 bg-[#F1F5F9] rounded animate-pulse" />
+        <div className="w-24 h-2.5 bg-white/50 rounded animate-pulse" />
+        <div className="w-18 h-2 bg-white/30 rounded animate-pulse" />
       </div>
-    </td>
-    <td className="py-5 px-4">
       <div className="flex gap-1">
-        <div className="w-16 h-5 bg-[#F1F5F9] rounded animate-pulse" />
-        <div className="w-8 h-5 bg-[#F1F5F9] rounded animate-pulse" />
+        <div className="w-10 h-5 bg-white/50 rounded animate-pulse" />
+        <div className="w-10 h-5 bg-white/50 rounded animate-pulse" />
       </div>
-    </td>
-    <td className="py-5 px-4">
       <div className="space-y-1.5">
-        <div className="w-32 h-3 bg-[#F1F5F9] rounded animate-pulse" />
-        <div className="w-12 h-2.5 bg-[#F1F5F9] rounded animate-pulse" />
+        <div className="w-32 h-2.5 bg-white/50 rounded animate-pulse" />
+        <div className="w-20 h-2 bg-white/30 rounded animate-pulse" />
       </div>
-    </td>
-    <td className="py-5 px-4">
-      <div className="flex gap-1">
-        <div className="w-8 h-8 bg-[#F1F5F9] rounded-lg animate-pulse" />
-        <div className="w-8 h-8 bg-[#F1F5F9] rounded-lg animate-pulse" />
-        <div className="w-8 h-8 bg-[#F1F5F9] rounded-lg animate-pulse" />
-      </div>
-    </td>
-  </tr>
+    </div>
+    <div className="flex items-center gap-1 ml-auto pl-2">
+      <div className="w-8 h-8 bg-white/50 rounded-lg animate-pulse" />
+      <div className="w-8 h-8 bg-white/50 rounded-lg animate-pulse" />
+      <div className="w-8 h-8 bg-white/50 rounded-lg animate-pulse" />
+    </div>
+  </div>
 );
 
+export const ColumnHeaderBar = () => (
+  <div className="hidden lg:flex items-center gap-4 px-5 pb-2 pt-2">
+    {/* spacer avatar */}
+    <div className="w-10 shrink-0" />
+    {/* nama */}
+    <div className="flex-1 text-[10px] font-semibold text-white uppercase tracking-[0.08em]">
+      Nama Proyek
+    </div>
+    {/* right cols */}
+    <div className="flex items-center gap-6 shrink-0">
+      <div className="w-[100px] text-[10px] font-semibold text-white uppercase tracking-[0.08em]">
+        Status
+      </div>
+      <div className="w-[140px] text-[10px] font-semibold text-white uppercase tracking-[0.08em]">
+        Project Manager
+      </div>
+      <div className="w-[130px] text-[10px] font-semibold text-white uppercase tracking-[0.08em]">
+        Klien & Vendor
+      </div>
+      <div className="w-[90px] text-[10px] font-semibold text-white uppercase tracking-[0.08em]">
+        Sites
+      </div>
+      <div className="w-40 text-[10px] font-semibold text-white uppercase tracking-[0.08em]">
+        Timeline
+      </div>
+    </div>
+    {/* spacer aksi */}
+    <div className="w-[120px] text-[10px] font-semibold text-white uppercase tracking-[0.08em] pl-10">
+      Aksi
+    </div>
+  </div>
+);
+
+// ── Pagination ───────────────────────────────────────────────────────────────
 const Pagination = ({
   totalProjects,
   limit,
@@ -397,40 +493,30 @@ const Pagination = ({
   const from = totalProjects === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(page * limit, totalProjects);
   return (
-    <div className="px-5 py-4 border-t border-[#F1F5F9] flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div className="flex items-center gap-4 text-[12px] text-[#475569]">
-        <span>
-          Menampilkan{" "}
-          <span className="text-[#0F172A] font-semibold">
-            {from}–{to}
-          </span>{" "}
-          dari{" "}
-          <span className="text-[#0F172A] font-semibold">{totalProjects}</span>{" "}
-          proyek
-        </span>
-      </div>
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+      <span className="text-[12px] text-gray-300">
+        Menampilkan{" "}
+        <span className="text-white font-semibold">
+          {from}–{to}
+        </span>{" "}
+        dari <span className="text-white font-semibold">{totalProjects}</span>{" "}
+        proyek
+      </span>
       <div className="flex items-center gap-1.5">
         <button
           type="button"
           disabled={page <= 1}
           onClick={() => onPageChange(Math.max(page - 1, 1))}
-          className="p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          title="Halaman Sebelumnya"
+          className="p-2 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        {/* Page numbers */}
         {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
           let p;
-          if (totalPages <= 5) {
-            p = i + 1;
-          } else if (page <= 3) {
-            p = i + 1;
-          } else if (page >= totalPages - 2) {
-            p = totalPages - 4 + i;
-          } else {
-            p = page - 2 + i;
-          }
+          if (totalPages <= 5) p = i + 1;
+          else if (page <= 3) p = i + 1;
+          else if (page >= totalPages - 2) p = totalPages - 4 + i;
+          else p = page - 2 + i;
           return (
             <button
               key={p}
@@ -438,8 +524,8 @@ const Pagination = ({
               onClick={() => onPageChange(p)}
               className={`w-8 h-8 rounded-lg text-[12px] font-medium transition-colors ${
                 p === page
-                  ? "bg-[#06B6D4] text-white border border-[#06B6D4]"
-                  : "border border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F1F5F9]"
+                  ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30 border border-blue-400"
+                  : "border border-white/20 bg-white/10 text-white hover:bg-white/30"
               }`}
             >
               {p}
@@ -450,8 +536,7 @@ const Pagination = ({
           type="button"
           disabled={page >= totalPages}
           onClick={() => onPageChange(Math.min(page + 1, totalPages))}
-          className="p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          title="Halaman Selanjutnya"
+          className="p-2 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -460,16 +545,7 @@ const Pagination = ({
   );
 };
 
-const TABLE_HEADERS = [
-  { key: "nama", label: "NAMA PROYEK" },
-  { key: "status", label: "STATUS" },
-  { key: "pm", label: "PROJECT MANAGER" },
-  { key: "parties", label: "KLIEN & VENDOR" },
-  { key: "sites", label: "SITES" },
-  { key: "timeline", label: "TIMELINE" },
-  { key: "aksi", label: "AKSI", center: true },
-];
-
+// ── Main ProjectTable ────────────────────────────────────────────────────────
 const ProjectTable = ({
   query,
   projects,
@@ -486,57 +562,51 @@ const ProjectTable = ({
   page,
   setPage,
   totalPages,
-}) => (
-  <section className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden shadow-sm">
-    {query.isLoading ? (
-      <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
-        <table className="w-full text-left">
-          <thead className="sticky top-0 z-10 bg-cyan-200 border-b border-cyan-400">
-            <tr>
-              {TABLE_HEADERS.map((h) => (
-                <th
-                  key={h.key}
-                  className={`py-3.5 px-4 md:px-5 text-[11px] font-semibold text-[#94A3B8] tracking-[0.06em] whitespace-nowrap ${h.center ? "text-center" : "text-left"}`}
-                >
-                  {h.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <SkeletonRow key={n} />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ) : query.isError ? (
-      <div className="p-16 text-center space-y-3">
-        <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
-        <h3 className="text-[#0F172A] font-semibold text-base">
+}) => {
+  if (query.isLoading) {
+    return (
+      <section className="space-y-2">
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <SkeletonCard key={n} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (query.isError) {
+    return (
+      <section className="py-20 text-center space-y-3">
+        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
+        <h3 className="text-white font-semibold text-base">
           Gagal memuat data proyek
         </h3>
-        <p className="text-[13px] text-[#475569] max-w-sm mx-auto">
+        <p className="text-[13px] text-gray-300 max-w-sm mx-auto">
           {query.error?.response?.data?.message ||
             query.error?.message ||
             "Terjadi kesalahan tak terduga. Periksa koneksi internet Anda lalu coba lagi."}
         </p>
         <button
           onClick={() => query.refetch()}
-          className="mt-2 min-h-10 px-5 py-2 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-sm text-[#0F172A] font-medium transition-colors"
+          className="mt-2 px-5 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-sm text-white font-medium border border-white/30 transition-colors shadow-sm"
         >
           Coba Lagi
         </button>
-      </div>
-    ) : projects.length === 0 ? (
-      <div className="p-16 text-center space-y-3">
-        <div className="w-14 h-14 rounded-2xl bg-[#ECFEFF] flex items-center justify-center mx-auto">
-          <FolderOpen className="w-7 h-7 text-[#0891B2]" />
+      </section>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <section className="py-20 text-center space-y-3">
+        <div className="w-14 h-14 rounded-2xl bg-white/20 border border-white/30 shadow-md flex items-center justify-center mx-auto">
+          <FolderOpen className="w-7 h-7 text-white" />
         </div>
-        <h3 className="text-[#0F172A] font-semibold text-lg">
+        <h3 className="text-white font-semibold text-lg">
           {hasActiveFilters ? "Proyek tidak ditemukan" : "Belum Ada Proyek"}
         </h3>
-        <p className="text-[13px] text-[#475569] max-w-sm mx-auto">
+        <p className="text-[13px] text-gray-300 max-w-sm mx-auto">
           {hasActiveFilters
             ? "Coba hapus kata kunci pencarian atau reset filter."
             : "Mulai dengan membuat proyek pertama Anda."}
@@ -544,50 +614,41 @@ const ProjectTable = ({
         {hasActiveFilters ? (
           <button
             onClick={onResetFilters}
-            className="mt-2 min-h-10 px-5 py-2 rounded-xl bg-[#F1F5F9] text-sm text-[#475569] hover:bg-[#E2E8F0] font-medium transition-colors"
+            className="px-5 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-sm text-white font-medium border border-white/30 transition-colors shadow-sm"
           >
             Reset Filter
           </button>
         ) : (
           <button
             onClick={onCreateProject}
-            className="mt-2 inline-flex items-center gap-2 min-h-10 px-5 py-2 rounded-xl bg-[#06B6D4] text-sm text-white hover:bg-[#0891B2] font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-blue-500 text-sm text-white hover:bg-blue-600 font-medium shadow-lg shadow-blue-500/30 border border-blue-400 transition-colors"
           >
             + Buat Proyek Baru
           </button>
         )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-2">
+      {/* Card list */}
+      <div className="space-y-2">
+        {projects.map((project) => (
+          <ProjectCard
+            key={project._id}
+            project={project}
+            onView={onViewProject}
+            onOpenProject={onOpenProject}
+            onPrefetchDetail={onPrefetchDetail}
+            onEdit={onEditProject}
+            onDelete={onDeleteProject}
+          />
+        ))}
       </div>
-    ) : (
-      <>
-        <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
-          <table className="w-full text-left">
-            <thead className="sticky top-0 z-10 bg-cyan-200 border-b border-cyan-400">
-              <tr>
-                {TABLE_HEADERS.map((h) => (
-                  <th
-                    key={h.key}
-                    className={`py-3.5 px-4 md:px-5 text-[11px] font-bold text-slate-600 tracking-[0.06em] whitespace-nowrap ${h.center ? "text-center" : "text-left"}`}
-                  >
-                    {h.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((project) => (
-                <ProjectRow
-                  key={project._id}
-                  project={project}
-                  onView={onViewProject}
-                  onOpenProject={onOpenProject}
-                  onPrefetchDetail={onPrefetchDetail}
-                  onEdit={onEditProject}
-                  onDelete={onDeleteProject}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+      {/* Pagination */}
+      <div className="pt-3">
         <Pagination
           totalProjects={totalProjects}
           limit={limit}
@@ -595,9 +656,9 @@ const ProjectTable = ({
           totalPages={totalPages}
           onPageChange={setPage}
         />
-      </>
-    )}
-  </section>
-);
+      </div>
+    </section>
+  );
+};
 
 export default ProjectTable;

@@ -5,7 +5,7 @@ import {
   DeleteProjectModal,
   ProjectFormModal,
 } from "./components/ProjectModals";
-import ProjectTable from "./components/ProjectTable";
+import ProjectTable, { ColumnHeaderBar } from "./components/ProjectTable";
 import { useProjectListPage } from "./hooks/useProjectListPage";
 import { getProjectById } from "../../services/project";
 import { useQueryClient } from "@tanstack/react-query";
@@ -65,13 +65,21 @@ const IndexProject = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans text-[#0F172A]">
-      <div className="mx-auto max-w-[1440px] space-y-6">
-        <ProjectListHeader
-          summary={summary}
-          onCreateProject={openCreateModal}
-        />
-        <ProjectFilters state={projectListPage} />
+    <div className="min-h-screen bg-white/20 font-sans rounded-sm text-white flex flex-col">
+      <div className="sticky top-0 z-30 bg-[#1A3D64]/90 pt-6 pb-2 rounded-sm">
+        <div className="mx-auto max-w-[1440px] space-y-5 px-6">
+          <ProjectListHeader
+            summary={summary}
+            onCreateProject={openCreateModal}
+          />
+          <ProjectFilters state={projectListPage} />
+        </div>
+        <div className="mx-auto max-w-[1440px] px-6 mt-4">
+          <ColumnHeaderBar />
+        </div>
+      </div>
+
+      <div className="flex-1 mx-auto max-w-[1440px] w-full p-6 pt-4">
         <ProjectTable
           query={projectQuery}
           projects={projectList}

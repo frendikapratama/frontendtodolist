@@ -58,7 +58,6 @@ const bookingPaths = menuBooking
     item.children ? item.children.map((child) => child.path) : [item.path],
   )
   .filter(Boolean);
-
 export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState(new Set());
@@ -251,7 +250,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
           transition-colors duration-150
           ${
             isActive
-              ? "bg-[#ECFEFF] text-[#0891B2] font-semibold"
+              ? "bg-[#1D546C] text-white font-semibold"
               : isChild
                 ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
                 : "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
@@ -308,12 +307,14 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         } ${
           // Pengaturan Lebar Desktop (Sesuai kode asli Anda)
-          isSidebarOpen ? "w-45" : "w-15"
+          isSidebarOpen ? "w-52" : "w-15"
         }`}
       >
         <aside
           className={`w-full p-2 h-full flex flex-col shadow-sm relative transition-colors duration-300 border-r ${
-            isBookingPage ? "bg-[#EFECE3] border-[#D4CFC3]" : "bg-white border-[#E2E8F0]"
+            isBookingPage
+              ? "bg-[#EFECE3] border-[#D4CFC3]"
+              : "bg-[#EFECE3] border-[#D4CFC3]"
           }`}
         >
           {/* Tombol Close (X) Khusus Mobile */}
@@ -325,13 +326,16 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
           </button>
 
           {/* Header */}
-          <div className={`p-3 pb-4 border-b ${isBookingPage ? "border-[#D4CFC3]" : "border-[#E2E8F0]"}`}>
-            <div className="flex items-center justify-center transition-all duration-300">
+          <div
+            className={`px-2 py-3 border-b ${isBookingPage ? "border-[#D4CFC3]" : "border-[#D4CFC3]"}`}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-center gap-1 transition-all duration-300">
               <img
                 src={Profile}
                 alt="Logo"
-                className={`transition-all duration-300 ${
-                  isSidebarOpen ? "w-9 h-9" : "scale-300"
+                className={`shrink-0 object-contain transition-all duration-300 ${
+                  isSidebarOpen ? "w-12 h-12" : "w-10 h-10"
                 }`}
               />
               {isSidebarOpen && (
@@ -345,7 +349,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
                   ]}
                   animationSpeed={3}
                   showBorder={false}
-                  className="custom-class text-2xl transition-opacity duration-300 ml-2"
+                  className="mx-0! text-3xl font-bold leading-none transition-opacity duration-300"
                 >
                   Planify
                 </GradientText>
@@ -578,7 +582,9 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
               <LogoutButton />
             </div>
           )}
-          <div className={`w-full h-px my-3 ${isBookingPage ? "bg-[#D4CFC3]" : "bg-[#E2E8F0]"}`}></div>
+          <div
+            className={`w-full h-px my-3 ${isBookingPage ? "bg-[#D4CFC3]" : "bg-[#E2E8F0]"}`}
+          ></div>
 
           {/* User Profile */}
           <div
