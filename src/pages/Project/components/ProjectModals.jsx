@@ -12,7 +12,7 @@ export const ProjectFormModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="form-modal-title"
@@ -22,14 +22,17 @@ export const ProjectFormModal = ({
         onClick={onCloseRequest}
         aria-hidden="true"
       />
-      <div className="bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 relative z-10 p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6 pb-3 border-b border-slate-200">
-          <h3 id="form-modal-title" className="font-bold text-lg">
+      <div className="bg-slate-900 text-slate-100 rounded-2xl shadow-2xl border border-slate-800 relative z-10 p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6 pb-3 border-b border-slate-800">
+          <h3
+            id="form-modal-title"
+            className="font-bold text-lg text-slate-100"
+          >
             {project ? "Edit Proyek" : "Buat Proyek Baru"}
           </h3>
           <button
             onClick={onCloseRequest}
-            className="p-1 text-slate-500 hover:text-slate-900 transition-colors"
+            className="p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
             aria-label="Tutup Modal"
           >
             <X className="w-5 h-5" />
@@ -66,14 +69,18 @@ export const DeleteProjectModal = ({
           <div className="p-2 bg-rose-50 rounded-xl border border-rose-100">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h3 id="delete-modal-title" className="font-bold text-lg text-slate-900">
+          <h3
+            id="delete-modal-title"
+            className="font-bold text-lg text-slate-900"
+          >
             Konfirmasi Hapus
           </h3>
         </div>
         <p className="text-slate-600 text-sm leading-relaxed">
           Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin ingin menghapus
           proyek
-          <strong className="text-slate-900">&quot;{project.nama}&quot;</strong>?
+          <strong className="text-slate-900">&quot;{project.nama}&quot;</strong>
+          ?
         </p>
         <div className="flex items-center justify-end gap-3 pt-2">
           <button

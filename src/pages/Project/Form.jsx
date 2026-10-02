@@ -236,11 +236,11 @@ const FormProject = ({ project, onClose }) => {
   );
 
   return (
-    <div className="bg-white rounded-xl">
+    <div>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Project Name */}
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-[#0F172A]">
+          <label className="block text-sm font-medium text-slate-200">
             Project Name <span className="text-rose-500">*</span>
           </label>
           <input
@@ -248,7 +248,7 @@ const FormProject = ({ project, onClose }) => {
             name="nama"
             value={formData.nama}
             onChange={handleChange}
-            className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] placeholder-[#94A3B8] transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
+            className="w-full px-3.5 py-2.5 bg-slate-800 text-slate-100 text-sm rounded-lg border border-slate-700 placeholder-slate-500 transition-colors focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-900 disabled:text-slate-600"
             placeholder="Enter project name"
             required
             disabled={mutation.isPending}
@@ -258,7 +258,7 @@ const FormProject = ({ project, onClose }) => {
         {/* Dates Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-[#0F172A]">
+            <label className="block text-sm font-medium text-slate-200">
               Start Date
             </label>
             <input
@@ -266,12 +266,12 @@ const FormProject = ({ project, onClose }) => {
               name="startedAt"
               value={formData.startedAt}
               onChange={handleChange}
-              className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
+              className="w-full px-3.5 py-2.5 bg-slate-800 text-slate-100 text-sm rounded-lg border border-slate-700 transition-colors focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-900 disabled:text-slate-600 scheme-dark"
               disabled={mutation.isPending}
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-[#0F172A]">
+            <label className="block text-sm font-medium text-slate-200">
               Due Date
             </label>
             <input
@@ -279,7 +279,7 @@ const FormProject = ({ project, onClose }) => {
               name="dueDate"
               value={formData.dueDate}
               onChange={handleChange}
-              className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
+              className="w-full px-3.5 py-2.5 bg-slate-800 text-slate-100 text-sm rounded-lg border border-slate-700 transition-colors focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-900 disabled:text-slate-600 scheme-dark"
               disabled={mutation.isPending}
             />
           </div>
@@ -287,18 +287,18 @@ const FormProject = ({ project, onClose }) => {
 
         {/* Status */}
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-[#0F172A]">
+          <label className="block text-sm font-medium text-slate-200">
             Status
           </label>
           <select
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="w-full px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] capitalize transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2] disabled:bg-[#F8FAFC] disabled:text-[#CBD5E1]"
+            className="w-full px-3.5 py-2.5 bg-slate-800 text-slate-100 text-sm rounded-lg border border-slate-700 capitalize transition-colors focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-900 disabled:text-slate-600"
             disabled={mutation.isPending}
           >
             {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
+              <option key={s} value={s} className="bg-slate-800 text-slate-100">
                 {s.replace(/\b\w/g, (char) => char.toUpperCase())}
               </option>
             ))}
@@ -307,11 +307,11 @@ const FormProject = ({ project, onClose }) => {
 
         {/* Project Manager */}
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-[#0F172A]">
+          <label className="block text-sm font-medium text-slate-200">
             Project Manager
           </label>
           {selectedManager ? (
-            <div className="flex items-center justify-between gap-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-2.5">
+            <div className="flex items-center justify-between gap-3 bg-slate-800/60 border border-slate-700 rounded-lg p-2.5">
               <div className="flex items-center gap-3 min-w-0">
                 {selectedManager.photo ? (
                   <img
@@ -320,16 +320,16 @@ const FormProject = ({ project, onClose }) => {
                     className="w-8 h-8 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#ECFEFF] text-[#0891B2] flex items-center justify-center text-xs font-semibold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 flex items-center justify-center text-xs font-semibold shrink-0">
                     {selectedManager.username?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[#0F172A] truncate">
+                  <p className="text-sm font-medium text-slate-100 truncate">
                     {selectedManager.username}
                   </p>
                   {selectedManager.email && (
-                    <p className="text-xs text-[#475569] truncate">
+                    <p className="text-xs text-slate-400 truncate">
                       {selectedManager.email}
                     </p>
                   )}
@@ -339,7 +339,7 @@ const FormProject = ({ project, onClose }) => {
                 type="button"
                 onClick={clearProjectManager}
                 disabled={mutation.isPending}
-                className="p-1.5 rounded-md text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#E2E8F0] transition-colors shrink-0"
+                className="p-1.5 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-700 transition-colors shrink-0"
                 title="Ganti project manager"
               >
                 <X className="w-4 h-4" />
@@ -358,7 +358,7 @@ const FormProject = ({ project, onClose }) => {
 
         {/* Divisions Multi-Select Dropdown */}
         <div className="space-y-1.5" ref={divisionDropdownRef}>
-          <label className="block text-sm font-medium text-[#0F172A]">
+          <label className="block text-sm font-medium text-slate-200">
             Divisions
           </label>
           <div className="relative">
@@ -366,38 +366,38 @@ const FormProject = ({ project, onClose }) => {
               type="button"
               onClick={() => setIsDivisionDropdownOpen((prev) => !prev)}
               disabled={mutation.isPending}
-              className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white text-[#0F172A] text-sm rounded-lg border border-[#E2E8F0] text-left transition-colors focus:outline-none focus:border-[#0891B2] focus:ring-1 focus:ring-[#0891B2]"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-800 text-slate-100 text-sm rounded-lg border border-slate-700 text-left transition-colors focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
             >
               <span
                 className={
                   formData.divisionId.length === 0
-                    ? "text-[#94A3B8]"
-                    : "text-[#0F172A]"
+                    ? "text-slate-500"
+                    : "text-slate-100"
                 }
               >
                 {formData.divisionId.length === 0
                   ? "Pilih divisi..."
                   : `${formData.divisionId.length} divisi dipilih`}
               </span>
-              <ChevronDown className="w-4 h-4 text-[#94A3B8]" />
+              <ChevronDown className="w-4 h-4 text-slate-400" />
             </button>
 
             {isDivisionDropdownOpen && (
-              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg overflow-hidden p-2 space-y-2">
+              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden p-2 space-y-2">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
                     value={divisionSearch}
                     onChange={(e) => setDivisionSearch(e.target.value)}
                     placeholder="Cari divisi..."
-                    className="w-full bg-[#F8FAFC] text-[#0F172A] text-xs pl-9 pr-3 py-2 rounded-md border border-[#E2E8F0] focus:outline-none focus:border-[#0891B2]"
+                    className="w-full bg-slate-900 text-slate-100 text-xs pl-9 pr-3 py-2 rounded-md border border-slate-700 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
 
                 <div className="max-h-48 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
                   {filteredDivisions.length === 0 ? (
-                    <p className="text-xs text-[#94A3B8] p-2 text-center">
+                    <p className="text-xs text-slate-500 p-2 text-center">
                       Divisi tidak ditemukan.
                     </p>
                   ) : (
@@ -409,16 +409,16 @@ const FormProject = ({ project, onClose }) => {
                           onClick={() => toggleDivision(d._id)}
                           className={`flex items-center justify-between p-2 rounded-md text-xs cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-[#ECFEFF] text-[#0891B2]"
-                              : "text-[#475569] hover:bg-[#F1F5F9]"
+                              ? "bg-cyan-950/60 text-cyan-400 border border-cyan-800/40"
+                              : "text-slate-300 hover:bg-slate-700/60"
                           }`}
                         >
                           <span className="font-medium">{d.name}</span>
                           <div
                             className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                               isSelected
-                                ? "bg-[#0891B2] border-[#0891B2]"
-                                : "border-[#CBD5E1] bg-white"
+                                ? "bg-cyan-600 border-cyan-500"
+                                : "border-slate-600 bg-slate-900"
                             }`}
                           >
                             {isSelected && (
@@ -440,13 +440,13 @@ const FormProject = ({ project, onClose }) => {
               {selectedDivisions.map((d) => (
                 <span
                   key={d._id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#ECFEFF] text-[#0891B2] border border-[#CFFAFE]"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-cyan-950/70 text-cyan-400 border border-cyan-800/60"
                 >
                   {d.name}
                   <button
                     type="button"
                     onClick={() => toggleDivision(d._id)}
-                    className="text-[#0891B2] hover:text-[#06B6D4] transition-colors"
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -458,7 +458,7 @@ const FormProject = ({ project, onClose }) => {
 
         {/* Sites - Checkboxes */}
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-[#0F172A]">
+          <label className="block text-sm font-medium text-slate-200">
             Sites
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -469,8 +469,8 @@ const FormProject = ({ project, onClose }) => {
                   key={s}
                   className={`flex items-center gap-2.5 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
                     isChecked
-                      ? "bg-[#ECFEFF] border-[#CFFAFE] text-[#0891B2]"
-                      : "bg-[#F8FAFC] border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]"
+                      ? "bg-cyan-950/60 border-cyan-800/60 text-cyan-400"
+                      : "bg-slate-800/60 border-slate-700 text-slate-300 hover:border-slate-600 hover:bg-slate-800"
                   }`}
                 >
                   <input
@@ -479,7 +479,7 @@ const FormProject = ({ project, onClose }) => {
                     value={s}
                     checked={isChecked}
                     onChange={handleChange}
-                    className="w-4 h-4 rounded accent-[#0891B2] cursor-pointer"
+                    className="w-4 h-4 rounded accent-cyan-600 cursor-pointer bg-slate-900 border-slate-700"
                     disabled={mutation.isPending}
                   />
                   <span className="text-xs font-medium uppercase">{s}</span>
@@ -491,28 +491,32 @@ const FormProject = ({ project, onClose }) => {
 
         {/* Parties */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-[#0F172A]">
+          <label className="block text-sm font-medium text-slate-200">
             Parties
           </label>
           <div className="space-y-2">
             {formData.parties.map((p, index) => (
               <div
                 key={index}
-                className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0]"
+                className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-slate-800/50 p-2.5 rounded-lg border border-slate-700"
               >
                 <select
                   value={p.party}
                   onChange={(e) =>
                     handlePartyChange(index, "party", e.target.value)
                   }
-                  className="flex-1 px-3 py-1.5 bg-white text-[#0F172A] text-xs rounded-md border border-[#E2E8F0] focus:outline-none focus:border-[#0891B2]"
+                  className="flex-1 px-3 py-1.5 bg-slate-800 text-slate-100 text-xs rounded-md border border-slate-700 focus:outline-none focus:border-cyan-500"
                   disabled={mutation.isPending}
                 >
-                  <option value="" disabled>
+                  <option value="" disabled className="text-slate-500">
                     Select party
                   </option>
                   {partyList.map((party) => (
-                    <option key={party._id} value={party._id}>
+                    <option
+                      key={party._id}
+                      value={party._id}
+                      className="bg-slate-800 text-slate-100"
+                    >
                       {party.name}
                     </option>
                   ))}
@@ -523,11 +527,15 @@ const FormProject = ({ project, onClose }) => {
                   onChange={(e) =>
                     handlePartyChange(index, "role", e.target.value)
                   }
-                  className="w-full sm:w-32 px-3 py-1.5 bg-white text-[#0F172A] text-xs rounded-md border border-[#E2E8F0] capitalize focus:outline-none focus:border-[#0891B2]"
+                  className="w-full sm:w-32 px-3 py-1.5 bg-slate-800 text-slate-100 text-xs rounded-md border border-slate-700 capitalize focus:outline-none focus:border-cyan-500"
                   disabled={mutation.isPending}
                 >
                   {ROLE_OPTIONS.map((r) => (
-                    <option key={r} value={r}>
+                    <option
+                      key={r}
+                      value={r}
+                      className="bg-slate-800 text-slate-100"
+                    >
                       {r}
                     </option>
                   ))}
@@ -536,7 +544,7 @@ const FormProject = ({ project, onClose }) => {
                 <button
                   type="button"
                   onClick={() => removePartyRow(index)}
-                  className="p-1.5 text-[#94A3B8] hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors self-end sm:self-auto"
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-md transition-colors self-end sm:self-auto"
                   disabled={mutation.isPending || formData.parties.length === 1}
                   title="Remove Party"
                 >
@@ -547,7 +555,7 @@ const FormProject = ({ project, onClose }) => {
             <button
               type="button"
               onClick={addPartyRow}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#0891B2] bg-[#ECFEFF] hover:bg-[#CFFAFE] border border-[#CFFAFE] rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cyan-400 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-800/50 rounded-md transition-colors"
               disabled={mutation.isPending}
             >
               <Plus className="w-3.5 h-3.5" /> Add Party
@@ -556,10 +564,10 @@ const FormProject = ({ project, onClose }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-5 border-t border-[#E2E8F0]">
+        <div className="flex items-center justify-end gap-3 pt-5 border-t border-slate-800">
           <button
             type="button"
-            className="px-4 py-2 text-sm font-medium text-[#475569] bg-white hover:bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors disabled:opacity-50"
             onClick={onClose}
             disabled={mutation.isPending}
           >
@@ -567,7 +575,7 @@ const FormProject = ({ project, onClose }) => {
           </button>
           <button
             type="submit"
-            className="px-5 py-2 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#06B6D4] rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2 text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
             disabled={mutation.isPending}
           >
             {mutation.isPending ? (

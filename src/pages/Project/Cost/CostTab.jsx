@@ -66,7 +66,13 @@ const STATUS_CONFIG = {
   },
 };
 
-const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigateToTab }) => {
+const CostTab = ({
+  projectId,
+  project,
+  tabContext,
+  onClearTabContext,
+  onNavigateToTab,
+}) => {
   // Query parameters state
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -91,7 +97,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
 
   // Form states
   const [formBOQItemId, setFormBOQItemId] = useState("");
-  const [formCostDate, setFormCostDate] = useState(new Date().toISOString().slice(0, 10));
+  const [formCostDate, setFormCostDate] = useState(
+    new Date().toISOString().slice(0, 10),
+  );
   const [formDescription, setFormDescription] = useState("");
   const [formAmount, setFormAmount] = useState("");
   const [formNotes, setFormNotes] = useState("");
@@ -127,7 +135,15 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
     if (selectedStatus !== "all") p.status = selectedStatus;
     if (selectedBudgetId !== "all") p.budgetId = selectedBudgetId;
     return p;
-  }, [page, limit, sortBy, sortOrder, debouncedSearch, selectedStatus, selectedBudgetId]);
+  }, [
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    debouncedSearch,
+    selectedStatus,
+    selectedBudgetId,
+  ]);
 
   const {
     costQuery,
@@ -145,7 +161,12 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
     totalDraftOrSubmitted: 0,
     totalRejected: 0,
   };
-  const pagination = data?.pagination || { page: 1, limit: 25, total: 0, totalPages: 1 };
+  const pagination = data?.pagination || {
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+  };
 
   // Determine linked Budget when user selects a BOQ Item in Create Modal
   const linkedBudgetForCreation = useMemo(() => {
@@ -230,7 +251,8 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
-    if (!formBOQItemId || !formCostDate || !formDescription || !formAmount) return;
+    if (!formBOQItemId || !formCostDate || !formDescription || !formAmount)
+      return;
 
     createMutation.mutate(
       {
@@ -243,7 +265,7 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       },
       {
         onSuccess: () => setIsCreateModalOpen(false),
-      }
+      },
     );
   };
 
@@ -263,7 +285,7 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       },
       {
         onSuccess: () => setIsEditModalOpen(false),
-      }
+      },
     );
   };
 
@@ -273,7 +295,7 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       { id: selectedCost._id, status: newStatus },
       {
         onSuccess: () => setIsStatusModalOpen(false),
-      }
+      },
     );
   };
 
@@ -298,7 +320,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
           <h4 className="text-xl font-bold text-white font-mono">
             {formatCurrency(summary.totalRealized)}
           </h4>
-          <p className="text-[11px] text-slate-500">Semua entri biaya diajukan</p>
+          <p className="text-[11px] text-slate-500">
+            Semua entri biaya diajukan
+          </p>
         </div>
 
         <div className="bg-slate-900/60 rounded-2xl p-4 border border-white/10 shadow-sm backdrop-blur-md space-y-1">
@@ -311,7 +335,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
           <h4 className="text-xl font-bold text-emerald-400 font-mono">
             {formatCurrency(summary.totalApproved)}
           </h4>
-          <p className="text-[11px] text-slate-500">Memotong Remaining Budget</p>
+          <p className="text-[11px] text-slate-500">
+            Memotong Remaining Budget
+          </p>
         </div>
 
         <div className="bg-slate-900/60 rounded-2xl p-4 border border-white/10 shadow-sm backdrop-blur-md space-y-1">
@@ -406,7 +432,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
             className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl border border-white/10 transition disabled:opacity-50 cursor-pointer"
             title="Muat Ulang"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-cyan-400" : ""}`} />
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-cyan-400" : ""}`}
+            />
           </button>
         </div>
 
@@ -424,12 +452,16 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       {isLoading ? (
         <div className="flex flex-col items-center justify-center p-16 bg-slate-900/60 rounded-2xl border border-white/5">
           <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-xs mt-3 font-medium">Memuat data Cost...</p>
+          <p className="text-slate-400 text-xs mt-3 font-medium">
+            Memuat data Cost...
+          </p>
         </div>
       ) : isError ? (
         <div className="p-10 bg-slate-900/60 rounded-2xl border border-rose-500/20 text-center">
           <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
-          <h4 className="text-rose-400 font-bold text-sm">Gagal memuat data Cost</h4>
+          <h4 className="text-rose-400 font-bold text-sm">
+            Gagal memuat data Cost
+          </h4>
           <button
             onClick={() => refetch()}
             className="mt-3 px-4 py-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg transition border border-white/10"
@@ -473,9 +505,12 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                   >
                     <div className="flex items-center gap-1">
                       <span>Cost Code</span>
-                      {sortBy === "costCode" && (
-                        sortOrder === "asc" ? <ArrowUp className="w-3 h-3 text-cyan-400" /> : <ArrowDown className="w-3 h-3 text-cyan-400" />
-                      )}
+                      {sortBy === "costCode" &&
+                        (sortOrder === "asc" ? (
+                          <ArrowUp className="w-3 h-3 text-cyan-400" />
+                        ) : (
+                          <ArrowDown className="w-3 h-3 text-cyan-400" />
+                        ))}
                     </div>
                   </th>
                   <th
@@ -484,9 +519,12 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                   >
                     <div className="flex items-center gap-1">
                       <span>Tanggal</span>
-                      {sortBy === "costDate" && (
-                        sortOrder === "asc" ? <ArrowUp className="w-3 h-3 text-cyan-400" /> : <ArrowDown className="w-3 h-3 text-cyan-400" />
-                      )}
+                      {sortBy === "costDate" &&
+                        (sortOrder === "asc" ? (
+                          <ArrowUp className="w-3 h-3 text-cyan-400" />
+                        ) : (
+                          <ArrowDown className="w-3 h-3 text-cyan-400" />
+                        ))}
                     </div>
                   </th>
                   <th className="py-3 px-4 min-w-[180px]">BOQ Item</th>
@@ -498,9 +536,12 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span>Amount</span>
-                      {sortBy === "amount" && (
-                        sortOrder === "asc" ? <ArrowUp className="w-3 h-3 text-cyan-400" /> : <ArrowDown className="w-3 h-3 text-cyan-400" />
-                      )}
+                      {sortBy === "amount" &&
+                        (sortOrder === "asc" ? (
+                          <ArrowUp className="w-3 h-3 text-cyan-400" />
+                        ) : (
+                          <ArrowDown className="w-3 h-3 text-cyan-400" />
+                        ))}
                     </div>
                   </th>
                   <th className="py-3 px-3 text-center">Status</th>
@@ -509,11 +550,15 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
               </thead>
               <tbody className="divide-y divide-white/5">
                 {costList.map((item, idx) => {
-                  const statusConf = STATUS_CONFIG[item.status] || STATUS_CONFIG.Draft;
+                  const statusConf =
+                    STATUS_CONFIG[item.status] || STATUS_CONFIG.Draft;
                   const isMenuOpen = activeMenuId === item._id;
 
                   return (
-                    <tr key={item._id} className="hover:bg-slate-800/40 transition-colors">
+                    <tr
+                      key={item._id}
+                      className="hover:bg-slate-800/40 transition-colors"
+                    >
                       <td className="py-3.5 px-3 text-center text-slate-500 font-mono">
                         {(pagination.page - 1) * pagination.limit + idx + 1}
                       </td>
@@ -544,15 +589,22 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${statusConf.style}`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusConf.dot}`} />
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${statusConf.dot}`}
+                          />
                           {statusConf.label}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-center relative" ref={isMenuOpen ? actionMenuRef : null}>
+                      <td
+                        className="py-3.5 px-3 text-center relative"
+                        ref={isMenuOpen ? actionMenuRef : null}
+                      >
                         <div className="flex items-center justify-center gap-1">
                           <button
                             type="button"
-                            onClick={() => setActiveMenuId(isMenuOpen ? null : item._id)}
+                            onClick={() =>
+                              setActiveMenuId(isMenuOpen ? null : item._id)
+                            }
                             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
@@ -583,7 +635,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                                     className="w-full px-3 py-1.5 text-xs text-purple-300 hover:bg-purple-500/10 flex items-center gap-2 cursor-pointer"
                                   >
                                     <Coins className="w-3.5 h-3.5 text-purple-400" />
-                                    <span>View Budget ({item.budget.budgetCode})</span>
+                                    <span>
+                                      View Budget ({item.budget.budgetCode})
+                                    </span>
                                   </button>
                                 )}
                               </div>
@@ -637,8 +691,15 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
           <div className="p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
             <div className="flex items-center gap-3">
               <span>
-                Menampilkan <span className="text-white font-medium">{costList.length}</span> dari{" "}
-                <span className="text-white font-medium">{pagination.total}</span> item.
+                Menampilkan{" "}
+                <span className="text-white font-medium">
+                  {costList.length}
+                </span>{" "}
+                dari{" "}
+                <span className="text-white font-medium">
+                  {pagination.total}
+                </span>{" "}
+                item.
               </span>
               <div className="flex items-center gap-1.5 pl-3 border-l border-white/10">
                 <span>Baris:</span>
@@ -673,7 +734,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
               <button
                 type="button"
                 disabled={page >= pagination.totalPages}
-                onClick={() => setPage((p) => Math.min(p + 1, pagination.totalPages))}
+                onClick={() =>
+                  setPage((p) => Math.min(p + 1, pagination.totalPages))
+                }
                 className="p-1.5 rounded-lg border border-white/10 bg-slate-950 text-slate-200 disabled:opacity-40 cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -686,11 +749,19 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       {/* CREATE COST MODAL (Sesuai PRD Section 7) */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="fixed inset-0" onClick={() => setIsCreateModalOpen(false)} />
+          <div
+            className="fixed inset-0"
+            onClick={() => setIsCreateModalOpen(false)}
+          />
           <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-lg w-full relative z-10 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <h3 className="font-bold text-white text-base">Catat Realisasi Biaya (Cost)</h3>
-              <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-white">
+              <h3 className="font-bold text-white text-base">
+                Catat Realisasi Biaya (Cost)
+              </h3>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                className="text-slate-400 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -712,13 +783,15 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                   </option>
                   {allBudgets.map((b) => (
                     <option key={b.boqItem?._id} value={b.boqItem?._id}>
-                      [{b.budgetCode}] {b.boqItem?.description} (Sisa Budget: {formatCurrency(b.remainingBudget)})
+                      [{b.budgetCode}] {b.boqItem?.description} (Sisa Budget:{" "}
+                      {formatCurrency(b.remainingBudget)})
                     </option>
                   ))}
                 </select>
                 {allBudgets.length === 0 && (
                   <p className="text-[11px] text-rose-400">
-                    Belum ada Budget yang dibuat untuk proyek ini. Harap buat Budget terlebih dahulu di tab Budget.
+                    Belum ada Budget yang dibuat untuk proyek ini. Harap buat
+                    Budget terlebih dahulu di tab Budget.
                   </p>
                 )}
               </div>
@@ -728,23 +801,35 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                 <div className="p-3 bg-slate-950/80 border border-white/5 rounded-xl space-y-1.5 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-400">BOQ Value:</span>
-                    <span className="text-slate-200 font-mono">{formatCurrency(linkedBudgetForCreation.boqValue)}</span>
+                    <span className="text-slate-200 font-mono">
+                      {formatCurrency(linkedBudgetForCreation.boqValue)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Budget Code Terkait:</span>
-                    <span className="text-purple-300 font-mono font-semibold">{linkedBudgetForCreation.budgetCode}</span>
+                    <span className="text-purple-300 font-mono font-semibold">
+                      {linkedBudgetForCreation.budgetCode}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Approval Budget:</span>
-                    <span className="text-emerald-400 font-mono">{formatCurrency(linkedBudgetForCreation.approvedAmount)}</span>
+                    <span className="text-emerald-400 font-mono">
+                      {formatCurrency(linkedBudgetForCreation.approvedAmount)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Actual Cost (Berjalan):</span>
-                    <span className="text-amber-400 font-mono">{formatCurrency(linkedBudgetForCreation.actualCost)}</span>
+                    <span className="text-slate-400">
+                      Actual Cost (Berjalan):
+                    </span>
+                    <span className="text-amber-400 font-mono">
+                      {formatCurrency(linkedBudgetForCreation.actualCost)}
+                    </span>
                   </div>
                   <div className="flex justify-between pt-1 border-t border-white/5 font-bold">
                     <span className="text-cyan-400">Remaining Budget:</span>
-                    <span className={`font-mono ${linkedBudgetForCreation.remainingBudget < 0 ? "text-rose-400" : "text-cyan-300"}`}>
+                    <span
+                      className={`font-mono ${linkedBudgetForCreation.remainingBudget < 0 ? "text-rose-400" : "text-cyan-300"}`}
+                    >
                       {formatCurrency(linkedBudgetForCreation.remainingBudget)}
                     </span>
                   </div>
@@ -768,7 +853,8 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
 
                 <div className="space-y-1">
                   <label className="text-xs text-slate-300 font-medium">
-                    Nilai Biaya (Amount) <span className="text-rose-400">*</span>
+                    Nilai Biaya (Amount){" "}
+                    <span className="text-rose-400">*</span>
                   </label>
                   <input
                     type="number"
@@ -787,9 +873,12 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                 <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5 text-xs text-amber-300">
                   <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-semibold">Peringatan Over-Budget:</span>
+                    <span className="font-semibold">
+                      Peringatan Over-Budget:
+                    </span>
                     <p className="text-[11px] mt-0.5 text-amber-200/90">
-                      Nilai Cost melebihi sisa Remaining Budget sebesar {formatCurrency(overBudgetAmount)}.
+                      Nilai Cost melebihi sisa Remaining Budget sebesar{" "}
+                      {formatCurrency(overBudgetAmount)}.
                     </p>
                   </div>
                 </div>
@@ -812,7 +901,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
 
               {/* Notes */}
               <div className="space-y-1">
-                <label className="text-xs text-slate-300 font-medium">Catatan Tambahan</label>
+                <label className="text-xs text-slate-300 font-medium">
+                  Catatan Tambahan
+                </label>
                 <textarea
                   rows={2}
                   placeholder="Keterangan rincian cost..."
@@ -824,7 +915,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
 
               {/* Status Action */}
               <div className="space-y-1">
-                <label className="text-xs text-slate-300 font-medium">Status Awal</label>
+                <label className="text-xs text-slate-300 font-medium">
+                  Status Awal
+                </label>
                 <div className="flex items-center gap-3">
                   <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
                     <input
@@ -873,7 +966,10 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       {/* MODAL: DETAIL COST */}
       {isDetailModalOpen && selectedCost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="fixed inset-0" onClick={() => setIsDetailModalOpen(false)} />
+          <div
+            className="fixed inset-0"
+            onClick={() => setIsDetailModalOpen(false)}
+          />
           <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-lg w-full relative z-10 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
@@ -907,7 +1003,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Tanggal Transaksi:</span>
-                <span className="text-slate-200">{formatDate(selectedCost.costDate)}</span>
+                <span className="text-slate-200">
+                  {formatDate(selectedCost.costDate)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Nominal Biaya:</span>
@@ -919,12 +1017,14 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                 <span className="text-slate-500">Status Persetujuan:</span>
                 <span
                   className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${
-                    STATUS_CONFIG[selectedCost.status]?.style || STATUS_CONFIG.Draft.style
+                    STATUS_CONFIG[selectedCost.status]?.style ||
+                    STATUS_CONFIG.Draft.style
                   }`}
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
-                      STATUS_CONFIG[selectedCost.status]?.dot || STATUS_CONFIG.Draft.dot
+                      STATUS_CONFIG[selectedCost.status]?.dot ||
+                      STATUS_CONFIG.Draft.dot
                     }`}
                   />
                   {selectedCost.status}
@@ -964,7 +1064,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                     type="button"
                     onClick={() => {
                       setIsDetailModalOpen(false);
-                      onNavigateToTab("budget", { focusBudgetId: selectedCost.budget._id });
+                      onNavigateToTab("budget", {
+                        focusBudgetId: selectedCost.budget._id,
+                      });
                     }}
                     className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 text-xs font-semibold rounded-xl transition cursor-pointer flex items-center gap-1"
                   >
@@ -999,11 +1101,19 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       {/* EDIT COST MODAL */}
       {isEditModalOpen && selectedCost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="fixed inset-0" onClick={() => setIsEditModalOpen(false)} />
+          <div
+            className="fixed inset-0"
+            onClick={() => setIsEditModalOpen(false)}
+          />
           <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-lg w-full relative z-10 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <h3 className="font-bold text-white text-base">Edit Cost ({selectedCost.costCode})</h3>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-white">
+              <h3 className="font-bold text-white text-base">
+                Edit Cost ({selectedCost.costCode})
+              </h3>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-slate-400 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1011,7 +1121,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-300 font-medium">Tanggal Cost</label>
+                  <label className="text-xs text-slate-300 font-medium">
+                    Tanggal Cost
+                  </label>
                   <input
                     type="date"
                     required
@@ -1021,7 +1133,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-300 font-medium">Amount</label>
+                  <label className="text-xs text-slate-300 font-medium">
+                    Amount
+                  </label>
                   <input
                     type="number"
                     min="1"
@@ -1034,7 +1148,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs text-slate-300 font-medium">Deskripsi Biaya</label>
+                <label className="text-xs text-slate-300 font-medium">
+                  Deskripsi Biaya
+                </label>
                 <input
                   type="text"
                   required
@@ -1045,7 +1161,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs text-slate-300 font-medium">Catatan</label>
+                <label className="text-xs text-slate-300 font-medium">
+                  Catatan
+                </label>
                 <textarea
                   rows={2}
                   value={formNotes}
@@ -1078,23 +1196,39 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       {/* APPROVAL STATUS WORKFLOW MODAL */}
       {isStatusModalOpen && selectedCost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="fixed inset-0" onClick={() => setIsStatusModalOpen(false)} />
+          <div
+            className="fixed inset-0"
+            onClick={() => setIsStatusModalOpen(false)}
+          />
           <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full relative z-10 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <h3 className="font-bold text-white text-base">Approval Cost ({selectedCost.costCode})</h3>
-              <button onClick={() => setIsStatusModalOpen(false)} className="text-slate-400 hover:text-white">
+              <h3 className="font-bold text-white text-base">
+                Approval Cost ({selectedCost.costCode})
+              </h3>
+              <button
+                onClick={() => setIsStatusModalOpen(false)}
+                className="text-slate-400 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-3 bg-slate-950 rounded-xl border border-white/5 space-y-1.5 text-xs">
-              <p className="font-medium text-white">{selectedCost.description}</p>
-              <p className="text-cyan-400 font-mono font-bold">{formatCurrency(selectedCost.amount)}</p>
-              <p className="text-[11px] text-slate-500">Status Saat Ini: {selectedCost.status}</p>
+              <p className="font-medium text-white">
+                {selectedCost.description}
+              </p>
+              <p className="text-cyan-400 font-mono font-bold">
+                {formatCurrency(selectedCost.amount)}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Status Saat Ini: {selectedCost.status}
+              </p>
             </div>
 
             <p className="text-xs text-slate-400">
-              Ubah status persetujuan cost. Cost dengan status <strong>Approved</strong> akan dihitung sebagai <em>Actual Cost</em> pada alokasi budget terkait.
+              Ubah status persetujuan cost. Cost dengan status{" "}
+              <strong>Approved</strong> akan dihitung sebagai{" "}
+              <em>Actual Cost</em> pada alokasi budget terkait.
             </p>
 
             <div className="flex flex-col gap-2 pt-2">
@@ -1130,7 +1264,10 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
       {/* DELETE CONFIRMATION */}
       {deleteCandidate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="fixed inset-0" onClick={() => setDeleteCandidate(null)} />
+          <div
+            className="fixed inset-0"
+            onClick={() => setDeleteCandidate(null)}
+          />
           <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full relative z-10 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/20">
@@ -1139,7 +1276,9 @@ const CostTab = ({ projectId, project, tabContext, onClearTabContext, onNavigate
               <h3 className="font-bold text-white text-base">Hapus Cost</h3>
             </div>
             <p className="text-xs text-slate-300">
-              Yakin ingin menghapus entri cost <strong className="text-white">{deleteCandidate.costCode}</strong> ({formatCurrency(deleteCandidate.amount)})?
+              Yakin ingin menghapus entri cost{" "}
+              <strong className="text-white">{deleteCandidate.costCode}</strong>{" "}
+              ({formatCurrency(deleteCandidate.amount)})?
             </p>
             <div className="flex items-center justify-end gap-3 pt-2">
               <button

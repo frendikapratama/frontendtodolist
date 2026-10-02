@@ -499,7 +499,7 @@ const BudgetTab = ({
         {/* Create Button */}
         <button
           onClick={handleOpenCreateModal}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-600/20 cursor-pointer shrink-0"
+          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 active:bg-cyan-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-lg shadow-cyan-600/20 cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Tambah Budget</span>
@@ -1005,7 +1005,7 @@ const BudgetTab = ({
                 <button
                   type="submit"
                   disabled={createMutation.isPending || !formBOQItemId}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-xs font-semibold rounded-xl text-white disabled:opacity-50"
+                  className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold rounded-xl text-white disabled:opacity-50"
                 >
                   {createMutation.isPending ? "Menyimpan..." : "Simpan Budget"}
                 </button>
