@@ -61,7 +61,8 @@ const StatusBadge = ({ status }) => {
     </span>
   );
 };
-const TableMeeting = ({ compact = false }) => {
+
+const TableMeeting = ({ compact = false, fixedStatus = null }) => {
   console.log("[TableMeeting] mounted", {
     compact,
   });
@@ -78,14 +79,17 @@ const TableMeeting = ({ compact = false }) => {
     roomId: "",
     startDate: compact ? today : "",
     endDate: compact ? today : "",
-    status: "all",
+    status: fixedStatus || "all",
     meetingType: "all",
     search: "",
   });
 
   const { meetingsQuery } = useMeetings();
   const { data, isLoading, dataUpdatedAt, isError, error, isFetching } =
-    meetingsQuery(page, limit, filters);
+    meetingsQuery(page, limit, {
+      ...filters,
+      ...(fixedStatus ? { status: fixedStatus } : {}),
+    });
 
   const { roomsQuery } = useRooms();
   const rooms = roomsQuery.data || [];
@@ -122,7 +126,7 @@ const TableMeeting = ({ compact = false }) => {
       roomId: "",
       startDate: compact ? today : "",
       endDate: compact ? today : "",
-      status: "all",
+      status: fixedStatus || "all",
       meetingType: "all",
       search: "",
     });
@@ -130,6 +134,7 @@ const TableMeeting = ({ compact = false }) => {
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (value === "" || value === "all") return false;
+    if (key === "status" && fixedStatus) return false;
     if (
       compact &&
       (key === "startDate" || key === "endDate") &&
@@ -139,12 +144,6 @@ const TableMeeting = ({ compact = false }) => {
     }
     return true;
   });
-
-  const openModal = (type, meeting) => {
-    setSelectedMeeting(meeting);
-    setModalType(type);
-    document.getElementById("meetingManagementModal").showModal();
-  };
 
   const closeModal = () => {
     setSelectedMeeting(null);
@@ -174,7 +173,7 @@ const TableMeeting = ({ compact = false }) => {
       minute: "2-digit",
     });
   };
-
+  const colCount = compact ? 4 : 6;
   return (
     <div className="flex flex-col h-full min-h-0 space-y-4">
       {/* Header */}
@@ -223,14 +222,35 @@ const TableMeeting = ({ compact = false }) => {
         <div
           className={`backdrop-blur-md rounded-xl shadow-xl p-4 shrink-0 ${theme.filterPanel}`}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end md:grid-cols-4">
+          <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/10">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+              Filters
+            </span>
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="btn btn-xs bg-[#122d47] hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 border-white/10 gap-1"
+              >
+                <X size={12} />
+                Reset
+              </button>
+            )}
+          </div>
+
+          <div
+            className={`grid gap-4 items-end ${
+              fixedStatus
+                ? "grid-cols-1 sm:grid-cols-3"
+                : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+            }`}
+          >
             {/* Room */}
-            <div className="flex flex-col gap-1 min-w-[170px]">
+            <div className="flex flex-col gap-1 min-w-0">
               <label className="text-xs font-medium text-slate-400">Room</label>
               <select
                 value={filters.roomId}
                 onChange={(e) => handleFilterChange("roomId", e.target.value)}
-                className={`select select-sm text-white focus:outline-none ${theme.inputBg}`}
+                className={`select select-sm w-full text-white focus:outline-none ${theme.inputBg}`}
               >
                 <option value="">All Rooms</option>
                 {rooms.map((room) => (
@@ -241,26 +261,28 @@ const TableMeeting = ({ compact = false }) => {
               </select>
             </div>
 
-            {/* Status */}
-            <div className="flex flex-col gap-1 min-w-[150px]">
-              <label className="text-xs font-medium text-slate-400">
-                Status
-              </label>
-              <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange("status", e.target.value)}
-                className={`select select-sm text-white focus:outline-none ${theme.inputBg}`}
-              >
-                <option value="all">All Status</option>
-                <option value="scheduled">Scheduled</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
+            {/* Status (disembunyikan jika fixedStatus) */}
+            {!fixedStatus && (
+              <div className="flex flex-col gap-1 min-w-0">
+                <label className="text-xs font-medium text-slate-400">
+                  Status
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange("status", e.target.value)}
+                  className={`select select-sm w-full text-white focus:outline-none ${theme.inputBg}`}
+                >
+                  <option value="all">All Status</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            )}
 
             {/* Start Date */}
-            <div className="flex flex-col gap-1 min-w-40">
+            <div className="flex flex-col gap-1 min-w-0">
               <label className="text-xs font-medium text-slate-400">
                 Start Date
               </label>
@@ -270,12 +292,12 @@ const TableMeeting = ({ compact = false }) => {
                 onChange={(e) =>
                   handleFilterChange("startDate", e.target.value)
                 }
-                className={`input input-sm text-white focus:outline-none ${theme.inputBg}`}
+                className={`input input-sm w-full text-white scheme-dark focus:outline-none ${theme.inputBg}`}
               />
             </div>
 
             {/* End Date */}
-            <div className="flex flex-col gap-1 min-w-40">
+            <div className="flex flex-col gap-1 min-w-0">
               <label className="text-xs font-medium text-slate-400">
                 End Date
               </label>
@@ -283,19 +305,9 @@ const TableMeeting = ({ compact = false }) => {
                 type="date"
                 value={filters.endDate}
                 onChange={(e) => handleFilterChange("endDate", e.target.value)}
-                className={`input input-sm text-white focus:outline-none ${theme.inputBg}`}
+                className={`input input-sm w-full text-white scheme-dark focus:outline-none ${theme.inputBg}`}
               />
             </div>
-
-            {hasActiveFilters && (
-              <button
-                onClick={resetFilters}
-                className="btn btn-sm bg-[#122d47] hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 border-white/10 gap-1.5"
-              >
-                <X size={14} />
-                Reset
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -353,14 +365,14 @@ const TableMeeting = ({ compact = false }) => {
             <tbody className={`divide-y ${theme.rowDivide}`}>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-12">
+                  <td colSpan={colCount} className="text-center py-12">
                     <span className="loading loading-spinner loading-md text-white"></span>
                   </td>
                 </tr>
               ) : meetings.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={colCount}
                     className="text-center py-12 text-slate-400 text-sm"
                   >
                     No meetings found.

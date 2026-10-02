@@ -287,7 +287,10 @@ const IndexBooking = () => {
                 <div className="absolute top-2 right-2">
                   {room.status === "cleaning_buffer" ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-violet-500/90 text-white border border-violet-400/30 backdrop-blur-md shadow-sm">
-                      <Sparkles size={12} className="animate-spin text-violet-200" />
+                      <Sparkles
+                        size={12}
+                        className="animate-spin text-violet-200"
+                      />
                       Cleaning Buffer
                     </span>
                   ) : room.status === "in_progress" ? (
@@ -333,7 +336,10 @@ const IndexBooking = () => {
                     return (
                       <div className="flex flex-col gap-1.5 py-2 px-3 rounded-lg border bg-violet-500/10 border-violet-500/25">
                         <div className="flex items-center gap-1.5">
-                          <Sparkles size={13} className="text-violet-400 animate-pulse shrink-0" />
+                          <Sparkles
+                            size={13}
+                            className="text-violet-400 animate-pulse shrink-0"
+                          />
                           <span className="text-[11px] font-semibold uppercase tracking-wider text-violet-300">
                             Cleaning Buffer
                           </span>
@@ -345,7 +351,11 @@ const IndexBooking = () => {
                           <div className="flex items-center gap-1 text-violet-300/80">
                             <Clock size={11} className="shrink-0" />
                             <span className="text-[11px]">
-                              Available at {new Date(room.bufferUntil).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                              Available at{" "}
+                              {new Date(room.bufferUntil).toLocaleTimeString(
+                                "id-ID",
+                                { hour: "2-digit", minute: "2-digit" },
+                              )}
                             </span>
                           </div>
                         )}
@@ -498,7 +508,7 @@ const IndexBooking = () => {
             onClose={() => setScheduleRoom(null)}
           />
         )}
-        <TableMeeting />
+        <TableMeeting fixedStatus="scheduled" />
       </div>
     </>
   );
