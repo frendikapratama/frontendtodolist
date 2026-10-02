@@ -11,6 +11,7 @@ import {
   Clock,
   User,
   Building2,
+  Info,
 } from "lucide-react";
 import useMeetings from "../../../hook/BookingMeeting/useMeetings";
 import { AuthContext } from "../../../context/AuthContext";
@@ -543,15 +544,40 @@ const MeetingResultsModal = ({ meeting, onClose }) => {
                         className="w-full h-full rounded-full object-cover"
                         loading="lazy"
                         decoding="async"
+                        alt={participant.username}
                       />
                     ) : (
                       <User size={13} className="text-blue-400" />
                     )}
                   </div>
-                  <div className="flex flex-col min-w-0">
+
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-sm text-slate-300 font-medium truncate">
                       {participant.username}
                     </span>
+
+                    {invitationStatus === "decline" &&
+                      participant.declineReason && (
+                        <div className="relative group shrink-0">
+                          <button
+                            type="button"
+                            className="w-5 h-5 flex items-center justify-center rounded-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                            aria-label=""
+                          >
+                            <Info size={13} />
+                          </button>
+
+                          <div className="absolute left-1/2 top-full z-50 mt-2 hidden w-56 -translate-x-1/2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 shadow-xl group-hover:block">
+                            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-rose-400">
+                              Reasoon for Decline
+                            </div>
+
+                            <p className="text-[11px] leading-relaxed text-slate-300">
+                              {participant.declineReason}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 </div>
                 <div className="flex flex-col items-center gap-2">
