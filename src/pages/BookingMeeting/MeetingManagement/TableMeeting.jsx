@@ -140,12 +140,6 @@ const TableMeeting = ({ compact = false }) => {
     return true;
   });
 
-  const openModal = (type, meeting) => {
-    setSelectedMeeting(meeting);
-    setModalType(type);
-    document.getElementById("meetingManagementModal").showModal();
-  };
-
   const closeModal = () => {
     setSelectedMeeting(null);
     setModalType(null);

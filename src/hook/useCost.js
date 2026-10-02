@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getCostsByProject,
-  getCostById,
   createCost,
   updateCost,
   updateCostStatus,
