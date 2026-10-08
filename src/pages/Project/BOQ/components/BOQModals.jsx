@@ -26,7 +26,6 @@ export const BOQFormModal = ({
   sectionFilterText,
   setSectionFilterText,
   sectionDropdownRef,
-  modalCalculatedTotal,
   onSubmit,
   isSubmitting,
 }) => {
@@ -47,8 +46,8 @@ export const BOQFormModal = ({
               </h3>
               <p className="text-xs text-slate-400">
                 {editingItem
-                  ? "Perbarui detail pekerjaan dan harga"
-                  : "Buat rincian pekerjaan dan harga satuan baru"}
+                  ? "Perbarui detail kebutuhan project"
+                  : "Buat rincian kebutuhan project baru"}
               </p>
             </div>
           </div>
@@ -260,8 +259,13 @@ export const BOQFormModal = ({
             )}
           </div>
 
-          {/* Unit, Quantity, Unit Price */}
-          <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Specification</label>
+            <textarea rows={2} value={formData.specification} onChange={(e) => setFormData({ ...formData, specification: e.target.value })} placeholder="Spesifikasi teknis yang dibutuhkan" className="w-full text-xs bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100" />
+          </div>
+
+          {/* Requirement quantity and unit */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
                 Satuan (Unit) <span className="text-rose-400">*</span>
@@ -302,43 +306,8 @@ export const BOQFormModal = ({
               )}
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Harga Satuan (Rp) <span className="text-rose-400">*</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                placeholder="0"
-                value={formData.unitPrice}
-                onChange={(e) =>
-                  setFormData({ ...formData, unitPrice: e.target.value })
-                }
-                className="w-full text-xs bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-              />
-              {formErrors?.unitPrice && (
-                <p className="text-xs text-rose-400 mt-1">
-                  {formErrors.unitPrice}
-                </p>
-              )}
-            </div>
           </div>
 
-          {/* Real-time Calculated Total Price */}
-          <div className="bg-slate-800/60 rounded-xl p-3 border border-slate-700/80 flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Total Harga (Otomatis)
-              </span>
-              <p className="text-[10px] text-slate-500">
-                Quantity × Harga Satuan
-              </p>
-            </div>
-            <div className="text-sm font-bold text-cyan-400 font-mono">
-              {formatCurrency(modalCalculatedTotal)}
-            </div>
-          </div>
 
           {/* Notes */}
           <div>
@@ -401,8 +370,7 @@ export const DeleteBOQModal = ({
         <p className="text-xs text-slate-400 text-center mt-1 mb-6 leading-relaxed">
           Item{" "}
           <strong className="text-slate-200">"{candidate.description}"</strong>{" "}
-          akan dihapus secara permanen. Subtotal dan Grand Total akan dihitung
-          ulang secara otomatis.
+          akan dihapus secara permanen dari daftar kebutuhan project.
         </p>
         <div className="flex items-center gap-3">
           <button
@@ -472,22 +440,11 @@ export const DetailBOQModal = ({
                 {item.description}
               </span>
             </div>
+            {item.specification && <div className="flex justify-between"><span className="text-slate-400">Specification:</span><span className="text-slate-200 text-right max-w-[260px]">{item.specification}</span></div>}
             <div className="flex justify-between">
               <span className="text-slate-400">Volume & Satuan:</span>
               <span className="text-slate-200 font-mono">
                 {item.quantity} {item.unit}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Harga Satuan:</span>
-              <span className="text-slate-200 font-mono">
-                {formatCurrency(item.unitPrice)}
-              </span>
-            </div>
-            <div className="flex justify-between pt-2 border-t border-white/5 font-bold">
-              <span className="text-cyan-400">Total Nilai BOQ:</span>
-              <span className="text-cyan-300 font-mono text-sm">
-                {formatCurrency(item.totalPrice)}
               </span>
             </div>
           </div>
@@ -602,12 +559,6 @@ export const CreateBudgetModal = ({
               <span>Section:</span>
               <span className="text-slate-200">{item.section}</span>
             </div>
-            <div className="flex justify-between pt-1 border-t border-white/5 font-semibold">
-              <span className="text-cyan-400">BOQ Value (Nilai Dasar):</span>
-              <span className="text-cyan-300 font-mono text-sm">
-                {formatCurrency(item.totalPrice)}
-              </span>
-            </div>
           </div>
 
           <div className="space-y-1">
@@ -717,12 +668,6 @@ export const ViewBudgetModal = ({ item, onClose, onNavigateToTab }) => {
             <span className="text-slate-400">BOQ Item:</span>
             <span className="text-white font-medium text-right">
               {item.boqItem?.description}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">BOQ Value:</span>
-            <span className="text-cyan-400 font-mono font-medium">
-              {formatCurrency(item.boqValue)}
             </span>
           </div>
           <div className="flex justify-between">

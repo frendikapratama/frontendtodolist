@@ -1,3 +1,4 @@
+import React from "react";
 import {
   ArrowLeft,
   FileText,
@@ -5,6 +6,7 @@ import {
   Coins,
   Wallet,
   Edit3,
+  Gavel,
 } from "lucide-react";
 import { PROJECT_DETAIL_STATUS_MAP } from "../projectDetailConstants";
 
@@ -25,6 +27,12 @@ const TAB_CONFIG = [
     key: "budget",
     label: "Budget",
     icon: Coins,
+    activeClass: "text-slate-900",
+  },
+  {
+    key: "bidding",
+    label: "Bidding",
+    icon: Gavel,
     activeClass: "text-slate-900",
   },
   {
@@ -97,7 +105,7 @@ const ProjectDetailHeader = ({
                     : "text-white hover:text-blue-500 "
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                {React.createElement(Icon, { className: "w-3.5 h-3.5" })}
                 <span>{label}</span>
               </button>
             ))}

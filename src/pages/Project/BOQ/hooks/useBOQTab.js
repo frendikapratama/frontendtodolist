@@ -40,9 +40,9 @@ export const useBOQTab = (projectId) => {
     sectionSelect: "",
     sectionCustom: "",
     description: "",
+    specification: "",
     unit: "",
     quantity: "",
-    unitPrice: "",
     notes: "",
     status: "Draft",
   });
@@ -109,7 +109,7 @@ export const useBOQTab = (projectId) => {
     projectId,
     { limit: 200 },
   );
-  const allBudgets = budgetQuery.data?.data || [];
+  const allBudgets = useMemo(() => budgetQuery.data?.data || [], [budgetQuery.data?.data]);
 
   const budgetByBOQItemIdMap = useMemo(() => {
     const map = {};
@@ -122,14 +122,7 @@ export const useBOQTab = (projectId) => {
   }, [allBudgets]);
 
   const { data, isLoading, isError, isFetching, refetch } = boqQuery;
-  const availableSections = sectionsQuery.data || data?.allSections || [];
-
-  // Real-time calculated total in modal
-  const modalCalculatedTotal = useMemo(() => {
-    const q = Number(formData.quantity) || 0;
-    const p = Number(formData.unitPrice) || 0;
-    return q * p;
-  }, [formData.quantity, formData.unitPrice]);
+  const availableSections = useMemo(() => sectionsQuery.data || data?.allSections || [], [sectionsQuery.data, data?.allSections]);
 
   const toggleSection = (sectionName) => {
     setCollapsedSections((prev) => ({
@@ -158,9 +151,9 @@ export const useBOQTab = (projectId) => {
         defaultSection || (hasExisting ? availableSections[0] : ""),
       sectionCustom: defaultSection && !hasExisting ? defaultSection : "",
       description: "",
+      specification: "",
       unit: "",
       quantity: "",
-      unitPrice: "",
       notes: "",
       status: "Draft",
     });
@@ -178,9 +171,9 @@ export const useBOQTab = (projectId) => {
       sectionSelect: item.section || "",
       sectionCustom: "",
       description: item.description || "",
+      specification: item.specification || "",
       unit: item.unit || "",
       quantity: String(item.quantity ?? ""),
-      unitPrice: String(item.unitPrice ?? ""),
       notes: item.notes || "",
       status: item.status || "Draft",
     });
@@ -219,12 +212,6 @@ export const useBOQTab = (projectId) => {
       errors.quantity = "Quantity harus berupa angka dan tidak boleh negatif";
     }
 
-    const price = Number(formData.unitPrice);
-    if (formData.unitPrice === "" || isNaN(price) || price < 0) {
-      errors.unitPrice =
-        "Unit Price harus berupa angka dan tidak boleh negatif";
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -242,9 +229,9 @@ export const useBOQTab = (projectId) => {
       itemCode: formData.itemCode.trim(),
       section: finalSection,
       description: formData.description.trim(),
+      specification: formData.specification.trim(),
       unit: formData.unit.trim(),
       quantity: Number(formData.quantity),
-      unitPrice: Number(formData.unitPrice),
       notes: formData.notes.trim(),
       status: formData.status,
     };
@@ -277,7 +264,7 @@ export const useBOQTab = (projectId) => {
 
   const handleOpenCreateBudget = (item) => {
     setCreateBudgetItem(item);
-    setBudgetPlannedAmount(item.totalPrice || "");
+    setBudgetPlannedAmount("");
     setBudgetNotes("");
     setBudgetStatus("Draft");
   };
@@ -407,7 +394,6 @@ export const useBOQTab = (projectId) => {
     setSectionFilterText,
     sectionDropdownRef,
     filteredModalSections,
-    modalCalculatedTotal,
     handleSubmitForm,
 
     // Quick Budget Form

@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react";
 import BOQTab from "./BOQ/BOQTab";
 import BudgetTab from "./Budget/BudgetTab";
 import CostTab from "./Cost/CostTab";
+import BiddingTab from "./Bidding/BiddingTab";
 import ProjectDetailHeader from "./components/ProjectDetailHeader";
 import ProjectDetailOverview from "./components/ProjectDetailOverview";
 import ProjectDetailEditModal from "./components/ProjectDetailEditModal";
@@ -26,12 +27,10 @@ const ProjectManagementDetailPage = () => {
     activeTab,
     tabContext,
     isEditOpen,
-    isFormDirty,
     setIsFormDirty,
     handleNavigateToTab,
     openEditModal,
     requestCloseEditModal,
-    closeEditModal,
   } = useProjectDetailPage();
 
   // ─── Loading State ───────────────────────────────────────────────────────────
@@ -126,6 +125,16 @@ const ProjectManagementDetailPage = () => {
         ) : activeTab === "budget" ? (
           <div className="animate-in fade-in duration-200">
             <BudgetTab
+              projectId={project._id}
+              project={project}
+              tabContext={tabContext}
+              onClearTabContext={() => handleNavigateToTab(activeTab, null)}
+              onNavigateToTab={handleNavigateToTab}
+            />
+          </div>
+        ) : activeTab === "bidding" ? (
+          <div className="animate-in fade-in duration-200">
+            <BiddingTab
               projectId={project._id}
               project={project}
               tabContext={tabContext}

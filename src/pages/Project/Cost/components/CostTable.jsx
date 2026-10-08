@@ -170,6 +170,17 @@ export const CostTable = ({
                     </td>
                     <td className="py-3.5 px-4 text-slate-200">
                       {item.description}
+                      {item.sourceType === "bidding" && (
+                        <span className="block text-[11px] font-medium text-cyan-300">
+                          Dari bidding: {item.sourceId?.title || "Bidding selesai"}
+                          {item.supplier?.name
+                            ? ` · ${item.supplier.name}`
+                            : ""}
+                          {item.unitPrice && item.quantity
+                            ? ` · ${item.quantity} × ${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(item.unitPrice)}`
+                            : ""}
+                        </span>
+                      )}
                       {item.notes && (
                         <span className="block text-[11px] text-slate-500 truncate">
                           {item.notes}

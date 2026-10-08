@@ -74,7 +74,7 @@ export const CostToolbar = ({
         )}
 
         {/* Refresh */}
-        <button
+        {/* <button
           onClick={() => refetch()}
           disabled={isFetching}
           className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl border border-white/10 transition disabled:opacity-50 cursor-pointer"
@@ -83,7 +83,7 @@ export const CostToolbar = ({
           <RefreshCw
             className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-cyan-400" : ""}`}
           />
-        </button>
+        </button> */}
       </div>
 
       {/* Record Cost Button */}

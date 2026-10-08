@@ -95,12 +95,6 @@ export const CostModals = ({
             {linkedBudgetForCreation && (
               <div className="p-3 bg-slate-950/80 border border-white/5 rounded-xl space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">BOQ Value:</span>
-                  <span className="text-slate-200 font-mono">
-                    {formatCurrency(linkedBudgetForCreation.boqValue)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-slate-400">Budget Code Terkait:</span>
                   <span className="text-purple-300 font-mono font-semibold">
                     {linkedBudgetForCreation.budgetCode}
@@ -338,6 +332,43 @@ export const CostModals = ({
                     {selectedCost.budget.budgetCode}
                   </span>
                 </div>
+              )}
+              {/* Traceability for bidding-sourced costs (PRD §39) */}
+              {selectedCost.sourceType === "bidding" && (
+                <>
+                  {selectedCost.supplier && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Supplier:</span>
+                      <span className="text-cyan-300 font-semibold">
+                        {selectedCost.supplier?.name || "-"}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCost.unitPrice != null && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Unit Price:</span>
+                      <span className="text-slate-200 font-mono">
+                        {formatCurrency(selectedCost.unitPrice)}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCost.quantity != null && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Quantity:</span>
+                      <span className="text-slate-200 font-mono">
+                        {selectedCost.quantity} × {formatCurrency(selectedCost.unitPrice)} = {formatCurrency(selectedCost.amount)}
+                      </span>
+                    </div>
+                  )}
+                  {selectedCost.sourceId && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Bidding:</span>
+                      <span className="text-slate-300 text-right truncate max-w-[180px]">
+                        {selectedCost.sourceId?.title || "-"}
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

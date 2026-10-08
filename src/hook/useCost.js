@@ -43,7 +43,8 @@ export const useCost = (projectId, queryParams = {}) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updateCost(id, data),
+    mutationFn: ({ id, data, ...rest }) =>
+      updateCost(id, data && Object.keys(data).length ? data : rest),
     onSuccess: (res) => {
       toast.success(res?.message || "Cost berhasil diperbarui");
       queryClient.invalidateQueries({ queryKey: ["costs", projectId] });

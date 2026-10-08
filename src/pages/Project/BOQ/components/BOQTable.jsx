@@ -17,7 +17,7 @@ import {
   Plus,
 } from "lucide-react";
 import { BOQ_STATUS_CONFIG, BOQ_PAGE_LIMIT_OPTIONS } from "../boqConstants";
-import { formatCurrency, formatNumber } from "../boqUtils";
+import { formatNumber } from "../boqUtils";
 
 const BOQTable = ({
   isLoading,
@@ -33,6 +33,7 @@ const BOQTable = ({
   onOpenDetailModal,
   onOpenCreateBudget,
   onOpenViewBudget,
+  onCreateBidding = () => {},
   budgetByBOQItemIdMap,
   collapsedSections,
   onToggleSection,
@@ -168,14 +169,6 @@ const BOQTable = ({
               </div>
 
               <div className="flex items-center gap-5">
-                <div className="text-right">
-                  <p className="text-[11px] font-medium text-slate-400">
-                    Subtotal Section
-                  </p>
-                  <p className="text-sm font-bold text-slate-100 font-mono">
-                    {formatCurrency(sec.subtotal)}
-                  </p>
-                </div>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -226,24 +219,6 @@ const BOQTable = ({
                           {renderSortIndicator("quantity")}
                         </div>
                       </th>
-                      <th
-                        className="py-2.5 px-3 w-32 text-right cursor-pointer hover:text-slate-200 transition"
-                        onClick={() => onSort("unitPrice")}
-                      >
-                        <div className="flex items-center justify-end gap-1">
-                          <span>Harga Satuan</span>
-                          {renderSortIndicator("unitPrice")}
-                        </div>
-                      </th>
-                      <th
-                        className="py-2.5 px-3 w-36 text-right cursor-pointer hover:text-slate-200 transition"
-                        onClick={() => onSort("totalPrice")}
-                      >
-                        <div className="flex items-center justify-end gap-1">
-                          <span>Total Harga</span>
-                          {renderSortIndicator("totalPrice")}
-                        </div>
-                      </th>
                       <th className="py-2.5 px-3 w-28 text-center">Status</th>
                       <th className="py-2.5 px-3 min-w-[120px]">Catatan</th>
                       <th className="py-2.5 px-3 w-16 text-center">Aksi</th>
@@ -283,12 +258,6 @@ const BOQTable = ({
                           </td>
                           <td className="py-3 px-3 text-right font-medium text-slate-200">
                             {formatNumber(item.quantity)}
-                          </td>
-                          <td className="py-3 px-3 text-right text-slate-300 font-mono">
-                            {formatCurrency(item.unitPrice)}
-                          </td>
-                          <td className="py-3 px-3 text-right font-bold text-slate-100 font-mono">
-                            {formatCurrency(item.totalPrice)}
                           </td>
                           <td className="py-3 px-3 text-center">
                             <span
@@ -337,6 +306,18 @@ const BOQTable = ({
                                 >
                                   <Eye className="w-3.5 h-3.5 text-blue-400" />
                                   <span>View Detail</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    onCreateBidding(item);
+                                  }}
+                                  className="w-full px-3 py-2 text-xs font-medium text-cyan-300 hover:bg-cyan-500/10 flex items-center gap-2 transition cursor-pointer"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                  <span>Create Bidding</span>
                                 </button>
 
                                 {/* 2. Create Budget / View Budget (Contextual CTA) */}
@@ -438,19 +419,6 @@ const BOQTable = ({
                       );
                     })}
 
-                    {/* Section Subtotal Row */}
-                    <tr className="bg-slate-900/60 font-semibold border-t border-white/5">
-                      <td
-                        colSpan={6}
-                        className="py-2.5 px-4 text-right text-[11px] text-slate-400 uppercase tracking-wider"
-                      >
-                        Subtotal {sec.name}:
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-xs font-bold text-slate-100">
-                        {formatCurrency(sec.subtotal)}
-                      </td>
-                      <td colSpan={3}></td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -458,31 +426,6 @@ const BOQTable = ({
           </div>
         );
       })}
-
-      {/* Grand Total Footer Banner */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 border border-white/10">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Akumulasi Anggaran BOQ
-          </span>
-          <h3 className="text-lg font-bold mt-0.5 text-slate-100">
-            Grand Total Bill of Quantity
-          </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Total kumulatif keseluruhan proyek ({pagination.totalOverall} item
-            terdata)
-          </p>
-        </div>
-
-        <div className="text-right">
-          <span className="text-xs text-cyan-300 font-medium">
-            Total Estimasi Biaya
-          </span>
-          <div className="text-2xl md:text-3xl font-extrabold text-white mt-0.5 font-mono">
-            {formatCurrency(data.grandTotal)}
-          </div>
-        </div>
-      </div>
 
       {/* Pagination Controls */}
       <div className="bg-slate-950/60 rounded-2xl p-4 border border-white/5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">

@@ -123,7 +123,6 @@ export const useBudgetTab = (
   const { data, isLoading, isError, isFetching, refetch } = budgetQuery || {};
   const budgetList = data?.data || [];
   const summary = data?.summary || {
-    totalBOQValue: 0,
     totalPlannedBudget: 0,
     totalApprovalBudget: 0,
     totalActualCost: 0,
@@ -384,8 +383,9 @@ export const useBudgetTab = (
       }
 
       const payload = {
-        ...data,
         id: budgetId,
+        data,
+        ...data,
       };
 
       if (updateMutation?.mutateAsync) {
@@ -420,11 +420,16 @@ export const useBudgetTab = (
         return;
       }
 
-      const payload = {
-        id: budgetId,
+      const statusData = {
         status,
         approvedAmount: Number(approvalAmount) || 0,
         approvalNote,
+      };
+
+      const payload = {
+        id: budgetId,
+        data: statusData,
+        ...statusData,
       };
 
       if (updateStatusMutation?.mutateAsync) {

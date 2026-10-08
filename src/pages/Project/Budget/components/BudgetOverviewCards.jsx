@@ -1,7 +1,6 @@
 import React from "react";
 import {
   CheckCircle2,
-  Wallet,
   Coins,
   ShieldCheck,
   TrendingDown,
@@ -10,21 +9,8 @@ import { formatCurrency } from "../budgetConstants";
 
 export const BudgetOverviewCards = ({ summary }) => (
   <>
-    {/* 5-METRIC SUMMARY CARDS ACCORDING TO PRD */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-      {/* Total BOQ Value */}
-      <div className="bg-slate-900/60 rounded-2xl p-4 border border-white/10 shadow-sm backdrop-blur-md space-y-1">
-        <div className="flex items-center justify-between text-slate-400">
-          <span className="text-[11px] font-semibold uppercase tracking-wider">
-            Total BOQ Value
-          </span>
-          <Wallet className="w-4 h-4 text-cyan-400" />
-        </div>
-        <h4 className="text-lg font-bold text-white font-mono">
-          {formatCurrency(summary.totalBOQValue)}
-        </h4>
-        <p className="text-[11px] text-slate-500">Nilai dasar seluruh BOQ</p>
-      </div>
+    {/* Allocation and cost summary */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
 
       {/* Planned Budget */}
       <div className="bg-slate-900/60 rounded-2xl p-4 border border-white/10 shadow-sm backdrop-blur-md space-y-1">

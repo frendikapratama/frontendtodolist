@@ -11,7 +11,7 @@ import {
   ViewBudgetModal,
 } from "./components/BOQModals";
 
-const BOQTab = ({ projectId, project, onNavigateToTab }) => {
+const BOQTab = ({ projectId, onNavigateToTab }) => {
   const boqTab = useBOQTab(projectId);
 
   const {
@@ -83,7 +83,6 @@ const BOQTab = ({ projectId, project, onNavigateToTab }) => {
     setSectionFilterText,
     sectionDropdownRef,
     filteredModalSections,
-    modalCalculatedTotal,
     handleSubmitForm,
 
     // Quick Budget Form
@@ -146,6 +145,7 @@ const BOQTab = ({ projectId, project, onNavigateToTab }) => {
           handleOpenCreateBudget(item);
         }}
         onOpenViewBudget={setViewBudgetItem}
+        onCreateBidding={(item) => onNavigateToTab?.("bidding", { boqItemId: item._id })}
         budgetByBOQItemIdMap={budgetByBOQItemIdMap}
         collapsedSections={collapsedSections}
         onToggleSection={toggleSection}
@@ -178,7 +178,6 @@ const BOQTab = ({ projectId, project, onNavigateToTab }) => {
         sectionFilterText={sectionFilterText}
         setSectionFilterText={setSectionFilterText}
         sectionDropdownRef={sectionDropdownRef}
-        modalCalculatedTotal={modalCalculatedTotal}
         onSubmit={handleSubmitForm}
         isSubmitting={createMutation.isPending || updateMutation.isPending}
       />

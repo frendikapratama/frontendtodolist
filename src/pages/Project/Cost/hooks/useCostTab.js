@@ -14,6 +14,7 @@ export const useCostTab = (
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedBudgetId, setSelectedBudgetId] = useState("all");
+  const [selectedSourceId, setSelectedSourceId] = useState("all");
   const [sortBy, setSortBy] = useState("costDate");
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
@@ -43,7 +44,7 @@ export const useCostTab = (
 
   // Fetch budgets of this project for linking
   const { budgetQuery } = useBudget(projectId, { limit: 200 });
-  const allBudgets = budgetQuery.data?.data || [];
+  const allBudgets = useMemo(() => budgetQuery.data?.data || [], [budgetQuery.data?.data]);
 
   // Debounce search
   useEffect(() => {
@@ -70,6 +71,7 @@ export const useCostTab = (
     if (debouncedSearch.trim()) p.search = debouncedSearch.trim();
     if (selectedStatus !== "all") p.status = selectedStatus;
     if (selectedBudgetId !== "all") p.budgetId = selectedBudgetId;
+    if (selectedSourceId !== "all") p.sourceId = selectedSourceId;
     return p;
   }, [
     page,
@@ -79,6 +81,7 @@ export const useCostTab = (
     debouncedSearch,
     selectedStatus,
     selectedBudgetId,
+    selectedSourceId,
   ]);
 
   const {
@@ -135,6 +138,7 @@ export const useCostTab = (
   // Contextual Trigger listener from BOQ / Budget tabs
   useEffect(() => {
     if (!tabContext) return;
+    if (tabContext.sourceId) setSelectedSourceId(tabContext.sourceId);
     if (tabContext.openCreate) {
       if (tabContext.boqItemId) {
         setFormBOQItemId(tabContext.boqItemId);
@@ -250,6 +254,8 @@ export const useCostTab = (
     setSelectedStatus,
     selectedBudgetId,
     setSelectedBudgetId,
+    selectedSourceId,
+    setSelectedSourceId,
     sortBy,
     sortOrder,
     handleSort,

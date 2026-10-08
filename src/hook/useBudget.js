@@ -31,7 +31,8 @@ export const useBudget = (projectId, queryParams = {}) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updateBudget(id, data),
+    mutationFn: ({ id, data, ...rest }) =>
+      updateBudget(id, data && Object.keys(data).length ? data : rest),
     onSuccess: (res) => {
       toast.success(res?.message || "Budget berhasil diperbarui");
       queryClient.invalidateQueries({ queryKey: ["budgets", projectId] });
@@ -43,7 +44,8 @@ export const useBudget = (projectId, queryParams = {}) => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, data }) => updateBudgetStatus(id, data),
+    mutationFn: ({ id, data, ...rest }) =>
+      updateBudgetStatus(id, data && Object.keys(data).length ? data : rest),
     onSuccess: (res) => {
       toast.success(res?.message || "Status budget berhasil diubah");
       queryClient.invalidateQueries({ queryKey: ["budgets", projectId] });

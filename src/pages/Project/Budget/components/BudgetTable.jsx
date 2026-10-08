@@ -124,20 +124,6 @@ export const BudgetTable = ({
                 </th>
                 <th
                   className="py-3 px-3 text-right cursor-pointer hover:text-white"
-                  onClick={() => handleSort("boqValue")}
-                >
-                  <div className="flex items-center justify-end gap-1">
-                    <span>BOQ Value</span>
-                    {sortBy === "boqValue" &&
-                      (sortOrder === "asc" ? (
-                        <ArrowUp className="w-3 h-3 text-blue-400" />
-                      ) : (
-                        <ArrowDown className="w-3 h-3 text-blue-400" />
-                      ))}
-                  </div>
-                </th>
-                <th
-                  className="py-3 px-3 text-right cursor-pointer hover:text-white"
                   onClick={() => handleSort("plannedAmount")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -203,9 +189,6 @@ export const BudgetTable = ({
                           </span>
                         )}
                       </div>
-                    </td>
-                    <td className="py-3.5 px-3 text-right font-mono text-slate-300">
-                      {formatCurrency(item.boqValue)}
                     </td>
                     <td className="py-3.5 px-3 text-right font-mono text-purple-300">
                       {formatCurrency(item.plannedAmount)}

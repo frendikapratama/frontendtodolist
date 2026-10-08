@@ -83,7 +83,7 @@ export const BudgetModals = ({
                 {availableBOQForCreation.map((b) => (
                   <option key={b._id} value={b._id}>
                     {b.itemCode ? `[${b.itemCode}] ` : ""}
-                    {b.description} ({formatCurrency(b.totalPrice)})
+                    {b.description} — {b.quantity} {b.unit}
                   </option>
                 ))}
               </select>
@@ -106,16 +106,7 @@ export const BudgetModals = ({
                 <div className="flex justify-between text-slate-400">
                   <span>Satuan & Volume:</span>
                   <span className="text-slate-200">
-                    {selectedBOQItem.quantity} {selectedBOQItem.unit} @{" "}
-                    {formatCurrency(selectedBOQItem.unitPrice)}
-                  </span>
-                </div>
-                <div className="flex justify-between pt-1 border-t border-white/5 font-semibold">
-                  <span className="text-cyan-400">
-                    BOQ Value (Dasar Nilai):
-                  </span>
-                  <span className="text-cyan-300 font-mono text-sm">
-                    {formatCurrency(selectedBOQItem.totalPrice)}
+                    {selectedBOQItem.quantity} {selectedBOQItem.unit}
                   </span>
                 </div>
               </div>
@@ -230,7 +221,6 @@ export const BudgetModals = ({
                 {selectedBudget.boqItem?.description}
               </p>
               <p className="text-slate-400">
-                BOQ Value: {formatCurrency(selectedBudget.boqValue)}
               </p>
             </div>
 
@@ -357,14 +347,6 @@ export const BudgetModals = ({
                     Section: {selectedBudget.boqItem.section}
                   </span>
                 )}
-              </div>
-              <div className="sm:text-right">
-                <span className="text-slate-500 text-[11px] block">
-                  BOQ Value (Dasar Kontrak):
-                </span>
-                <span className="text-cyan-400 font-mono font-bold text-sm">
-                  {formatCurrency(selectedBudget.boqValue)}
-                </span>
               </div>
             </div>
 
@@ -559,12 +541,6 @@ export const BudgetModals = ({
                 <span className="text-slate-400">BOQ Item:</span>
                 <span className="text-white font-medium">
                   {selectedBudget.boqItem?.description}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">BOQ Value:</span>
-                <span className="text-cyan-400 font-mono font-medium">
-                  {formatCurrency(selectedBudget.boqValue)}
                 </span>
               </div>
               <div className="flex justify-between">

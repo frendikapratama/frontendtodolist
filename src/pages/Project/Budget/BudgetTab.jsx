@@ -25,6 +25,12 @@ const BudgetTab = ({
     <div className="space-y-6">
       <BudgetOverviewCards summary={budgetData.summary} />
 
+      <div className="flex justify-end">
+        <button type="button" onClick={() => onNavigateToTab?.("bidding")} className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/20">
+          Create Bidding from project BOQ
+        </button>
+      </div>
+
       <BudgetToolbar
         searchInput={budgetData.searchInput}
         setSearchInput={budgetData.setSearchInput}
