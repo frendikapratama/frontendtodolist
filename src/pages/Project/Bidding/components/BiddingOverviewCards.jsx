@@ -9,7 +9,7 @@ export const BiddingOverviewCards = ({ activeBidding, activeTotal }) => {
 
   return (
     <div className="grid gap-4 sm:grid-cols-3 animate-fadeIn">
-      <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/20 p-5">
+      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 shadow-sm backdrop-blur-md">
         <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wide">
           Status Pengadaan
         </span>
@@ -24,11 +24,11 @@ export const BiddingOverviewCards = ({ activeBidding, activeTotal }) => {
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 shadow-sm backdrop-blur-md">
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
           Item Selesai
         </span>
-        <div className="mt-2 text-2xl font-bold text-white">
+        <div className="mt-2 text-xl font-bold text-white">
           {items.length}{" "}
           <span className="text-sm font-normal text-slate-400">Item BOQ</span>
         </div>
@@ -37,11 +37,11 @@ export const BiddingOverviewCards = ({ activeBidding, activeTotal }) => {
         </p>
       </div>
 
-      <div className="rounded-xl border border-cyan-900/40 bg-cyan-950/20 p-5">
+      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 shadow-sm backdrop-blur-md">
         <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wide">
           TOTAL NILAI BIDDING
         </span>
-        <div className="mt-2 text-2xl font-extrabold text-cyan-300">
+        <div className="mt-2 text-xl font-extrabold text-cyan-300">
           {currency(activeTotal)}
         </div>
         <p className="mt-1 text-xs text-slate-400">

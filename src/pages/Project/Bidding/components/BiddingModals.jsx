@@ -1,5 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { Gavel, Search, Trash2, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Gavel,
+  Search,
+  Trash2,
+  X,
+  UserPlus,
+  Plus,
+  RefreshCw,
+  Users,
+} from "lucide-react";
 import { currency } from "../biddingUtils";
 
 /**
@@ -502,6 +511,267 @@ export function QuoteDetailModal({ modalData, onClose, onSave }) {
             className="rounded-lg bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500"
           >
             Simpan Detail
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * MODAL: SUPPLIER PICKER
+ * Search party master → pilih dengan checkbox → opsi tambah party baru jika tidak ada
+ */
+export function SupplierPickerModal({
+  isOpen,
+  onClose,
+  activeSuppliers = [],
+  partyMaster = [],
+  partySearch = "",
+  setPartySearch,
+  loadingParties = false,
+  onToggleSupplier,
+  onAddNewParty,
+  addingParty = false,
+}) {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newPartyName, setNewPartyName] = useState("");
+  const [newPartyEmail, setNewPartyEmail] = useState("");
+  const [newPartyPhone, setNewPartyPhone] = useState("");
+  const searchRef = useRef(null);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setShowAddForm(false);
+      setNewPartyName("");
+      setNewPartyEmail("");
+      setNewPartyPhone("");
+      setTimeout(() => searchRef.current?.focus(), 80);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleAddParty = async () => {
+    if (!newPartyName.trim()) return;
+    await onAddNewParty({
+      name: newPartyName.trim(),
+      email: newPartyEmail.trim(),
+      phone: newPartyPhone.trim(),
+    });
+    setShowAddForm(false);
+    setNewPartyName("");
+    setNewPartyEmail("");
+    setNewPartyPhone("");
+  };
+
+  const isEmpty = !loadingParties && partyMaster.length === 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn">
+      <div className="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/50">
+              <Users size={16} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">
+                Tambah Supplier Peserta
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Cari dari Party Master lalu pilih
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="px-6 py-3 border-b border-slate-800/60">
+          <div className="relative">
+            {loadingParties ? (
+              <RefreshCw
+                size={14}
+                className="absolute left-3 top-2.5 text-slate-400 animate-spin"
+              />
+            ) : (
+              <Search
+                size={14}
+                className="absolute left-3 top-2.5 text-slate-400"
+              />
+            )}
+            <input
+              ref={searchRef}
+              type="search"
+              placeholder="Cari nama, email, atau telepon supplier..."
+              value={partySearch}
+              onChange={(e) => setPartySearch(e.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+            />
+          </div>
+        </div>
+
+        {/* Party List */}
+        <div className="flex-1 overflow-y-auto px-6 py-3 space-y-1.5 min-h-0">
+          {loadingParties ? (
+            <div className="py-10 text-center text-xs text-slate-400">
+              <RefreshCw
+                className="animate-spin mx-auto mb-2 text-cyan-500"
+                size={18}
+              />
+              Memuat Party Master...
+            </div>
+          ) : partyMaster.length === 0 ? (
+            <div className="py-8 text-center space-y-2">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800/80 text-slate-500">
+                <Users size={20} />
+              </div>
+              <p className="text-xs text-slate-400">
+                {partySearch
+                  ? `Tidak ditemukan supplier dengan kata kunci "${partySearch}".`
+                  : "Belum ada data di Party Master."}
+              </p>
+              {!showAddForm && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-700/80 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-600 transition"
+                >
+                  <Plus size={12} />
+                  Tambah Party Baru
+                </button>
+              )}
+            </div>
+          ) : (
+            partyMaster.map((vendor) => {
+              const isSelected = activeSuppliers.some(
+                (s) => String(s._id || s) === String(vendor._id),
+              );
+              return (
+                <label
+                  key={vendor._id}
+                  className={`flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-xs cursor-pointer transition select-none ${
+                    isSelected
+                      ? "border-cyan-600/70 bg-cyan-950/40 text-cyan-200"
+                      : "border-slate-800 bg-slate-800/40 text-slate-300 hover:bg-slate-800 hover:border-slate-600"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onToggleSupplier(vendor._id)}
+                    className="rounded border-slate-600 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-0 bg-slate-800"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="font-semibold text-white block truncate">
+                      {vendor.name}
+                    </span>
+                    <span className="text-[11px] text-slate-500 block truncate">
+                      {[vendor.email, vendor.phone]
+                        .filter(Boolean)
+                        .join(" · ") || "Party Master"}
+                    </span>
+                  </div>
+                  {isSelected && (
+                    <span className="shrink-0 text-[10px] font-bold text-cyan-400 uppercase tracking-wide">
+                      Dipilih
+                    </span>
+                  )}
+                </label>
+              );
+            })
+          )}
+        </div>
+
+        {/* Add Party Inline Form */}
+        {showAddForm && (
+          <div className="border-t border-slate-800 px-6 py-4 bg-slate-800/30 space-y-3">
+            <h4 className="text-xs font-bold text-white flex items-center gap-2">
+              <UserPlus size={14} className="text-cyan-400" />
+              Tambah Party Baru ke Master
+            </h4>
+            <div className="grid grid-cols-1 gap-2">
+              <input
+                type="text"
+                placeholder="Nama perusahaan / supplier *"
+                value={newPartyName}
+                onChange={(e) => setNewPartyName(e.target.value)}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="email"
+                  placeholder="Email (opsional)"
+                  value={newPartyEmail}
+                  onChange={(e) => setNewPartyEmail(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+                <input
+                  type="tel"
+                  placeholder="Telepon (opsional)"
+                  value={newPartyPhone}
+                  onChange={(e) => setNewPartyPhone(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleAddParty}
+                disabled={addingParty || !newPartyName.trim()}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500 disabled:opacity-50 transition"
+              >
+                {addingParty ? (
+                  <RefreshCw size={12} className="animate-spin" />
+                ) : (
+                  <Plus size={12} />
+                )}
+                {addingParty ? "Menyimpan..." : "Simpan & Pilih"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddForm(false)}
+                className="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-400 hover:bg-slate-800 transition"
+              >
+                Batal
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-slate-800 px-6 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400">
+              {activeSuppliers.length} supplier dipilih
+            </span>
+            {!showAddForm && !isEmpty && (
+              <button
+                type="button"
+                onClick={() => setShowAddForm(true)}
+                className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition"
+              >
+                <Plus size={12} />
+                Tambah Party Baru
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500 transition"
+          >
+            Selesai
           </button>
         </div>
       </div>

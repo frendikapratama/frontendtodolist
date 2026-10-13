@@ -13,11 +13,11 @@ import {
   ArrowDown,
   Coins,
   Eye,
-  Check,
   Plus,
 } from "lucide-react";
 import { BOQ_STATUS_CONFIG, BOQ_PAGE_LIMIT_OPTIONS } from "../boqConstants";
 import { formatNumber } from "../boqUtils";
+import ActionDropdownPortal from "../../../../components/shared/ActionDropdownPortal";
 
 const BOQTable = ({
   isLoading,
@@ -230,6 +230,8 @@ const BOQTable = ({
                         BOQ_STATUS_CONFIG[item.status] ||
                         BOQ_STATUS_CONFIG.Draft;
                       const isMenuOpen = activeMenuId === item._id;
+                      const isStatusMenuOpen =
+                        activeMenuId === `status-${item._id}`;
 
                       return (
                         <tr
@@ -259,24 +261,89 @@ const BOQTable = ({
                           <td className="py-3 px-3 text-right font-medium text-slate-200">
                             {formatNumber(item.quantity)}
                           </td>
-                          <td className="py-3 px-3 text-center">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.bg}`}
+                          <td
+                            className="py-3 px-3 text-center"
+                            ref={isStatusMenuOpen ? actionMenuRef : null}
+                          >
+                            <button
+                              type="button"
+                              id={`boq-status-${item._id}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuId((prev) =>
+                                  prev === `status-${item._id}`
+                                    ? null
+                                    : `status-${item._id}`,
+                                );
+                              }}
+                              aria-label={`Ubah status ${item.description}`}
+                              aria-expanded={isStatusMenuOpen}
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer transition hover:brightness-110 ${statusInfo.bg}`}
                             >
                               <span
                                 className={`w-1.5 h-1.5 rounded-full ${statusInfo.dot}`}
                               />
                               <span>{statusInfo.label}</span>
-                            </span>
+                              <ChevronDown className="w-3 h-3 opacity-70" />
+                            </button>
+                            {isStatusMenuOpen && (
+                              <ActionDropdownPortal
+                                anchorId={`boq-status-${item._id}`}
+                                width={160}
+                                className="w-40 bg-slate-900 rounded-xl shadow-2xl border border-white/10 py-1 text-left animate-in fade-in zoom-in-95 duration-100"
+                              >
+                                {[
+                                  "Draft",
+                                  "Submitted",
+                                  "Approved",
+                                  "Rejected",
+                                ].map((status) => {
+                                  const option =
+                                    BOQ_STATUS_CONFIG[status] ||
+                                    BOQ_STATUS_CONFIG.Draft;
+                                  const isCurrentStatus = item.status === status;
+
+                                  return (
+                                    <button
+                                      key={status}
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveMenuId(null);
+                                        if (!isCurrentStatus) {
+                                          onStatusChange(item._id, status);
+                                        }
+                                      }}
+                                      className={`w-full px-3 py-2 text-xs flex items-center gap-2 transition hover:bg-slate-800 cursor-pointer ${
+                                        isCurrentStatus
+                                          ? "font-semibold text-white"
+                                          : "text-slate-300"
+                                      }`}
+                                    >
+                                      <span
+                                        className={`w-2 h-2 rounded-full ${option.dot}`}
+                                      />
+                                      <span>{option.label}</span>
+                                      {isCurrentStatus && (
+                                        <span className="ml-auto text-cyan-400">✓</span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </ActionDropdownPortal>
+                            )}
                           </td>
                           <td className="py-3 px-3 text-slate-400 max-w-40 truncate">
                             {item.notes || (
                               <span className="text-slate-600">-</span>
                             )}
                           </td>
-                          <td className="py-3 px-3 text-center relative">
+                          <td
+                            className="py-3 px-3 text-center relative"
+                            ref={isMenuOpen ? actionMenuRef : null}
+                          >
                             <button
                               type="button"
+                              id={`boq-action-${item._id}`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setActiveMenuId((prev) =>
@@ -291,9 +358,9 @@ const BOQTable = ({
 
                             {/* Action Dropdown Menu */}
                             {isMenuOpen && (
-                              <div
-                                ref={actionMenuRef}
-                                className="absolute right-2 top-full mt-1 w-48 bg-slate-900 rounded-xl shadow-2xl border border-white/10 py-1.5 text-left animate-in fade-in zoom-in-95 duration-100 z-50"
+                              <ActionDropdownPortal
+                                anchorId={`boq-action-${item._id}`}
+                                className="w-48 bg-slate-900 rounded-xl shadow-2xl border border-white/10 py-1.5 text-left animate-in fade-in zoom-in-95 duration-100"
                               >
                                 {/* 1. View Detail BOQ Item */}
                                 <button
@@ -370,35 +437,6 @@ const BOQTable = ({
                                   <span>Edit Item</span>
                                 </button>
 
-                                <div className="my-1 border-t border-white/5 px-3 py-1">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                    Ubah Status:
-                                  </span>
-                                </div>
-
-                                {[
-                                  "Draft",
-                                  "Submitted",
-                                  "Approved",
-                                  "Rejected",
-                                ].map((st) => (
-                                  <button
-                                    key={st}
-                                    type="button"
-                                    onClick={() => onStatusChange(item._id, st)}
-                                    className={`w-full px-3 py-1.5 text-xs flex items-center justify-between hover:bg-slate-800 transition cursor-pointer ${
-                                      item.status === st
-                                        ? "font-bold text-[#0E7490]"
-                                        : "text-slate-300"
-                                    }`}
-                                  >
-                                    <span>{st}</span>
-                                    {item.status === st && (
-                                      <Check className="w-3 h-3 text-[#0E7490]" />
-                                    )}
-                                  </button>
-                                ))}
-
                                 <div className="my-1 border-t border-white/5" />
 
                                 <button
@@ -412,7 +450,7 @@ const BOQTable = ({
                                   <Trash2 className="w-3.5 h-3.5 text-rose-400" />
                                   <span>Hapus Item</span>
                                 </button>
-                              </div>
+                              </ActionDropdownPortal>
                             )}
                           </td>
                         </tr>

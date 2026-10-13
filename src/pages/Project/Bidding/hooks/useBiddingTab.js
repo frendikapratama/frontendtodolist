@@ -28,8 +28,15 @@ export const useBiddingTab = (
   const [boqItems, setBoqItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState("");
+  // inputQuery: nilai real-time dari input → debounced ke searchQuery
+  const [inputQuery, setInputQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  // Pagination
+  const ITEMS_PER_PAGE = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Create Bidding Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -52,6 +59,10 @@ export const useBiddingTab = (
   const [partySearch, setPartySearch] = useState("");
   const [partyMaster, setPartyMaster] = useState([]);
   const [loadingParties, setLoadingParties] = useState(false);
+  const [addingParty, setAddingParty] = useState(false);
+
+  // Supplier picker modal
+  const [showSupplierPickerModal, setShowSupplierPickerModal] = useState(false);
 
   // Quote detail modal (leadTime, paymentTerm, notes)
   const [quoteDetailModal, setQuoteDetailModal] = useState(null);
@@ -76,8 +87,23 @@ export const useBiddingTab = (
     [boqItems],
   );
 
-  // Debounced search for Party Master
+  // Debounce: inputQuery → searchQuery (300ms)
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(inputQuery);
+      setCurrentPage(1); // reset ke halaman 1 setiap kali query berubah
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputQuery]);
+
+  // Reset halaman jika statusFilter berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
+
+  // Lazy-load Party Master — only runs when showSupplierPickerModal is open
+  useEffect(() => {
+    if (!showSupplierPickerModal) return;
     let cancelled = false;
     const timer = setTimeout(
       async () => {
@@ -94,29 +120,42 @@ export const useBiddingTab = (
           if (!cancelled) setLoadingParties(false);
         }
       },
-      partySearch ? 250 : 0,
+      partySearch ? 300 : 0,
     );
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [partySearch]);
+  }, [partySearch, showSupplierPickerModal]);
 
-  // Load biddings list
+  // Load biddings list with API search, status, and pagination
   const loadBiddings = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     try {
-      const res = await getBiddingsByProject(projectId);
+      const res = await getBiddingsByProject(projectId, {
+        search: searchQuery,
+        status: statusFilter,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+      });
       setBiddings(res?.data || []);
+      if (res?.pagination) {
+        setTotalCount(res.pagination.total || 0);
+        setTotalPages(res.pagination.totalPages || 1);
+      }
     } catch (err) {
       console.error("Gagal memuat daftar bidding:", err);
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, searchQuery, statusFilter, currentPage]);
 
-  // Load BOQ items for project
+  useEffect(() => {
+    loadBiddings();
+  }, [loadBiddings]);
+
+  // Load BOQ items for project (one-time on mount)
   const loadBOQItems = useCallback(async () => {
     if (!projectId) return;
     try {
@@ -129,9 +168,8 @@ export const useBiddingTab = (
   }, [projectId]);
 
   useEffect(() => {
-    loadBiddings();
     loadBOQItems();
-  }, [loadBiddings, loadBOQItems]);
+  }, [loadBOQItems]);
 
   // Deep load active bidding details
   const loadActiveBidding = useCallback(async (id) => {
@@ -252,6 +290,58 @@ export const useBiddingTab = (
       alert(
         err.response?.data?.message || "Gagal memperbarui supplier peserta",
       );
+    }
+  };
+
+  // Handle Remove Supplier (shortcut for X button in setup card)
+  const handleRemoveSupplier = async (supplierId) => {
+    if (!activeBidding || activeBidding.status === "FINISHED") return;
+    const hasQuote = activeBidding.items?.some((item) =>
+      item.quotations?.some(
+        (q) => String(q.supplier?._id || q.supplier) === String(supplierId),
+      ),
+    );
+    if (hasQuote) {
+      alert("Supplier yang sudah memiliki harga penawaran tidak dapat dikeluarkan.");
+      return;
+    }
+    const current = (activeBidding.suppliers || []).map((s) => String(s._id || s));
+    const nextSuppliers = current.filter((id) => id !== String(supplierId));
+    try {
+      const res = await apiUpdateBiddingSuppliers(activeBidding._id, nextSuppliers);
+      setActiveBidding(res?.data);
+      await loadBiddings();
+    } catch (err) {
+      alert(err.response?.data?.message || "Gagal menghapus supplier peserta");
+    }
+  };
+
+  // Open supplier picker and pre-load party master
+  const handleOpenSupplierPicker = () => {
+    setPartySearch("");
+    setShowSupplierPickerModal(true);
+  };
+
+  // Add new party to master then auto-select it as supplier
+  const handleAddNewParty = async ({ name, email, phone }) => {
+    if (!activeBidding) return;
+    setAddingParty(true);
+    try {
+      const res = await api.post("/party", { name, email, phone, type: "VENDOR" });
+      const newParty = res.data?.data || res.data;
+      // Reload party list
+      const listRes = await api.get("/party", {
+        params: { search: partySearch.trim(), page: 1, limit: 100 },
+      });
+      setPartyMaster(listRes.data?.data || []);
+      // Auto-toggle (add) new party as supplier
+      if (newParty?._id) {
+        await handleToggleSupplier(newParty._id);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Gagal menambahkan party baru");
+    } finally {
+      setAddingParty(false);
     }
   };
 
@@ -440,27 +530,6 @@ export const useBiddingTab = (
     setActiveId("");
   };
 
-  // Filter biddings in list
-  const filteredBiddings = useMemo(() => {
-    return biddings.filter((bid) => {
-      const matchSearch =
-        !searchQuery ||
-        bid.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bid.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      if (!matchSearch) return false;
-      if (statusFilter === "ALL") return true;
-      if (statusFilter === "FINISHED") return bid.status === "FINISHED";
-      if (statusFilter === "IN_PROGRESS")
-        return (
-          bid.status === "IN_PROGRESS" ||
-          bid.status === "QUOTATION" ||
-          bid.status === "EVALUATION"
-        );
-      if (statusFilter === "DRAFT") return bid.status === "DRAFT";
-      return true;
-    });
-  }, [biddings, searchQuery, statusFilter]);
-
   // Validation readiness
   const finishValidation = useMemo(() => {
     return checkBiddingFinishReady(activeBidding);
@@ -480,7 +549,7 @@ export const useBiddingTab = (
     biddings,
     boqItems,
     boqSections,
-    filteredBiddings,
+    filteredBiddings: biddings,
     loading,
     activeId,
     setActiveId,
@@ -489,10 +558,20 @@ export const useBiddingTab = (
     handleBackToList,
 
     // Filters & Search
+    inputQuery,
+    setInputQuery,
     searchQuery,
     setSearchQuery,
     statusFilter,
     setStatusFilter,
+
+    // Pagination
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalCount,
+    pagedBiddings: biddings,
+    ITEMS_PER_PAGE,
 
     // Create Modal
     showCreateModal,
@@ -528,6 +607,12 @@ export const useBiddingTab = (
     partyMaster,
     loadingParties,
     handleToggleSupplier,
+    handleRemoveSupplier,
+    handleOpenSupplierPicker,
+    handleAddNewParty,
+    addingParty,
+    showSupplierPickerModal,
+    setShowSupplierPickerModal,
 
     // Quotations & Selections
     handleUnitPriceChange,

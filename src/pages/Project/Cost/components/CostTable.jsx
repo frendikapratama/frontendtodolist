@@ -10,11 +10,11 @@ import {
   ArrowUp,
   ArrowDown,
   Coins,
-  ShieldCheck,
   Receipt,
   Eye,
 } from "lucide-react";
 import { formatCurrency, formatDate, STATUS_CONFIG } from "../costConstants";
+import ActionDropdownPortal from "../../../../components/shared/ActionDropdownPortal";
 
 export const CostTable = ({
   isLoading,
@@ -191,14 +191,18 @@ export const CostTable = ({
                       {formatCurrency(item.amount)}
                     </td>
                     <td className="py-3.5 px-3 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${statusConf.style}`}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenStatusModal(item)}
+                        title="Ubah status cost"
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border cursor-pointer transition hover:brightness-110 ${statusConf.style}`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${statusConf.dot}`}
                         />
                         {statusConf.label}
-                      </span>
+                        <ChevronRight className="w-3 h-3 opacity-70" />
+                      </button>
                     </td>
                     <td
                       className="py-3.5 px-3 text-center relative"
@@ -207,6 +211,7 @@ export const CostTable = ({
                       <div className="flex items-center justify-center gap-1">
                         <button
                           type="button"
+                          id={`cost-action-${item._id}`}
                           onClick={() =>
                             setActiveMenuId(isMenuOpen ? null : item._id)
                           }
@@ -216,7 +221,10 @@ export const CostTable = ({
                         </button>
 
                         {isMenuOpen && (
-                          <div className="absolute right-3 top-10 w-48 bg-slate-900 border border-white/10 rounded-xl shadow-2xl py-1 z-30 divide-y divide-white/5 text-left animate-in fade-in zoom-in-95 duration-100">
+                          <ActionDropdownPortal
+                            anchorId={`cost-action-${item._id}`}
+                            className="w-48 bg-slate-900 border border-white/10 rounded-xl shadow-2xl py-1 divide-y divide-white/5 text-left animate-in fade-in zoom-in-95 duration-100"
+                          >
                             <div className="py-1">
                               <button
                                 type="button"
@@ -257,14 +265,6 @@ export const CostTable = ({
                                   <span>Edit Cost</span>
                                 </button>
                               )}
-                              <button
-                                type="button"
-                                onClick={() => handleOpenStatusModal(item)}
-                                className="w-full px-3 py-1.5 text-xs text-slate-200 hover:bg-white/5 flex items-center gap-2 cursor-pointer"
-                              >
-                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                <span>Approval Status</span>
-                              </button>
                             </div>
                             {item.status !== "Approved" && (
                               <div className="py-1">
@@ -281,7 +281,7 @@ export const CostTable = ({
                                 </button>
                               </div>
                             )}
-                          </div>
+                          </ActionDropdownPortal>
                         )}
                       </div>
                     </td>

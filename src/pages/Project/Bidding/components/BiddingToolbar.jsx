@@ -1,16 +1,20 @@
 import React from "react";
-import { Search } from "lucide-react";
+import { RefreshCw, Search, X } from "lucide-react";
 import { BIDDING_STATUS_OPTIONS } from "../biddingConstants";
 
 export const BiddingToolbar = ({
+  inputQuery,
+  setInputQuery,
   searchQuery,
-  setSearchQuery,
   statusFilter,
   setStatusFilter,
+  totalCount,
+  filteredCount,
 }) => {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
+      {/* Status Filter Pills */}
+      <div className="flex items-center gap-2 flex-wrap">
         {BIDDING_STATUS_OPTIONS.map((opt) => (
           <button
             key={opt.value}
@@ -26,15 +30,44 @@ export const BiddingToolbar = ({
         ))}
       </div>
 
-      <div className="relative w-full sm:w-64">
-        <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Cari nama pengadaan..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-lg border border-slate-800 bg-slate-900 pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-        />
+      {/* Search + Info */}
+      <div className="flex items-center gap-3">
+        {/* Result count badge */}
+        {(searchQuery || statusFilter !== "ALL") && (
+          <span className="text-xs text-slate-400 shrink-0">
+            <span className="font-semibold text-white">{filteredCount}</span>
+            {" / "}
+            {totalCount} hasil
+          </span>
+        )}
+
+        {/* Search Input */}
+        <div className="relative w-full sm:w-72">
+          {inputQuery !== searchQuery ? (
+            <RefreshCw
+              size={14}
+              className="absolute left-3 top-2.5 text-cyan-400 animate-spin pointer-events-none"
+            />
+          ) : (
+            <Search size={14} className="absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
+          )}
+          <input
+            type="text"
+            placeholder="Cari nama pengadaan..."
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            className="w-full rounded-lg border border-slate-800 bg-slate-900 pl-9 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+          />
+          {inputQuery && (
+            <button
+              type="button"
+              onClick={() => setInputQuery("")}
+              className="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 transition"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -55,7 +55,7 @@ export function BiddingCard({ bid, onOpen, onDelete, currency: currencyFmt }) {
     }, 0) || 0;
 
   return (
-    <article className="group relative rounded-xl border border-slate-700 bg-slate-900/90 p-5 transition-all duration-200 hover:border-cyan-500/60 hover:shadow-xl hover:shadow-cyan-950/30">
+    <article className="group relative rounded-xl border border-slate-700 bg-slate-900/70 p-5 transition-all duration-200 hover:border-cyan-500/60 hover:shadow-xl hover:shadow-cyan-950/30">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -100,10 +100,10 @@ export function BiddingCard({ bid, onOpen, onDelete, currency: currencyFmt }) {
           )}
           <button
             onClick={onOpen}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition ${
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-base transition ${
               isFinished
-                ? "bg-emerald-700 text-white hover:bg-emerald-600 shadow-md shadow-emerald-950/40"
-                : "bg-cyan-600 text-white hover:bg-cyan-500 shadow-md shadow-cyan-950/40"
+                ? "bg-emerald-700 text-white hover:bg-emerald-600 shadow-xs shadow-emerald-950/40"
+                : "bg-cyan-600 text-white hover:bg-cyan-500 shadow-xs shadow-cyan-950/40"
             }`}
           >
             {isFinished ? "Lihat Hasil" : "Lanjutkan"}

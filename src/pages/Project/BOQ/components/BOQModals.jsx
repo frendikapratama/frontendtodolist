@@ -8,6 +8,7 @@ import {
   FileText,
   Coins,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 import { formatCurrency } from "../boqUtils";
 
@@ -260,8 +261,18 @@ export const BOQFormModal = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Specification</label>
-            <textarea rows={2} value={formData.specification} onChange={(e) => setFormData({ ...formData, specification: e.target.value })} placeholder="Spesifikasi teknis yang dibutuhkan" className="w-full text-xs bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100" />
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              Specification
+            </label>
+            <textarea
+              rows={2}
+              value={formData.specification}
+              onChange={(e) =>
+                setFormData({ ...formData, specification: e.target.value })
+              }
+              placeholder="Spesifikasi teknis yang dibutuhkan"
+              className="w-full text-xs bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"
+            />
           </div>
 
           {/* Requirement quantity and unit */}
@@ -305,9 +316,7 @@ export const BOQFormModal = ({
                 </p>
               )}
             </div>
-
           </div>
-
 
           {/* Notes */}
           <div>
@@ -440,7 +449,14 @@ export const DetailBOQModal = ({
                 {item.description}
               </span>
             </div>
-            {item.specification && <div className="flex justify-between"><span className="text-slate-400">Specification:</span><span className="text-slate-200 text-right max-w-[260px]">{item.specification}</span></div>}
+            {item.specification && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Specification:</span>
+                <span className="text-slate-200 text-right max-w-[260px]">
+                  {item.specification}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-slate-400">Volume & Satuan:</span>
               <span className="text-slate-200 font-mono">

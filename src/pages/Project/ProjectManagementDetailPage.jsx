@@ -91,7 +91,6 @@ const ProjectManagementDetailPage = () => {
       </div>
     );
   }
-
   // ─── Main Content ─────────────────────────────────────────────────────────────
   return (
     <div

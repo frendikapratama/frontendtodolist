@@ -1,5 +1,13 @@
 import React from "react";
-import { ArrowLeft, Check, Gavel, Plus, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Gavel,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import { useBiddingTab } from "./hooks/useBiddingTab";
 import { BiddingOverviewCards } from "./components/BiddingOverviewCards";
 import { BiddingToolbar } from "./components/BiddingToolbar";
@@ -15,6 +23,7 @@ import {
   FinishBiddingModal,
   BOQItemPickerModal,
   QuoteDetailModal,
+  SupplierPickerModal,
 } from "./components/BiddingModals";
 import { statusLabel, currency } from "./biddingUtils";
 
@@ -63,21 +72,21 @@ export default function BiddingTab({
     setBoqSection,
     updatingItems,
     handleSaveBOQItems,
-    partySearch,
-    setPartySearch,
-    loadingParties,
-    partyMaster,
-    handleToggleSupplier,
     showFinishModal,
     finishing,
     handleFinishBidding,
     setShowCreateModal,
+    inputQuery,
+    setInputQuery,
     searchQuery,
-    setSearchQuery,
     statusFilter,
     setStatusFilter,
     loading,
     filteredBiddings,
+    pagedBiddings,
+    currentPage,
+    setCurrentPage,
+    totalPages,
     setActiveId,
     setBiddingToDelete,
     showCreateModal,
@@ -251,11 +260,9 @@ export default function BiddingTab({
               items={items}
               activeSuppliers={activeSuppliers}
               onOpenItemPicker={() => setShowItemPickerModal(true)}
-              partySearch={partySearch}
-              setPartySearch={setPartySearch}
-              loadingParties={loadingParties}
-              partyMaster={partyMaster}
-              onToggleSupplier={handleToggleSupplier}
+              onOpenSupplierPicker={biddingData.handleOpenSupplierPicker}
+              onRemoveSupplier={biddingData.handleRemoveSupplier}
+              isFinished={isFinished}
             />
 
             <BiddingTable
@@ -384,6 +391,19 @@ export default function BiddingTab({
           itemCount={items.length}
           total={activeTotal}
         />
+
+        <SupplierPickerModal
+          isOpen={biddingData.showSupplierPickerModal}
+          onClose={() => biddingData.setShowSupplierPickerModal(false)}
+          activeSuppliers={activeSuppliers}
+          partyMaster={biddingData.partyMaster}
+          partySearch={biddingData.partySearch}
+          setPartySearch={biddingData.setPartySearch}
+          loadingParties={biddingData.loadingParties}
+          onToggleSupplier={biddingData.handleToggleSupplier}
+          onAddNewParty={biddingData.handleAddNewParty}
+          addingParty={biddingData.addingParty}
+        />
       </div>
     );
   }
@@ -391,7 +411,7 @@ export default function BiddingTab({
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Top Banner / Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Gavel className="h-5 w-5 text-cyan-400" />
@@ -418,10 +438,13 @@ export default function BiddingTab({
 
       {/* Filter and Search Bar */}
       <BiddingToolbar
+        inputQuery={inputQuery}
+        setInputQuery={setInputQuery}
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
+        totalCount={biddingData.totalCount}
+        filteredCount={biddingData.totalCount}
       />
 
       {/* Bidding Grid */}
@@ -454,16 +477,100 @@ export default function BiddingTab({
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredBiddings.map((bid) => (
-            <BiddingCard
-              key={bid._id}
-              bid={bid}
-              onOpen={() => setActiveId(bid._id)}
-              onDelete={(b) => setBiddingToDelete(b)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {pagedBiddings.map((bid) => (
+              <BiddingCard
+                key={bid._id}
+                bid={bid}
+                onOpen={() => setActiveId(bid._id)}
+                onDelete={(b) => setBiddingToDelete(b)}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-slate-400">
+                Halaman{" "}
+                <span className="font-semibold text-white">{currentPage}</span>{" "}
+                dari{" "}
+                <span className="font-semibold text-white">{totalPages}</span> •{" "}
+                <span className="text-slate-500">
+                  {biddingData.totalCount} bidding
+                </span>
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronLeft size={14} />
+                  Prev
+                </button>
+
+                {/* Page number pills */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => {
+                      // show first, last, current, and neighbors
+                      return (
+                        p === 1 ||
+                        p === totalPages ||
+                        Math.abs(p - currentPage) <= 1
+                      );
+                    })
+                    .reduce((acc, p, idx, arr) => {
+                      if (idx > 0 && p - arr[idx - 1] > 1) {
+                        acc.push("...");
+                      }
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((item, idx) =>
+                      item === "..." ? (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="px-1 text-xs text-slate-600"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => setCurrentPage(item)}
+                          className={`min-w-7 rounded-lg px-2 py-1 text-xs font-medium transition ${
+                            item === currentPage
+                              ? "bg-cyan-600 text-white shadow-sm"
+                              : "border border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800"
+                          }`}
+                        >
+                          {item}
+                        </button>
+                      ),
+                    )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  Next
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* MODALS FOR LIST VIEW */}

@@ -65,7 +65,11 @@ export const useBOQTab = (projectId) => {
   // Close active dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (actionMenuRef.current && !actionMenuRef.current.contains(e.target)) {
+      if (
+        actionMenuRef.current &&
+        !actionMenuRef.current.contains(e.target) &&
+        !e.target.closest?.("[data-action-menu-portal]")
+      ) {
         setActiveMenuId(null);
       }
       if (

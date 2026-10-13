@@ -3,8 +3,8 @@ import api from "../api/axios";
 /**
  * Get all biddings for a project
  */
-export async function getBiddingsByProject(projectId) {
-  const res = await api.get(`/biddings/project/${projectId}`);
+export async function getBiddingsByProject(projectId, params = {}) {
+  const res = await api.get(`/biddings/project/${projectId}`, { params });
   return res.data;
 }
 

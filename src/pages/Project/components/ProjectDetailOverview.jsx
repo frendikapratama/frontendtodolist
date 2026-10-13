@@ -13,13 +13,13 @@ const ProjectDetailOverview = ({ project }) => {
       {/* METRICS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Timeline Card */}
-        <div className="border bg-slate-950/60 border-white/5 rounded-2xl p-5 space-y-2 shadow-xs">
-          <span className="text-sm font-semibold text-slate-400 capitalize tracking-wider flex items-center gap-2">
+        <div className="border bg-slate-900/60 border-white/10 rounded-2xl p-5 space-y-2 shadow-sm backdrop-blur-md">
+          <span className="text-xs font-semibold text-slate-400 capitalize tracking-wider flex items-center gap-2">
             <Calendar className="w-4 h-4 text-cyan-500" />
             Timeline Proyek
           </span>
           <div
-            className="text-base font-bold text-white pt-1"
+            className="text-xl font-bold text-white pt-1"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             {formatProjectDetailDate(project?.startedAt)} –{" "}
@@ -28,8 +28,8 @@ const ProjectDetailOverview = ({ project }) => {
         </div>
 
         {/* Scope / Site Card */}
-        <div className=" border bg-slate-950/60 border-white/5 rounded-2xl p-5 space-y-2 shadow-sm">
-          <span className="text-sm font-semibold text-slate-400 capitalize tracking-wider flex items-center gap-2">
+        <div className="border bg-slate-900/60 border-white/10 rounded-2xl p-5 space-y-2 shadow-sm backdrop-blur-md">
+          <span className="text-xs font-semibold text-slate-400 capitalize tracking-wider flex items-center gap-2">
             <MapPin className="w-4 h-4 text-emerald-500" />
             Scope / Lokasi Site
           </span>
@@ -50,13 +50,13 @@ const ProjectDetailOverview = ({ project }) => {
         </div>
 
         {/* PM Card */}
-        <div className="border bg-slate-950/60 border-white/5 rounded-2xl p-5 space-y-2 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="border bg-slate-900/60 border-white/10 rounded-2xl p-5 space-y-2 shadow-sm backdrop-blur-md">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <UserCheck className="w-4 h-4 text-violet-500" />
             Penanggung Jawab (PM)
           </span>
           <div
-            className="text-base font-bold text-white truncate pt-1"
+            className="text-xl font-bold text-white truncate pt-1"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             {project?.projectManager?.username || "-"}
@@ -67,7 +67,7 @@ const ProjectDetailOverview = ({ project }) => {
       {/* PARTIES & STAKEHOLDERS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Client Parties */}
-        <div className="border bg-slate-950/60 border-white/5 rounded-2xl p-5 space-y-3 shadow-sm">
+        <div className="border bg-slate-900/60 border-white/10 rounded-2xl p-5 space-y-3 shadow-sm backdrop-blur-md">
           <div className="flex items-center justify-between pb-3 border-b border-white/5">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <Building2 className="w-4 h-4 text-emerald-500" />
@@ -86,7 +86,7 @@ const ProjectDetailOverview = ({ project }) => {
               {clientParties.map((cp) => (
                 <div
                   key={cp._id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-white/5 text-xs"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-white/10 text-xs"
                 >
                   <span className="font-semibold text-white">
                     {cp.party?.name || "-"}
@@ -101,7 +101,7 @@ const ProjectDetailOverview = ({ project }) => {
         </div>
 
         {/* Vendor Parties */}
-        <div className="border bg-slate-950/60 border-white/5 rounded-2xl p-5 space-y-3 shadow-sm">
+        <div className="border bg-slate-900/60 border-white/10 rounded-2xl p-5 space-y-3 shadow-sm backdrop-blur-md">
           <div className="flex items-center justify-between pb-3 border-b border-white/5">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <Building2 className="w-4 h-4 text-amber-500" />
@@ -120,7 +120,7 @@ const ProjectDetailOverview = ({ project }) => {
               {vendorParties.map((vp) => (
                 <div
                   key={vp._id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-white/5 text-xs"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-white/10 text-xs"
                 >
                   <span className="font-semibold text-white">
                     {vp.party?.name || "-"}

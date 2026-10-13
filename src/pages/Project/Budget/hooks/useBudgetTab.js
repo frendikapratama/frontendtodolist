@@ -72,7 +72,8 @@ export const useBudgetTab = (
     const handleClickOutside = (event) => {
       if (
         actionMenuRef.current &&
-        !actionMenuRef.current.contains(event.target)
+        !actionMenuRef.current.contains(event.target) &&
+        !event.target.closest?.("[data-action-menu-portal]")
       ) {
         setActiveMenuId(null);
       }

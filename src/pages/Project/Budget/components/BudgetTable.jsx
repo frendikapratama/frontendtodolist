@@ -11,10 +11,10 @@ import {
   ArrowDown,
   Eye,
   Coins,
-  ShieldCheck,
   ListTree,
 } from "lucide-react";
 import { formatCurrency, STATUS_CONFIG } from "../budgetConstants";
+import ActionDropdownPortal from "../../../../components/shared/ActionDropdownPortal";
 
 export const BudgetTable = ({
   isLoading,
@@ -218,14 +218,18 @@ export const BudgetTable = ({
                       </span>
                     </td>
                     <td className="py-3.5 px-3 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${statusConf.style}`}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenApproveModal(item)}
+                        title="Buka alur perubahan status budget"
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border cursor-pointer transition hover:brightness-110 ${statusConf.style}`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${statusConf.dot}`}
                         />
                         {statusConf.label}
-                      </span>
+                        <ChevronRight className="w-3 h-3 opacity-70" />
+                      </button>
                     </td>
                     <td
                       className="py-3.5 px-3 text-center relative"
@@ -234,6 +238,7 @@ export const BudgetTable = ({
                       <div className="flex items-center justify-center gap-1">
                         <button
                           type="button"
+                          id={`budget-action-${item._id}`}
                           onClick={() =>
                             setActiveMenuId(isMenuOpen ? null : item._id)
                           }
@@ -245,7 +250,10 @@ export const BudgetTable = ({
 
                         {/* Action dropdown menu */}
                         {isMenuOpen && (
-                          <div className="absolute right-3 top-10 w-48 bg-slate-900 border border-white/10 rounded-xl shadow-2xl py-1 z-30 divide-y divide-white/5 animate-in fade-in zoom-in-95 duration-100 text-left">
+                          <ActionDropdownPortal
+                            anchorId={`budget-action-${item._id}`}
+                            className="w-48 bg-slate-900 border border-white/10 rounded-xl shadow-2xl py-1 divide-y divide-white/5 animate-in fade-in zoom-in-95 duration-100 text-left"
+                          >
                             <div className="py-1">
                               <button
                                 type="button"
@@ -283,14 +291,6 @@ export const BudgetTable = ({
                                   <span>Edit Planned Budget</span>
                                 </button>
                               )}
-                              <button
-                                type="button"
-                                onClick={() => handleOpenApproveModal(item)}
-                                className="w-full px-3 py-1.5 text-xs text-slate-200 hover:bg-white/5 flex items-center gap-2 cursor-pointer"
-                              >
-                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                <span>Approval Workflow</span>
-                              </button>
                             </div>
                             <div className="py-1">
                               <button
@@ -305,7 +305,7 @@ export const BudgetTable = ({
                                 <span>Hapus Budget</span>
                               </button>
                             </div>
-                          </div>
+                          </ActionDropdownPortal>
                         )}
                       </div>
                     </td>

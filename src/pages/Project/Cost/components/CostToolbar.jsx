@@ -26,7 +26,7 @@ export const CostToolbar = ({
             placeholder="Cari Cost Code, deskripsi..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 text-xs bg-slate-950 text-slate-200 placeholder:text-slate-500 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+            className="w-full pl-9 pr-8 py-2 text-xs bg-slate-900/80 text-slate-200 placeholder:text-slate-500 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
           />
           {searchInput && (
             <button
@@ -45,7 +45,7 @@ export const CostToolbar = ({
             setSelectedStatus(e.target.value);
             setPage(1);
           }}
-          className="text-xs bg-slate-950 text-slate-200 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+          className="text-xs bg-slate-900/80 text-slate-200 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
         >
           <option value="all">Semua Status</option>
           <option value="Draft">Draft</option>
@@ -62,7 +62,7 @@ export const CostToolbar = ({
               setSelectedBudgetId(e.target.value);
               setPage(1);
             }}
-            className="text-xs bg-slate-950 text-slate-200 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+            className="text-xs bg-slate-900/80 text-slate-200 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
           >
             <option value="all">Semua Budget</option>
             {allBudgets.map((b) => (
