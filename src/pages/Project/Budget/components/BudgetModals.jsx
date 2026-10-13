@@ -220,8 +220,7 @@ export const BudgetModals = ({
               <p className="font-semibold text-white">
                 {selectedBudget.boqItem?.description}
               </p>
-              <p className="text-slate-400">
-              </p>
+              <p className="text-slate-400"></p>
             </div>
 
             <div className="space-y-1">

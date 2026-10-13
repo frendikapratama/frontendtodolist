@@ -1,17 +1,11 @@
 import React from "react";
-import {
-  CheckCircle2,
-  Coins,
-  ShieldCheck,
-  TrendingDown,
-} from "lucide-react";
+import { CheckCircle2, Coins, ShieldCheck, TrendingDown } from "lucide-react";
 import { formatCurrency } from "../budgetConstants";
 
 export const BudgetOverviewCards = ({ summary }) => (
   <>
     {/* Allocation and cost summary */}
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-
       {/* Planned Budget */}
       <div className="bg-slate-900/60 rounded-2xl p-5 border border-white/10 shadow-sm backdrop-blur-md space-y-1">
         <div className="flex items-center justify-between text-slate-400">
