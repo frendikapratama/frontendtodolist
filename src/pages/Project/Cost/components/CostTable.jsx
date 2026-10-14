@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Plus,
+  ChevronDown,
   ChevronRight,
   ChevronLeft,
   Edit2,
@@ -195,13 +196,13 @@ export const CostTable = ({
                         type="button"
                         onClick={() => handleOpenStatusModal(item)}
                         title="Ubah status cost"
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border cursor-pointer transition hover:brightness-110 ${statusConf.style}`}
+                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold cursor-pointer transition hover:brightness-110 ${statusConf.style}`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${statusConf.dot}`}
                         />
                         {statusConf.label}
-                        <ChevronRight className="w-3 h-3 opacity-70" />
+                        <ChevronDown className="w-3 h-3 opacity-70" />
                       </button>
                     </td>
                     <td

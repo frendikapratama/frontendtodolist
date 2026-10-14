@@ -28,6 +28,7 @@ import IndexParty from "./pages/Party/Index";
 import IndexProject from "./pages/Project/Index";
 import ProjectManagementDetailPage from "./pages/Project/ProjectManagementDetailPage";
 import RoomDetailPage from "./pages/BookingMeeting/Rooms/DetailRoom";
+import ResourceList from "./pages/Resource/ResourceList";
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};
@@ -74,6 +75,7 @@ export default function App() {
                       path="/project-management"
                       element={<IndexProject />}
                     />
+                    <Route path="/resources" element={<ResourceList />} />
                     <Route
                       path="/project-management/:id"
                       element={<ProjectManagementDetailPage />}

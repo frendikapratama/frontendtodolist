@@ -36,6 +36,7 @@ import ProfileDialog from "./ui/ProfileDialog";
 const iconMap = {
   dashboard: LayoutDashboard,
   products: Package,
+  package: Package,
   users: Users,
   reports: FileText,
   settings: Settings,

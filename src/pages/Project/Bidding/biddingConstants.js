@@ -15,23 +15,23 @@ export const BIDDING_STATUS_OPTIONS = [
 export const BIDDING_STATUS_CONFIG = {
   DRAFT: {
     label: "Draft",
-    badge: "bg-slate-800 text-slate-400 border border-slate-700",
+    badge: "bg-slate-100 text-slate-700 border-slate-300",
   },
   IN_PROGRESS: {
     label: "In Progress",
-    badge: "bg-cyan-950/90 text-cyan-300 border border-cyan-700/50",
+    badge: "bg-cyan-50 text-cyan-700 border-cyan-300",
   },
   QUOTATION: {
     label: "In Progress",
-    badge: "bg-cyan-950/90 text-cyan-300 border border-cyan-700/50",
+    badge: "bg-cyan-50 text-cyan-700 border-cyan-300",
   },
   EVALUATION: {
     label: "In Progress",
-    badge: "bg-cyan-950/90 text-cyan-300 border border-cyan-700/50",
+    badge: "bg-cyan-50 text-cyan-700 border-cyan-300",
   },
   FINISHED: {
     label: "Selesai",
-    badge: "bg-emerald-950/90 text-emerald-300 border border-emerald-700/50",
+    badge: "bg-emerald-50 text-emerald-700 border-emerald-300",
   },
 };
 

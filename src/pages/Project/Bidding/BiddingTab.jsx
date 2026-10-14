@@ -121,14 +121,15 @@ export default function BiddingTab({
             </button>
             <div className="h-4 w-px bg-slate-700" />
             <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
                 isFinished
-                  ? "bg-emerald-950 text-emerald-300 border border-emerald-700/60"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-300"
                   : activeBidding.status === "IN_PROGRESS"
-                    ? "bg-cyan-950 text-cyan-300 border border-cyan-700/60"
-                    : "bg-slate-800 text-slate-400 border border-slate-700"
+                    ? "bg-cyan-50 text-cyan-700 border-cyan-300"
+                    : "bg-slate-100 text-slate-700 border-slate-300"
               }`}
             >
+              <span className={`h-1.5 w-1.5 rounded-full ${isFinished ? "bg-emerald-500" : activeBidding.status === "IN_PROGRESS" ? "bg-cyan-500" : "bg-slate-400"}`} />
               {isFinished
                 ? "✓ Bidding Selesai"
                 : statusLabel(activeBidding.status)}

@@ -7,6 +7,7 @@ import {
   Wallet,
   Edit3,
   Gavel,
+  Package,
 } from "lucide-react";
 import { PROJECT_DETAIL_STATUS_MAP } from "../projectDetailConstants";
 
@@ -40,6 +41,12 @@ const TAB_CONFIG = [
     label: "Cost",
     icon: Wallet,
     activeClass: " text-slate-900 ",
+  },
+  {
+    key: "resources",
+    label: "Resources",
+    icon: Package,
+    activeClass: "text-slate-900",
   },
 ];
 

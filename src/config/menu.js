@@ -50,6 +50,12 @@ export const menuItems = [
     icon: "folder",
     // requireAdmin: true,
   },
+  {
+    id: "Resources",
+    label: "Resources",
+    path: "/resources",
+    icon: "package",
+  },
 ];
 
 export const menuBooking = [

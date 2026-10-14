@@ -9,6 +9,7 @@ import BiddingTab from "./Bidding/BiddingTab";
 import ProjectDetailHeader from "./components/ProjectDetailHeader";
 import ProjectDetailOverview from "./components/ProjectDetailOverview";
 import ProjectDetailEditModal from "./components/ProjectDetailEditModal";
+import ResourcePlanningTab from "./Resource/ResourcePlanningTab";
 import { useProjectDetailPage } from "./hooks/useProjectDetailPage";
 
 const ProjectManagementDetailPage = () => {
@@ -141,7 +142,7 @@ const ProjectManagementDetailPage = () => {
               onNavigateToTab={handleNavigateToTab}
             />
           </div>
-        ) : (
+        ) : activeTab === "cost" ? (
           <div className="animate-in fade-in duration-200">
             <CostTab
               projectId={project._id}
@@ -150,6 +151,10 @@ const ProjectManagementDetailPage = () => {
               onClearTabContext={() => handleNavigateToTab(activeTab, null)}
               onNavigateToTab={handleNavigateToTab}
             />
+          </div>
+        ) : (
+          <div className="animate-in fade-in duration-200">
+            <ResourcePlanningTab projectId={project._id} />
           </div>
         )}
       </main>
