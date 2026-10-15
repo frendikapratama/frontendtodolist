@@ -28,6 +28,7 @@ import MeetingRecapPage from "./pages/BookingMeeting/MeetingRecap/Index";
 import ScheduleToday from "./pages/BookingMeeting/ScheduleToday";
 import RoomDetailPage from "./pages/BookingMeeting/Rooms/DetailRoom";
 import NewRoomDetailPage from "./pages/BookingMeeting/Rooms/NewRoomDetailPage";
+
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};
