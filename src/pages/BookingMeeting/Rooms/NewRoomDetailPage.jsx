@@ -373,7 +373,7 @@ export default function RoomDetailPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* SECTION BAWAH: Meeting Saat Ini */}
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm shrink-0">
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm shrink-0 flex flex-col">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                     <Clock size={25} />
@@ -384,7 +384,7 @@ export default function RoomDetailPage() {
                 </div>
 
                 {currentMeeting ? (
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 rounded-xl">
+                  <div className="flex flex-col sm:flex-row items-start justify-center gap-4 p-3 rounded-xl  my-auto">
                     <div className="w-full min-w-0">
                       <div className="w-full min-w-0">
                         <h4 className="text-xl font-bold text-slate-800">
@@ -509,9 +509,9 @@ export default function RoomDetailPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-4 grid grid-cols-1 gap-1 max-h-8/12">
+          <div className="lg:col-span-4 grid grid-cols-1 gap-1 h-full min-h-0">
             {/* CARD 1: MINGGU INI */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div className="h-full min-h-0 bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden flex flex-col">
               {/* Header Card */}
               <div className="px-4 py-3 bg-linear-to-r from-blue-700/80 via-blue-800/90 to-blue-900 flex items-center justify-between">
                 <h4 className="text-lg font-semibold uppercase tracking-wider text-slate-50">
@@ -525,7 +525,7 @@ export default function RoomDetailPage() {
               {/* Konten List Meeting (Menggunakan Grid / Flex) */}
               <div
                 ref={meetingListRef}
-                className="p-3 flex-1 overflow-y-auto  custom-scrollbar"
+                className="p-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar"
               >
                 {nextMeetings?.thisWeek?.length > 0 ? (
                   <div className="grid grid-cols-1 gap-2.5">
