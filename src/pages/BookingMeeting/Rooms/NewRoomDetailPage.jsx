@@ -12,6 +12,7 @@ import {
   Clock,
   AlertCircle,
   ArrowLeft,
+  ArrowRight,
   Users,
   CalendarDays,
   Hourglass,
@@ -115,6 +116,7 @@ export default function RoomDetailPage() {
     return d.toLocaleString("id-ID", {
       hour: "2-digit",
       minute: "2-digit",
+      hourCycle: "h23",
     });
   };
 
@@ -125,7 +127,7 @@ export default function RoomDetailPage() {
         <div className="flex flex-col items-center gap-3 text-blue-600">
           <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-sm font-medium tracking-wide">
-            Memuat detail ruangan...
+            Loading room details...
           </p>
         </div>
       </div>
@@ -139,18 +141,18 @@ export default function RoomDetailPage() {
         <div className="bg-white border border-slate-200 p-6 rounded-2xl text-center max-w-md w-full shadow-xl">
           <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-slate-800 mb-1">
-            Gagal Memuat Data
+            Failed to Load Data
           </h3>
           <p className="text-xs text-slate-500 mb-6">
             {error?.response?.data?.message ||
               error?.message ||
-              "Terjadi kesalahan yang tidak diketahui"}
+              "An unknown error occurred"}
           </p>
           <button
             onClick={() => navigate(-1)}
             className="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2"
           >
-            <ArrowLeft size={16} /> Kembali
+            <ArrowLeft size={16} /> Go Back
           </button>
         </div>
       </div>
@@ -162,12 +164,12 @@ export default function RoomDetailPage() {
     return (
       <div className="h-screen w-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center text-slate-600">
-          <p className="mb-4 font-medium">Ruangan tidak ditemukan.</p>
+          <p className="mb-4 font-medium">Room not found.</p>
           <button
             onClick={() => navigate(-1)}
             className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm hover:bg-blue-100 transition flex items-center gap-2 mx-auto"
           >
-            <ArrowLeft size={16} /> Kembali
+            <ArrowLeft size={16} /> Go Back
           </button>
         </div>
       </div>
@@ -179,12 +181,18 @@ export default function RoomDetailPage() {
     status,
     isAvailable,
     nextMeetings,
+    nextMeeting,
     remainingMinutes,
     currentMeeting,
     dailyMeetings,
     totalMeetingToday,
     totalMeetingTomorrow,
   } = data;
+
+  // Filter nextMeeting dari list minggu ini agar tidak double
+  const filteredThisWeek = nextMeetings?.thisWeek?.filter(
+    (item) => item._id !== nextMeeting?._id
+  );
 
   return (
     <div
@@ -220,7 +228,7 @@ export default function RoomDetailPage() {
           <div class="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto border-t lg:border-t-0 border-slate-100 bg-white">
             <div>
               <h2 class="text-lg sm:text-xl font-extrabold text-blue-950 tracking-tight capitalize">
-                {room?.nama || "Ruang Meeting"}
+                {room?.nama || "Meeting Room"}
               </h2>
               <p class="text-xs sm:text-sm text-slate-500 font-medium mt-0.5 capitalize">
                 {room?.lokasi || "Office Lantai 2 HPC"}
@@ -300,7 +308,7 @@ export default function RoomDetailPage() {
                       }`}
                     />
                     <span className="text-xs font-bold tracking-wide uppercase">
-                      {status || (!isAvailable ? "In Progress" : "Available")}
+                      {status || (!isAvailable ? "In Use" : "Available")}
                     </span>
                   </div>
                 </div>
@@ -313,11 +321,10 @@ export default function RoomDetailPage() {
                       className="text-amber-400 animate-pulse"
                     />
                     <span>
-                      Sisa{" "}
                       <strong className="text-white font-semibold">
                         {remainingMinutes}
                       </strong>{" "}
-                      min
+                      min remaining
                     </span>
                   </div>
                 )}
@@ -331,14 +338,14 @@ export default function RoomDetailPage() {
 
                 <div className="space-y-1.5 pl-2">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800/80">
-                    Total Meeting Hari Ini
+                    Today's Meetings
                   </p>
                   <div className="flex items-baseline gap-2">
                     <p className="text-3xl font-black tracking-tight text-emerald-950">
                       {totalMeetingToday || 0}
                     </p>
                     <span className="text-xs font-medium text-emerald-700/80">
-                      Jadwal
+                      Scheduled
                     </span>
                   </div>
                 </div>
@@ -353,14 +360,14 @@ export default function RoomDetailPage() {
 
                 <div className="space-y-1.5 pl-2">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-amber-800/80">
-                    Total Meeting Besok
+                    Tomorrow's Meetings
                   </p>
                   <div className="flex items-baseline gap-2">
                     <p className="text-3xl font-black tracking-tight text-amber-950">
                       {totalMeetingTomorrow || 0}
                     </p>
                     <span className="text-xs font-medium text-amber-700/80">
-                      Jadwal
+                      Scheduled
                     </span>
                   </div>
                 </div>
@@ -379,7 +386,7 @@ export default function RoomDetailPage() {
                     <Clock size={25} />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-800">
-                    Meeting Saat Ini
+                    Current Meeting
                   </h3>
                 </div>
 
@@ -399,7 +406,7 @@ export default function RoomDetailPage() {
 
                           {remainingMinutes != null && (
                             <span className="shrink-0 text-lg sm:text-xl font-semibold text-blue-600  px-3 py-1 rounded-full">
-                              Sisa {remainingMinutes} mnt
+                              {remainingMinutes} min left
                             </span>
                           )}
                         </div>
@@ -419,90 +426,54 @@ export default function RoomDetailPage() {
                   </div>
                 ) : (
                   <div className="text-center py-5 text-xs text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-                    Tidak ada meeting yang sedang berlangsung saat ini. Ruangan
-                    siap digunakan.
+                    No meeting in progress. The room is available.
                   </div>
                 )}
               </div>
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm shrink-0">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <BarChart3 size={25} />
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm shrink-0 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
+                    <ArrowRight size={25} />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-800">
-                    Statistik Meeting Harian
+                    Next Meeting
                   </h3>
                 </div>
 
-                {Array.isArray(dailyMeetings) && dailyMeetings.length > 0 ? (
-                  <div className="pt-2">
-                    {/* Area Grafik Batang */}
-                    <div className="h-36 flex items-end justify-between gap-2 px-2 border-b border-slate-100 pb-2">
-                      {dailyMeetings.map((item, index) => {
-                        const maxTotal = Math.max(
-                          ...dailyMeetings.map((d) => d.total),
-                          5,
-                        );
-                        const heightPercentage = (item.total / maxTotal) * 100;
+                {nextMeeting ? (
+                  <div className="flex flex-col sm:flex-row items-start justify-center gap-4 p-3 rounded-xl my-auto">
+                    <div className="w-full min-w-0">
+                      <h4 className="text-xl font-bold text-slate-800 truncate">
+                        {nextMeeting.title}
+                      </h4>
 
-                        const activeColors = [
-                          "bg-blue-600 hover:bg-blue-700", // Hari ke-1
-                          "bg-indigo-600 hover:bg-indigo-700", // Hari ke-2
-                          "bg-violet-600 hover:bg-violet-700", // Hari ke-3
-                          "bg-emerald-600 hover:bg-emerald-700", // Hari ke-4
-                          "bg-amber-600 hover:bg-amber-700", // Hari ke-5
-                          "bg-rose-600 hover:bg-rose-700", // Hari ke-6
-                          "bg-cyan-600 hover:bg-cyan-700", // Hari ke-7
-                        ];
+                      <div className="flex items-center gap-1.5 text-sm text-violet-600 font-semibold mt-2">
+                        <CalendarDays size={14} className="shrink-0" />
+                        <span>
+                          {dayjs(nextMeeting.startTime).format("dddd, D MMMM YYYY")}
+                        </span>
+                      </div>
 
-                        const colorClass =
-                          activeColors[index % activeColors.length];
+                      <div className="w-full flex items-center justify-between gap-3 py-3">
+                        <span className="text-xl sm:text-2xl text-slate-600 font-bold tracking-tight">
+                          {formatTime(nextMeeting.startTime)} -{" "}
+                          {formatTime(nextMeeting.endTime)}
+                        </span>
+                      </div>
 
-                        return (
-                          <div
-                            key={index}
-                            className="flex-1 flex flex-col items-center h-full justify-end group relative"
-                          >
-                            <div className="absolute -top-7 bg-slate-800 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm pointer-events-none z-10">
-                              {item.total} meeting
-                            </div>
-
-                            <span className="text-[10px] font-semibold text-slate-700 mb-1">
-                              {item.total > 0 ? item.total : ""}
-                            </span>
-
-                            {/* Batang Grafik */}
-                            <div
-                              className={`w-full max-w-[26px] rounded-t-lg transition-all duration-300 shadow-sm ${
-                                item.total > 0
-                                  ? colorClass
-                                  : "bg-slate-100 hover:bg-slate-200"
-                              }`}
-                              style={{
-                                height: `${Math.max(heightPercentage, 8)}%`,
-                              }}
-                            ></div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex justify-between gap-2 px-2 pt-3">
-                      {dailyMeetings.map((item, index) => (
-                        <div key={index} className="flex-1 text-center">
-                          <p className="text-[11px] font-semibold text-slate-700">
-                            {item.day.slice(0, 3)}
-                          </p>
-                          <p className="text-[9px] text-slate-400 font-mono mt-0.5">
-                            {item.date.split("-").slice(1).join("/")}
-                          </p>
-                        </div>
-                      ))}
+                      <div className="flex items-center gap-1">
+                        <Users size={18} className="text-slate-400" />
+                        <p className="text-base text-slate-500">
+                          <span className="font-medium text-slate-700">
+                            {nextMeeting.organizer || "Admin"}
+                          </span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-5 text-xs text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-                    Tidak ada data statistik.
+                  <div className="text-center py-5 text-xs text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-xl my-auto">
+                    No upcoming meetings scheduled.
                   </div>
                 )}
               </div>
@@ -515,10 +486,10 @@ export default function RoomDetailPage() {
               {/* Header Card */}
               <div className="px-4 py-3 bg-linear-to-r from-blue-700/80 via-blue-800/90 to-blue-900 flex items-center justify-between">
                 <h4 className="text-lg font-semibold uppercase tracking-wider text-slate-50">
-                  Minggu Ini
+                  This Week
                 </h4>
                 <span className="text-sm font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                  {nextMeetings?.thisWeek?.length || 0} meeting
+                  {filteredThisWeek?.length || 0} meetings
                 </span>
               </div>
 
@@ -527,9 +498,9 @@ export default function RoomDetailPage() {
                 ref={meetingListRef}
                 className="p-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar"
               >
-                {nextMeetings?.thisWeek?.length > 0 ? (
+                {filteredThisWeek?.length > 0 ? (
                   <div className="grid grid-cols-1 gap-2.5">
-                    {nextMeetings.thisWeek.map((item) => (
+                    {filteredThisWeek.map((item) => (
                       <div
                         key={item._id}
                         className="p-3 bg-white hover:bg-slate-50/80 border border-slate-200/60 rounded-xl transition-all shadow-2xs hover:shadow-sm"
@@ -562,7 +533,7 @@ export default function RoomDetailPage() {
                   </div>
                 ) : (
                   <div className="py-6 text-center text-xs text-slate-400">
-                    Tidak ada meeting tersisa minggu ini.
+                    No remaining meetings this week.
                   </div>
                 )}
               </div>
