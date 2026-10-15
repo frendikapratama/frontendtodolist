@@ -27,6 +27,7 @@ import IndexMySchedule from "./pages/BookingMeeting/MySchedule/Index";
 import MeetingRecapPage from "./pages/BookingMeeting/MeetingRecap/Index";
 import ScheduleToday from "./pages/BookingMeeting/ScheduleToday";
 import RoomDetailPage from "./pages/BookingMeeting/Rooms/DetailRoom";
+import NewRoomDetailPage from "./pages/BookingMeeting/Rooms/NewRoomDetailPage";
 export default function App() {
   if (import.meta.env.MODE === "development") {
     console.log = () => {};
@@ -43,7 +44,8 @@ export default function App() {
                 <Route path="/schedule-today" element={<ScheduleToday />} />
                 <Route path="/forgot-password" element={<AuthPages />} />
                 <Route path="/verify-reset-password" element={<AuthPages />} />
-                <Route path="/room/:roomId" element={<RoomDetailPage />} />
+                {/* <Route path="/room/:roomId" element={<RoomDetailPage />} /> */}
+                <Route path="/room/:roomId" element={<NewRoomDetailPage />} />
                 <Route path="/" element={<Navigate to="/login" />} />
                 <Route path="/login" element={<AuthPages />} />
                 <Route
