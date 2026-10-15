@@ -508,7 +508,7 @@ const IndexBooking = () => {
             onClose={() => setScheduleRoom(null)}
           />
         )}
-        <TableMeeting fixedStatus="scheduled" />
+        <TableMeeting fixedStatuses={["scheduled", "in_progress"]} />
       </div>
     </>
   );

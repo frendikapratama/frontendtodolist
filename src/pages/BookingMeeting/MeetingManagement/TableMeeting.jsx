@@ -62,7 +62,8 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const TableMeeting = ({ compact = false, fixedStatus = null }) => {
+const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = null }) => {
+  const visibleStatuses = fixedStatuses || (fixedStatus ? [fixedStatus] : null);
   console.log("[TableMeeting] mounted", {
     compact,
   });
@@ -86,9 +87,10 @@ const TableMeeting = ({ compact = false, fixedStatus = null }) => {
 
   const { meetingsQuery } = useMeetings();
   const { data, isLoading, dataUpdatedAt, isError, error, isFetching } =
-    meetingsQuery(page, limit, {
+    meetingsQuery(fixedStatuses ? 1 : page, visibleStatuses ? 100 : limit, {
       ...filters,
       ...(fixedStatus ? { status: fixedStatus } : {}),
+      ...(visibleStatuses && !fixedStatus ? { status: "all" } : {}),
     });
 
   const { roomsQuery } = useRooms();
@@ -134,7 +136,7 @@ const TableMeeting = ({ compact = false, fixedStatus = null }) => {
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (value === "" || value === "all") return false;
-    if (key === "status" && fixedStatus) return false;
+    if (key === "status" && visibleStatuses) return false;
     if (
       compact &&
       (key === "startDate" || key === "endDate") &&
@@ -151,8 +153,26 @@ const TableMeeting = ({ compact = false, fixedStatus = null }) => {
     document.getElementById("meetingManagementModal").close();
   };
 
-  const meetings = data?.data || [];
-  const pagination = data?.pagination || {};
+  const fetchedMeetings = data?.data || [];
+  const matchingMeetings = visibleStatuses
+    ? fetchedMeetings.filter((meeting) => visibleStatuses.includes(meeting.status))
+    : fetchedMeetings;
+  const meetings = fixedStatuses
+    ? matchingMeetings.slice((page - 1) * limit, page * limit)
+    : matchingMeetings;
+  const totalMeetings = fixedStatuses ? matchingMeetings.length : data?.pagination?.total || 0;
+  const totalPages = fixedStatuses
+    ? Math.ceil(totalMeetings / limit)
+    : data?.pagination?.totalPages || 1;
+  const pagination = fixedStatuses
+    ? {
+        page,
+        totalPages,
+        total: totalMeetings,
+        hasPrev: page > 1,
+        hasNext: page < totalPages,
+      }
+    : data?.pagination || {};
 
   const formatDateTime = (dateStr) => {
     if (!dateStr) return "-";
@@ -239,7 +259,7 @@ const TableMeeting = ({ compact = false, fixedStatus = null }) => {
 
           <div
             className={`grid gap-4 items-end ${
-              fixedStatus
+              visibleStatuses
                 ? "grid-cols-1 sm:grid-cols-3"
                 : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
             }`}
@@ -262,7 +282,7 @@ const TableMeeting = ({ compact = false, fixedStatus = null }) => {
             </div>
 
             {/* Status (disembunyikan jika fixedStatus) */}
-            {!fixedStatus && (
+            {!visibleStatuses && (
               <div className="flex flex-col gap-1 min-w-0">
                 <label className="text-xs font-medium text-slate-400">
                   Status
