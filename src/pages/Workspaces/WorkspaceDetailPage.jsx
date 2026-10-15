@@ -49,12 +49,19 @@ const WorkspaceDetailPage = () => {
 
   const handleAddProject = (e) => {
     e.preventDefault();
-    addProjectMutation.mutate({
-      workspaceId: id,
-      data: { nama: projectName },
-    });
-    setProjectName("");
-    document.getElementById("addProjectModal").close();
+    if (!projectName.trim()) return;
+    addProjectMutation.mutate(
+      {
+        workspaceId: id,
+        data: { nama: projectName.trim() },
+      },
+      {
+        onSuccess: () => {
+          setProjectName("");
+          document.getElementById("addProjectModal").close();
+        },
+      }
+    );
   };
 
   const handleInviteMember = (e) => {
@@ -104,8 +111,12 @@ const WorkspaceDetailPage = () => {
               required
             />
             <div className="modal-action">
-              <button type="submit" className="btn btn-primary">  
-                Save
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={addProjectMutation.isPending}
+              >
+                {addProjectMutation.isPending ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
