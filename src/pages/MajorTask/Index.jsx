@@ -954,7 +954,19 @@ const MajorTaskPage = () => {
                               ${
                                 task.status === "Done-In review"
                                   ? " bg-yellow-100 text-yellow-700"
-                                  : "bg-indigo-100 text-indigo-700"
+                                  : task.status === "Done"
+                                    ? " bg-green-100 text-green-700"
+                                    : task.status === "To Do"
+                                      ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                      : task.status === "In Progress"
+                                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                        : task.status === "Blocked"
+                                          ? "text-red-800 bg-red-200 hover:bg-red-300"
+                                          : task.status === "Done"
+                                            ? "bg-green-200 text-green-800 hover:bg-green-300"
+                                            : task.status === "Hold"
+                                              ? "bg-yellow-200 text-yellow-800 hover:bg-yellow-300"
+                                              : "bg-indigo-100 text-indigo-700"
                               }`}
                             >
                               {task.status}
