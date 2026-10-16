@@ -1225,7 +1225,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   {task.status === "Done-In review" ? (
                     <div className="flex items-center space-x-2">
                       {/* Tampilkan status text dengan ukuran lebih kecil */}
-                      <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-yellow-100 text-yellow-700 whitespace-nowrap">
+                      <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-teal-100 text-teal-700 hover:bg-teal-300 cursor-pointer whitespace-nowrap">
                         {task.status}
                       </span>
 
@@ -1265,8 +1265,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                         ref={(el) =>
                           (buttonRefs.current[`status-${task._id}`] = el)
                         }
-                        className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 
-                          ${canEditStatus(task) ? "cursor-pointer hover:bg-indigo-200" : "cursor-default"}`}
+                        className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full  
+                          ${canEditStatus(task) ? "cursor-pointer " : "cursor-default"}
+                          
+                          ${
+                            task.status === "To Do"
+                              ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              : task.status === "In Progress"
+                                ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                : task.status === "Blocked"
+                                  ? "text-red-800 bg-red-200 hover:bg-red-300"
+                                  : task.status === "Done"
+                                    ? "bg-green-200 text-green-800 hover:bg-green-300"
+                                    : task.status === "Hold"
+                                      ? "bg-yellow-200 text-yellow-800 hover:bg-yellow-300"
+                                      : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                          }`}
                         onClick={() =>
                           canEditStatus(task) &&
                           setActivePopup({ taskId: task._id, field: "status" })
