@@ -60,15 +60,8 @@ export function BiddingCard({ bid, onOpen, onDelete, currency: currencyFmt }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
-                isFinished
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                  : bid.status === "IN_PROGRESS"
-                    ? "bg-cyan-50 text-cyan-700 border-cyan-300"
-                    : "bg-slate-100 text-slate-700 border-slate-300"
-              }`}
+              className={`inline-flex items-center  px-2.5 py-0.5 text-[11px] font-semibold`}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${isFinished ? "bg-emerald-500" : bid.status === "IN_PROGRESS" ? "bg-cyan-500" : "bg-slate-400"}`} />
               {isFinished ? "✓ Selesai" : statusLabel(bid.status)}
             </span>
             <span className="text-xs text-slate-500">

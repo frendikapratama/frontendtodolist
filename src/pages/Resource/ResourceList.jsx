@@ -50,7 +50,8 @@ const ResourceList = () => {
       if (
         !event.target.closest?.("[data-action-menu-portal]") &&
         !event.target.closest?.("[data-resource-status-trigger]")
-      ) setActiveStatusMenuId(null);
+      )
+        setActiveStatusMenuId(null);
     };
     document.addEventListener("mousedown", closeOnOutsideClick);
     return () => document.removeEventListener("mousedown", closeOnOutsideClick);
@@ -222,9 +223,9 @@ const ResourceList = () => {
             <option value="Inactive">Inactive</option>
           </select>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-white/10">
-          <table className="w-full min-w-[850px] text-left text-sm">
-            <thead className="bg-white/5 text-xs uppercase text-slate-400">
+        <div className="overflow-x-auto rounded-xl border border-white/10 bg-slate-900/20">
+          <table className="w-full min-w-[850px] table-fixed text-left text-sm">
+            <thead className="bg-white/5 text-xs uppercase tracking-wider text-slate-400">
               <tr>
                 {[
                   "Kode",
@@ -234,108 +235,191 @@ const ResourceList = () => {
                   "Status",
                   "Aksi",
                 ].map((heading) => (
-                  <th key={heading} className="px-4 py-3">
+                  <th
+                    key={heading}
+                    className={`px-5 py-4 font-semibold ${
+                      heading === "Aksi" ? "text-center" : ""
+                    }`}
+                  >
                     {heading}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+
+            <tbody className="divide-y divide-white/10">
               {resourceQuery.isLoading ? (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-slate-400">
+                  <td
+                    colSpan={6}
+                    className="px-5 py-12 text-center text-slate-400"
+                  >
                     Memuat resource...
                   </td>
                 </tr>
               ) : resourceQuery.isError ? (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-rose-300">
+                  <td
+                    colSpan={6}
+                    className="px-5 py-12 text-center text-rose-300"
+                  >
                     Gagal memuat daftar resource. Coba muat ulang halaman.
                   </td>
                 </tr>
               ) : resources.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-slate-400">
+                  <td
+                    colSpan={6}
+                    className="px-5 py-12 text-center text-slate-400"
+                  >
                     Belum ada resource yang cocok dengan pencarian.
                   </td>
                 </tr>
               ) : (
                 resources.map((resource) => (
-                  <tr key={resource._id} className="hover:bg-white/3">
-                    <td className="px-4 py-3 font-mono text-cyan-300">
-                      {resource.code}
+                  <tr
+                    key={resource._id}
+                    className="transition-colors duration-150 hover:bg-white/4"
+                  >
+                    <td className="px-5 py-4 align-middle">
+                      <span
+                        className="block truncate font-mono text-xs font-medium text-cyan-300"
+                        title={resource.code}
+                      >
+                        {resource.code || "-"}
+                      </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-white">
+
+                    <td className="px-5 py-4 align-middle">
+                      <div
+                        className="truncate font-semibold text-white"
+                        title={resource.name}
+                      >
                         {resource.name}
                       </div>
-                      <div className="max-w-md truncate text-xs text-slate-400">
+                      <div
+                        className="mt-1 truncate text-xs text-slate-400"
+                        title={
+                          resource.description || resource.technicalSpecs || ""
+                        }
+                      >
                         {resource.description || resource.technicalSpecs || "-"}
                       </div>
                     </td>
-                    <td className="px-4 py-3">{resource.category}</td>
-                    <td className="px-4 py-3">{resource.unit}</td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        type="button"
-                        data-resource-status-trigger
-                        id={`resource-status-${resource._id}`}
-                        aria-expanded={activeStatusMenuId === resource._id}
-                        onClick={() => setActiveStatusMenuId((current) => current === resource._id ? null : resource._id)}
-                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition hover:brightness-110 ${resource.status === "Active" ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "border-slate-300 bg-slate-100 text-slate-700"}`}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${resource.status === "Active" ? "bg-emerald-500" : "bg-slate-400"}`} />
-                        {resource.status}
-                        <ChevronDown className="h-3 w-3 opacity-70" />
-                      </button>
-                      {activeStatusMenuId === resource._id && (
-                        <ActionDropdownPortal
-                          anchorId={`resource-status-${resource._id}`}
-                          width={144}
-                          className="w-36 rounded-xl border border-white/10 bg-slate-900 py-1 text-left shadow-2xl animate-in fade-in zoom-in-95 duration-100"
-                        >
-                          {["Active", "Inactive"].map((nextStatus) => {
-                            const selected = resource.status === nextStatus;
-                            return (
-                              <button
-                                key={nextStatus}
-                                type="button"
-                                onClick={() => changeStatus(resource, nextStatus)}
-                                className={`flex w-full items-center gap-2 px-3 py-2 text-xs transition hover:bg-slate-800 ${selected ? "font-semibold text-white" : "text-slate-300"}`}
-                              >
-                                <span className={`h-2 w-2 rounded-full ${nextStatus === "Active" ? "bg-emerald-400" : "bg-slate-400"}`} />
-                                <span>{nextStatus}</span>
-                                {selected && <Check className="ml-auto h-3 w-3 text-cyan-400" />}
-                              </button>
-                            );
-                          })}
-                        </ActionDropdownPortal>
-                      )}
+
+                    <td className="px-5 py-4 align-middle">
+                      <span className="inline-flex max-w-full truncate rounded-md bg-white/5 px-2.5 py-1 text-xs font-medium text-slate-200">
+                        {resource.category}
+                      </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+
+                    <td className="px-5 py-4 align-middle text-slate-300">
+                      {resource.unit || "-"}
+                    </td>
+
+                    <td className="px-5 py-4 align-middle">
+                      <div className="relative flex justify-start">
                         <button
+                          type="button"
+                          data-resource-status-trigger
+                          id={`resource-status-${resource._id}`}
+                          aria-expanded={activeStatusMenuId === resource._id}
+                          onClick={() =>
+                            setActiveStatusMenuId((current) =>
+                              current === resource._id ? null : resource._id,
+                            )
+                          }
+                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition hover:brightness-110 ${
+                            resource.status === "Active"
+                              ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                              : "border-slate-300 bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              resource.status === "Active"
+                                ? "bg-emerald-500"
+                                : "bg-slate-400"
+                            }`}
+                          />
+
+                          {resource.status}
+
+                          <ChevronDown className="h-3 w-3 opacity-70" />
+                        </button>
+                        {activeStatusMenuId === resource._id && (
+                          <ActionDropdownPortal
+                            anchorId={`resource-status-${resource._id}`}
+                            width={144}
+                            className="w-36 rounded-xl border border-white/10 bg-slate-900 py-1 text-left shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+                          >
+                            {["Active", "Inactive"].map((nextStatus) => {
+                              const selected = resource.status === nextStatus;
+
+                              return (
+                                <button
+                                  key={nextStatus}
+                                  type="button"
+                                  onClick={() =>
+                                    changeStatus(resource, nextStatus)
+                                  }
+                                  className={`flex w-full items-center gap-2 px-3 py-2.5 text-xs transition hover:bg-slate-800 ${
+                                    selected
+                                      ? "font-semibold text-white"
+                                      : "text-slate-300"
+                                  }`}
+                                >
+                                  <span
+                                    className={`h-2 w-2 shrink-0 rounded-full ${
+                                      nextStatus === "Active"
+                                        ? "bg-emerald-400"
+                                        : "bg-slate-400"
+                                    }`}
+                                  />
+                                  <span>{nextStatus}</span>
+                                  {selected && (
+                                    <Check className="ml-auto h-3.5 w-3.5 text-cyan-400" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </ActionDropdownPortal>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-4 align-middle">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          type="button"
                           title="Detail"
+                          aria-label={`Detail ${resource.name}`}
                           onClick={() => setViewing(resource)}
-                          className="rounded-lg p-2 text-slate-300 hover:bg-white/10"
+                          className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
                         >
                           <Eye size={16} />
                         </button>
+
                         <button
+                          type="button"
                           title="Edit"
+                          aria-label={`Edit ${resource.name}`}
                           onClick={() => openEdit(resource)}
-                          className="rounded-lg p-2 text-cyan-300 hover:bg-cyan-500/10"
+                          className="rounded-lg p-2 text-cyan-300 transition hover:bg-cyan-500/10"
                         >
                           <Pencil size={16} />
                         </button>
+
                         <button
+                          type="button"
                           title="Hapus"
+                          aria-label={`Hapus ${resource.name}`}
                           onClick={() =>
                             window.confirm(
                               `Hapus resource ${resource.name}?`,
                             ) && deleteMutation.mutate(resource._id)
                           }
-                          className="rounded-lg p-2 text-rose-300 hover:bg-rose-500/10"
+                          className="rounded-lg p-2 text-rose-300 transition hover:bg-rose-500/10"
                         >
                           <Trash2 size={16} />
                         </button>

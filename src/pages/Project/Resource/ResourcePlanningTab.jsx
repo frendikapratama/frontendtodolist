@@ -45,7 +45,8 @@ const ResourcePlanningTab = ({ projectId }) => {
       if (
         !event.target.closest?.("[data-action-menu-portal]") &&
         !event.target.closest?.("[data-resource-status-trigger]")
-      ) setActiveStatusMenuId(null);
+      )
+        setActiveStatusMenuId(null);
     };
     document.addEventListener("mousedown", closeOnOutsideClick);
     return () => document.removeEventListener("mousedown", closeOnOutsideClick);
@@ -114,10 +115,15 @@ const ResourcePlanningTab = ({ projectId }) => {
       updateResourcePlanning(projectId, planId, { status }),
     onSuccess: (result) => {
       toast.success(result.message);
-      queryClient.invalidateQueries({ queryKey: ["resource-planning", projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ["resource-planning", projectId],
+      });
       setActiveStatusMenuId(null);
     },
-    onError: (error) => toast.error(error.response?.data?.message || "Gagal mengubah status perencanaan"),
+    onError: (error) =>
+      toast.error(
+        error.response?.data?.message || "Gagal mengubah status perencanaan",
+      ),
   });
   const openEdit = (plan) => {
     setEditing(plan);
@@ -275,25 +281,53 @@ const ResourcePlanningTab = ({ projectId }) => {
                         data-resource-status-trigger
                         id={`resource-planning-status-${plan._id}`}
                         aria-expanded={activeStatusMenuId === plan._id}
-                        onClick={() => setActiveStatusMenuId((current) => current === plan._id ? null : plan._id)}
+                        onClick={() =>
+                          setActiveStatusMenuId((current) =>
+                            current === plan._id ? null : plan._id,
+                          )
+                        }
                         className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition hover:brightness-110 ${plan.status === "Confirmed" ? "border-emerald-300 bg-emerald-50 text-emerald-700" : plan.status === "Cancelled" ? "border-slate-300 bg-slate-100 text-slate-700" : "border-amber-300 bg-amber-50 text-amber-700"}`}
                       >
-                        <span className={`h-1.5 w-1.5 rounded-full ${plan.status === "Confirmed" ? "bg-emerald-500" : plan.status === "Cancelled" ? "bg-slate-400" : "bg-amber-500"}`} />
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${plan.status === "Confirmed" ? "bg-emerald-500" : plan.status === "Cancelled" ? "bg-slate-400" : "bg-amber-500"}`}
+                        />
                         {plan.status}
                         <ChevronDown className="h-3 w-3 opacity-70" />
                       </button>
                       {activeStatusMenuId === plan._id && (
-                        <ActionDropdownPortal anchorId={`resource-planning-status-${plan._id}`} width={160} className="w-40 rounded-xl border border-white/10 bg-slate-900 py-1 text-left shadow-2xl animate-in fade-in zoom-in-95 duration-100">
-                          {["Planned", "Confirmed", "Cancelled"].map((nextStatus) => {
-                            const selected = plan.status === nextStatus;
-                            return (
-                              <button key={nextStatus} type="button" onClick={() => { setActiveStatusMenuId(null); if (!selected) statusMutation.mutate({ planId: plan._id, status: nextStatus }); }} className={`flex w-full items-center gap-2 px-3 py-2 text-xs transition hover:bg-slate-800 ${selected ? "font-semibold text-white" : "text-slate-300"}`}>
-                                <span className={`h-2 w-2 rounded-full ${nextStatus === "Confirmed" ? "bg-emerald-400" : nextStatus === "Cancelled" ? "bg-slate-400" : "bg-amber-400"}`} />
-                                <span>{nextStatus}</span>
-                                {selected && <Check className="ml-auto h-3 w-3 text-cyan-400" />}
-                              </button>
-                            );
-                          })}
+                        <ActionDropdownPortal
+                          anchorId={`resource-planning-status-${plan._id}`}
+                          width={160}
+                          className="w-40 rounded-xl border border-white/10 bg-slate-900 py-1 text-left shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+                        >
+                          {["Planned", "Confirmed", "Cancelled"].map(
+                            (nextStatus) => {
+                              const selected = plan.status === nextStatus;
+                              return (
+                                <button
+                                  key={nextStatus}
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveStatusMenuId(null);
+                                    if (!selected)
+                                      statusMutation.mutate({
+                                        planId: plan._id,
+                                        status: nextStatus,
+                                      });
+                                  }}
+                                  className={`flex w-full items-center gap-2 px-3 py-2 text-xs transition hover:bg-slate-800 ${selected ? "font-semibold text-white" : "text-slate-300"}`}
+                                >
+                                  <span
+                                    className={`h-2 w-2 rounded-full ${nextStatus === "Confirmed" ? "bg-emerald-400" : nextStatus === "Cancelled" ? "bg-slate-400" : "bg-amber-400"}`}
+                                  />
+                                  <span>{nextStatus}</span>
+                                  {selected && (
+                                    <Check className="ml-auto h-3 w-3 text-cyan-400" />
+                                  )}
+                                </button>
+                              );
+                            },
+                          )}
                         </ActionDropdownPortal>
                       )}
                     </td>
