@@ -94,14 +94,20 @@ export const useWorkspace = (kuarterId = null) => {
         queryKey: ["workspace-projects", variables.workspaceId],
       });
       queryClient.invalidateQueries({
+        queryKey: ["workspace-projects"],
+      });
+      queryClient.invalidateQueries({
         queryKey: ["workspaces"],
       });
     },
     onError: (error) => {
-      if (error.response?.data?.error) {
-        error.response.data.error.forEach((msg) => {
+      const resData = error.response?.data;
+      if (Array.isArray(resData?.error)) {
+        resData.error.forEach((msg) => {
           toast.error(msg);
         });
+      } else if (resData?.message) {
+        toast.error(resData.message);
       } else {
         toast.error("Failed to add project");
       }

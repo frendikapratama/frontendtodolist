@@ -19,8 +19,6 @@ import { useNavigate } from "react-router-dom";
 
 import AnimatedNumber from "../components/ui/AnimatedNumber";
 import NotificationBell from "../components/ui/NotificationBell";
-import { progress } from "framer-motion";
-import { Navigate } from "react-router-dom";
 
 // ==================== CONSTANTS ====================
 const GRID_COLS = 12;
@@ -34,7 +32,7 @@ const DEFAULT_CARDS = [
     y: 0,
     w: 5,
     h: 5,
-    title: "Distribution Project",
+    title: "Projects per Division",
     icon: PieChart,
   },
   {
@@ -67,27 +65,26 @@ const DEFAULT_CARDS = [
   },
 ];
 
-const SAMPLE_TASKS = [
-  {
-    title: "Project Kickoff",
-    startDate: "2025-11-10",
-    dueDate: "2025-11-15",
-    meetingDate: "2025-11-12",
-  },
-  {
-    title: "Design Review",
-    startDate: "2025-11-18",
-    dueDate: "2025-11-20",
-    meetingDate: "2025-11-19",
-  },
-];
+// pie chart default data (OLD)
 
-const DEFAULT_PIE_DATA = [
-  { label: "IT", value: 35, color: "#707070" },
-  { label: "Marketing", value: 25, color: "#707070" },
-  { label: "Finance", value: 20, color: "#707070" },
-  { label: "HR", value: 15, color: "#707070" },
-  { label: "Operations", value: 5, color: "#707070" },
+// const DEFAULT_PIE_DATA = [
+//   { label: "IT", value: 35, color: "#707070" },
+//   { label: "Marketing", value: 25, color: "#707070" },
+//   { label: "Finance", value: 20, color: "#707070" },
+//   { label: "HR", value: 15, color: "#707070" },
+//   { label: "Operations", value: 5, color: "#707070" },
+// ];
+
+// new chart default
+const TREEMAP_COLORS = [
+  "#2563eb",
+  "#059669",
+  "#d97706",
+  "#db2777",
+  "#7c3aed",
+  "#ea580c",
+  "#0891b2",
+  "#65a30d",
 ];
 
 // ==================== HELPER FUNCTIONS ====================
@@ -339,7 +336,7 @@ const ActivityHeatmap = ({ logs }) => {
                 <div key={weekIndex} className="flex flex-col gap-1">
                   {[0, 1, 2, 3, 4, 5, 6].map((dayIndex) => {
                     const dayData = week.find(
-                      (d) => d && d.weekday === dayIndex
+                      (d) => d && d.weekday === dayIndex,
                     );
                     const currentYear = new Date().getFullYear();
 
@@ -524,19 +521,274 @@ const QuarterSelectionDialog = ({ quarters, onSelect, isLoading, onClose }) => {
   );
 };
 
-// ==================== PIE CHART COMPONENT ====================
-const InteractivePieChart = ({ pieData }) => {
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [isAnimating, setIsAnimating] = useState(true);
-  const PIE_DATA = pieData;
+// ==================== PIE CHART COMPONENT (OLD) ====================
+// const InteractivePieChart = ({ pieData }) => {
+//   const [selectedIndex, setSelectedIndex] = useState(null);
+//   const [isAnimating, setIsAnimating] = useState(true);
+//   const PIE_DATA = pieData;
+
+//   useEffect(() => {
+//     setIsAnimating(true);
+//     const timer = setTimeout(() => setIsAnimating(false), 1200);
+//     return () => clearTimeout(timer);
+//   }, [pieData]);
+
+//   if (!PIE_DATA || PIE_DATA.length === 0) {
+//     return (
+//       <div className="w-full h-full flex items-center justify-center">
+//         <p className="text-white/60 text-lg">There is no data yet</p>
+//       </div>
+//     );
+//   }
+
+//   const total = PIE_DATA.reduce((sum, item) => sum + item.value, 0);
+
+//   const handleClick = (index) => {
+//     setSelectedIndex(selectedIndex === index ? null : index);
+//   };
+
+//   const getPathData = (startAngle, endAngle, isSelected) => {
+//     const radius = 100;
+//     const centerX = 200;
+//     const centerY = 180;
+//     const offset = isSelected ? 20 : 0;
+
+//     const midAngle = (startAngle + endAngle) / 2;
+//     const offsetX = Math.cos(midAngle) * offset;
+//     const offsetY = Math.sin(midAngle) * offset;
+
+//     const x1 = centerX + offsetX + radius * Math.cos(startAngle);
+//     const y1 = centerY + offsetY + radius * Math.sin(startAngle);
+//     const x2 = centerX + offsetX + radius * Math.cos(endAngle);
+//     const y2 = centerY + offsetY + radius * Math.sin(endAngle);
+
+//     const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
+
+//     return `M ${centerX + offsetX} ${
+//       centerY + offsetY
+//     } L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+//   };
+
+//   const getTextPosition = (startAngle, endAngle, isSelected) => {
+//     const midAngle = (startAngle + endAngle) / 2;
+//     const textRadius = isSelected ? 50 : 65;
+//     const centerX = 200;
+//     const centerY = 180;
+//     const offset = isSelected ? 20 : 0;
+
+//     const offsetX = Math.cos(midAngle) * offset;
+//     const offsetY = Math.sin(midAngle) * offset;
+
+//     return {
+//       x: centerX + offsetX + textRadius * Math.cos(midAngle),
+//       y: centerY + offsetY + textRadius * Math.sin(midAngle),
+//     };
+//   };
+
+//   const getOuterTextPosition = (startAngle, endAngle) => {
+//     const midAngle = (startAngle + endAngle) / 2;
+//     const outerRadius = 135;
+//     const centerX = 200;
+//     const centerY = 180;
+
+//     return {
+//       x: centerX + outerRadius * Math.cos(midAngle),
+//       y: centerY + outerRadius * Math.sin(midAngle),
+//     };
+//   };
+
+//   let currentAngle = -Math.PI / 2;
+
+//   return (
+//     <div className="flex items-center justify-center h-full">
+//       <style>{`
+//         @keyframes pieChartDraw {
+//           from {
+//             opacity: 0;
+//             transform: rotate(-180deg);
+//           }
+//           to {
+//             opacity: 1;
+//             transform: rotate(0deg);
+//           }
+//         }
+
+//         .pie-chart-svg {
+//           animation: ${
+//             isAnimating
+//               ? "pieChartDraw 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"
+//               : "none"
+//           };
+//           transform-origin: center;
+//         }
+//       `}</style>
+//       <svg
+//         width="800"
+//         height="720"
+//         viewBox="0 0 400 360"
+//         className="pie-chart-svg"
+//       >
+//         {PIE_DATA.map((item, index) => {
+//           const sliceAngle = (item.value / total) * 2 * Math.PI;
+//           const startAngle = currentAngle;
+//           const endAngle = currentAngle + sliceAngle;
+//           const isSelected = selectedIndex === index;
+
+//           const pathData = getPathData(startAngle, endAngle, isSelected);
+//           const textPos = getTextPosition(startAngle, endAngle, isSelected);
+//           const outerTextPos = getOuterTextPosition(startAngle, endAngle);
+//           const percentage = ((item.value / total) * 100).toFixed(0);
+
+//           currentAngle = endAngle;
+
+//           return (
+//             <g key={index}>
+//               <path
+//                 d={pathData}
+//                 fill={isSelected ? "#6b7280" : item.color}
+//                 stroke="#4b5563"
+//                 strokeWidth="3"
+//                 onClick={() => handleClick(index)}
+//                 style={{
+//                   cursor: "pointer",
+//                   transition: "all 0.3s ease",
+//                   filter: isSelected
+//                     ? "drop-shadow(0 0 15px rgba(156, 163, 175, 0.8)) drop-shadow(0 0 25px rgba(156, 163, 175, 0.5))"
+//                     : "none",
+//                 }}
+//               />
+
+//               {!isSelected && (
+//                 <text
+//                   x={textPos.x}
+//                   y={textPos.y}
+//                   fill="white"
+//                   textAnchor="middle"
+//                   dominantBaseline="middle"
+//                   fontSize="13"
+//                   fontWeight="500"
+//                   onClick={() => handleClick(index)}
+//                   style={{ cursor: "pointer", pointerEvents: "none" }}
+//                   transform={
+//                     sliceAngle < 0.3
+//                       ? `rotate(45 ${textPos.x} ${textPos.y})`
+//                       : ""
+//                   }
+//                 >
+//                   {item.label}
+//                 </text>
+//               )}
+
+//               {isSelected && (
+//                 <text
+//                   x={outerTextPos.x}
+//                   y={outerTextPos.y}
+//                   fill="white"
+//                   textAnchor="middle"
+//                   dominantBaseline="middle"
+//                   fontSize="13"
+//                   fontWeight="600"
+//                   style={{ pointerEvents: "none" }}
+//                 >
+//                   {item.label} - {percentage}%
+//                 </text>
+//               )}
+//             </g>
+//           );
+//         })}
+//       </svg>
+//     </div>
+//   );
+// };
+
+// ==================== TREEMAP COMPONENT (NEW) ====================
+const squarify = (items, x, y, w, h) => {
+  const result = [];
+  const totalValue = items.reduce((s, i) => s + i.value, 0);
+  if (totalValue <= 0 || w <= 0 || h <= 0) return result;
+
+  const scale = (w * h) / totalValue;
+  const nodes = items.map((i) => ({ ...i, area: i.value * scale }));
+  const rect = { x, y, w, h };
+
+  const sumArea = (row) => row.reduce((s, n) => s + n.area, 0);
+
+  const worst = (row, side) => {
+    const sum = sumArea(row);
+    const maxA = Math.max(...row.map((n) => n.area));
+    const minA = Math.min(...row.map((n) => n.area));
+    return Math.max(
+      (side * side * maxA) / (sum * sum),
+      (sum * sum) / (side * side * minA),
+    );
+  };
+
+  const layoutRow = (row) => {
+    const sum = sumArea(row);
+    if (rect.w >= rect.h) {
+      // baris berupa kolom di sisi kiri
+      const colW = sum / rect.h;
+      let cy = rect.y;
+      row.forEach((n) => {
+        const nodeH = n.area / colW;
+        result.push({ ...n, x: rect.x, y: cy, w: colW, h: nodeH });
+        cy += nodeH;
+      });
+      rect.x += colW;
+      rect.w -= colW;
+    } else {
+      // baris berupa deretan di sisi atas
+      const rowH = sum / rect.w;
+      let cx = rect.x;
+      row.forEach((n) => {
+        const nodeW = n.area / rowH;
+        result.push({ ...n, x: cx, y: rect.y, w: nodeW, h: rowH });
+        cx += nodeW;
+      });
+      rect.y += rowH;
+      rect.h -= rowH;
+    }
+  };
+
+  let row = [];
+  let i = 0;
+  while (i < nodes.length) {
+    const side = Math.min(rect.w, rect.h);
+    const next = nodes[i];
+    if (row.length === 0 || worst([...row, next], side) <= worst(row, side)) {
+      row.push(next);
+      i++;
+    } else {
+      layoutRow(row);
+      row = [];
+    }
+  }
+  if (row.length) layoutRow(row);
+
+  return result;
+};
+
+const DistributionTreemap = ({ pieData }) => {
+  const containerRef = useRef(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   useEffect(() => {
-    setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 1200);
-    return () => clearTimeout(timer);
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      setSize({ w: el.offsetWidth, h: el.offsetHeight });
+    });
+    observer.observe(el);
+    setSize({ w: el.offsetWidth, h: el.offsetHeight });
+    return () => observer.disconnect();
   }, [pieData]);
 
-  if (!PIE_DATA || PIE_DATA.length === 0) {
+  const validData = (pieData || [])
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  if (validData.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-white/60 text-lg">There is no data yet</p>
@@ -544,166 +796,63 @@ const InteractivePieChart = ({ pieData }) => {
     );
   }
 
-  const total = PIE_DATA.reduce((sum, item) => sum + item.value, 0);
-
-  const handleClick = (index) => {
-    setSelectedIndex(selectedIndex === index ? null : index);
-  };
-
-  const getPathData = (startAngle, endAngle, isSelected) => {
-    const radius = 100;
-    const centerX = 200;
-    const centerY = 180;
-    const offset = isSelected ? 20 : 0;
-
-    const midAngle = (startAngle + endAngle) / 2;
-    const offsetX = Math.cos(midAngle) * offset;
-    const offsetY = Math.sin(midAngle) * offset;
-
-    const x1 = centerX + offsetX + radius * Math.cos(startAngle);
-    const y1 = centerY + offsetY + radius * Math.sin(startAngle);
-    const x2 = centerX + offsetX + radius * Math.cos(endAngle);
-    const y2 = centerY + offsetY + radius * Math.sin(endAngle);
-
-    const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
-
-    return `M ${centerX + offsetX} ${
-      centerY + offsetY
-    } L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-  };
-
-  const getTextPosition = (startAngle, endAngle, isSelected) => {
-    const midAngle = (startAngle + endAngle) / 2;
-    const textRadius = isSelected ? 50 : 65;
-    const centerX = 200;
-    const centerY = 180;
-    const offset = isSelected ? 20 : 0;
-
-    const offsetX = Math.cos(midAngle) * offset;
-    const offsetY = Math.sin(midAngle) * offset;
-
-    return {
-      x: centerX + offsetX + textRadius * Math.cos(midAngle),
-      y: centerY + offsetY + textRadius * Math.sin(midAngle),
-    };
-  };
-
-  const getOuterTextPosition = (startAngle, endAngle) => {
-    const midAngle = (startAngle + endAngle) / 2;
-    const outerRadius = 135;
-    const centerX = 200;
-    const centerY = 180;
-
-    return {
-      x: centerX + outerRadius * Math.cos(midAngle),
-      y: centerY + outerRadius * Math.sin(midAngle),
-    };
-  };
-
-  let currentAngle = -Math.PI / 2;
+  const total = validData.reduce((sum, item) => sum + item.value, 0);
+  const tiles = squarify(validData, 0, 0, size.w, size.h);
 
   return (
-    <div className="flex items-center justify-center h-full">
-      <style>{`
-        @keyframes pieChartDraw {
-          from {
-            opacity: 0;
-            transform: rotate(-180deg);
-          }
-          to {
-            opacity: 1;
-            transform: rotate(0deg);
-          }
-        }
-        
-        .pie-chart-svg {
-          animation: ${
-            isAnimating
-              ? "pieChartDraw 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"
-              : "none"
-          };
-          transform-origin: center;
-        }
-      `}</style>
-      <svg
-        width="800"
-        height="720"
-        viewBox="0 0 400 360"
-        className="pie-chart-svg"
-      >
-        {PIE_DATA.map((item, index) => {
-          const sliceAngle = (item.value / total) * 2 * Math.PI;
-          const startAngle = currentAngle;
-          const endAngle = currentAngle + sliceAngle;
-          const isSelected = selectedIndex === index;
+    <div ref={containerRef} className="relative w-full h-full">
+      {tiles.map((tile, index) => {
+        const percentage = ((tile.value / total) * 100).toFixed(0);
+        const isHovered = hoveredIndex === index;
+        const showLabel = tile.w > 60 && tile.h > 40;
+        const showDetail = tile.w > 90 && tile.h > 60;
 
-          const pathData = getPathData(startAngle, endAngle, isSelected);
-          const textPos = getTextPosition(startAngle, endAngle, isSelected);
-          const outerTextPos = getOuterTextPosition(startAngle, endAngle);
-          const percentage = ((item.value / total) * 100).toFixed(0);
-
-          currentAngle = endAngle;
-
-          return (
-            <g key={index}>
-              <path
-                d={pathData}
-                fill={isSelected ? "#6b7280" : item.color}
-                stroke="#4b5563"
-                strokeWidth="3"
-                onClick={() => handleClick(index)}
-                style={{
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  filter: isSelected
-                    ? "drop-shadow(0 0 15px rgba(156, 163, 175, 0.8)) drop-shadow(0 0 25px rgba(156, 163, 175, 0.5))"
-                    : "none",
-                }}
-              />
-
-              {!isSelected && (
-                <text
-                  x={textPos.x}
-                  y={textPos.y}
-                  fill="white"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="13"
-                  fontWeight="500"
-                  onClick={() => handleClick(index)}
-                  style={{ cursor: "pointer", pointerEvents: "none" }}
-                  transform={
-                    sliceAngle < 0.3
-                      ? `rotate(45 ${textPos.x} ${textPos.y})`
-                      : ""
-                  }
-                >
-                  {item.label}
-                </text>
+        return (
+          <div
+            key={index}
+            className="absolute"
+            style={{
+              left: tile.x,
+              top: tile.y,
+              width: tile.w,
+              height: tile.h,
+              padding: 2,
+              transition: "all 0.4s ease",
+            }}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
+            <div
+              className="w-full h-full rounded-lg p-2 overflow-hidden flex flex-col justify-between cursor-default transition-all duration-200"
+              style={{
+                backgroundColor: tile.color,
+                opacity: hoveredIndex === null || isHovered ? 1 : 0.55,
+                boxShadow: isHovered
+                  ? "0 0 0 2px rgba(255,255,255,0.7)"
+                  : "none",
+              }}
+              title={`${tile.label}: ${tile.value} project (${percentage}%)`}
+            >
+              {showLabel && (
+                <p className="text-white text-sm font-semibold leading-tight line-clamp-2">
+                  {tile.label}
+                </p>
               )}
-
-              {isSelected && (
-                <text
-                  x={outerTextPos.x}
-                  y={outerTextPos.y}
-                  fill="white"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="13"
-                  fontWeight="600"
-                  style={{ pointerEvents: "none" }}
-                >
-                  {item.label} - {percentage}%
-                </text>
+              {showDetail && (
+                <div className="text-white">
+                  <p className="text-2xl font-bold leading-none">
+                    {tile.value}
+                  </p>
+                  <p className="text-white/80 text-xs mt-1">{percentage}%</p>
+                </div>
               )}
-            </g>
-          );
-        })}
-      </svg>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
-
 // ==================== CARD CONTENT COMPONENTS ====================
 const TasksContent = ({ taskStatuses }) => {
   const hasData =
@@ -919,8 +1068,12 @@ export default function Dashboard() {
       const pieChartData = (stats.workspaces || []).map((workspace, index) => ({
         label: workspace.workspaceName,
         value: workspace.totalProject || 0,
-        color:
-          DEFAULT_PIE_DATA[index % DEFAULT_PIE_DATA.length]?.color || "#1a1a1a",
+        //  (OLD)
+        // color:
+        //   DEFAULT_PIE_DATA[index % DEFAULT_PIE_DATA.length]?.color || "#1a1a1a",
+
+        // (NEW)
+        color: TREEMAP_COLORS[index % TREEMAP_COLORS.length],
       }));
       setPieData(pieChartData);
       const updatedTaskStatuses = [
@@ -1157,7 +1310,7 @@ export default function Dashboard() {
     if (dragging) {
       const newPos = getGridPosition(
         e.clientX - dragging.offsetX,
-        e.clientY - dragging.offsetY
+        e.clientY - dragging.offsetY,
       );
 
       const draggedCard = cards.find((c) => c.id === dragging.id);
@@ -1173,7 +1326,7 @@ export default function Dashboard() {
       });
 
       const tempCards = cards.map((c) =>
-        c.id === dragging.id ? { ...c, x: proposedX, y: proposedY } : c
+        c.id === dragging.id ? { ...c, x: proposedX, y: proposedY } : c,
       );
 
       setCards(compactLayout(tempCards, dragging.id));
@@ -1191,16 +1344,16 @@ export default function Dashboard() {
         2,
         Math.min(
           maxW,
-          resizing.originalW + Math.round(deltaX / (colWidth + GAP))
-        )
+          resizing.originalW + Math.round(deltaX / (colWidth + GAP)),
+        ),
       );
       const newH = Math.max(
         2,
-        resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP))
+        resizing.originalH + Math.round(deltaY / (ROW_HEIGHT + GAP)),
       );
 
       const tempCards = cards.map((c) =>
-        c.id === resizing.id ? { ...c, w: newW, h: newH } : c
+        c.id === resizing.id ? { ...c, w: newW, h: newH } : c,
       );
 
       setCards(compactLayout(tempCards, resizing.id));
@@ -1259,7 +1412,10 @@ export default function Dashboard() {
   const renderCardContent = (cardId) => {
     switch (cardId) {
       case "pie-chart":
-        return <InteractivePieChart pieData={pieData} />;
+        // (OLD)
+        // return <InteractivePieChart pieData={pieData} />;
+        // (NEW)
+        return <DistributionTreemap pieData={pieData} />;
       case "agenda":
         return <AgendaContent agendaByKuarter={agendasByKuarter} />;
       case "tasks":
@@ -1392,7 +1548,7 @@ export default function Dashboard() {
               placeholder.x,
               placeholder.y,
               placeholder.w,
-              placeholder.h
+              placeholder.h,
             )}
           />
         )}

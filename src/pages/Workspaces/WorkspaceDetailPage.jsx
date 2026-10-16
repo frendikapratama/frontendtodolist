@@ -61,14 +61,15 @@ const WorkspaceDetailPage = () => {
 
   const handleAddProject = (e) => {
     e.preventDefault();
+    if (!projectName.trim()) return;
     addProjectMutation.mutate(
       {
         workspaceId: id,
-        data: projectForm,
+        data: { nama: projectName.trim() },
       },
       {
         onSuccess: () => {
-          setProjectForm(initialProjectForm);
+          setProjectName("");
           document.getElementById("addProjectModal").close();
         },
       },
@@ -176,7 +177,7 @@ const WorkspaceDetailPage = () => {
                 className="btn btn-primary"
                 disabled={addProjectMutation.isPending}
               >
-                {addProjectMutation.isPending ? "Menyimpan..." : "Save"}
+                {addProjectMutation.isPending ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
