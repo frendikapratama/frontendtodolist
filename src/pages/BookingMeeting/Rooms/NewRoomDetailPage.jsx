@@ -191,7 +191,7 @@ export default function RoomDetailPage() {
 
   // Filter nextMeeting dari list minggu ini agar tidak double
   const filteredThisWeek = nextMeetings?.thisWeek?.filter(
-    (item) => item._id !== nextMeeting?._id
+    (item) => item._id !== nextMeeting?._id,
   );
 
   return (
@@ -200,8 +200,8 @@ export default function RoomDetailPage() {
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <div className="h-screen w-screen max-h-screen overflow-hidden flex flex-col justify-between bg-slate-50/60 p-3 sm:p-5 select-none font-sans text-slate-800">
-        <header class="w-full  bg-white shadow-xl rounded-2xl overflow-hidden border border-blue-100 flex flex-col lg:flex-row items-center justify-between">
-          <div class="flex items-center justify-between lg:justify-start px-6 py-4 w-full lg:w-auto bg-linear-to-r from-blue-50/50 to-transparent">
+        <header class="w-full  bg-white shadow-xl rounded-2xl overflow-hidden flex flex-col lg:flex-row items-center justify-between">
+          <div class="flex items-center justify-between lg:justify-start px-6 py-4 w-full lg:w-auto ">
             <div class="flex items-center space-x-3">
               <div class="text-blue-600 text-3xl sm:text-4xl">
                 <i class="fa-solid fa-calendar-days"></i>
@@ -225,7 +225,7 @@ export default function RoomDetailPage() {
             <div class="hidden sm:block h-10 w-px bg-slate-300 ml-6"></div>
           </div>
 
-          <div class="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto border-t lg:border-t-0 border-slate-100 bg-white">
+          <div class="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto ">
             <div>
               <h2 class="text-lg sm:text-xl font-extrabold text-blue-950 tracking-tight capitalize">
                 {room?.nama || "Meeting Room"}
@@ -236,7 +236,7 @@ export default function RoomDetailPage() {
             </div>
           </div>
 
-          <div class="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto border-t lg:border-t-0 border-slate-100 bg-linear-to-r from-transparent to-blue-50/30">
+          <div class="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto border-t lg:border-t-0 ">
             <div class="text-blue-600 text-3xl">
               <i class="fa-regular fa-calendar-days"></i>
             </div>
@@ -450,7 +450,9 @@ export default function RoomDetailPage() {
                       <div className="flex items-center gap-1.5 text-sm text-violet-600 font-semibold mt-2">
                         <CalendarDays size={14} className="shrink-0" />
                         <span>
-                          {dayjs(nextMeeting.startTime).format("dddd, D MMMM YYYY")}
+                          {dayjs(nextMeeting.startTime).format(
+                            "dddd, D MMMM YYYY",
+                          )}
                         </span>
                       </div>
 
