@@ -37,6 +37,8 @@ const categories = ["Material", "Manpower", "Equipment"];
 const ResourceList = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   const [editing, setEditing] = useState(null);
@@ -44,6 +46,16 @@ const ResourceList = () => {
   const [viewing, setViewing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [activeStatusMenuId, setActiveStatusMenuId] = useState(null);
+
+  // Debounce search input to reduce query frequency
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+
 
   useEffect(() => {
     const closeOnOutsideClick = (event) => {
@@ -58,8 +70,8 @@ const ResourceList = () => {
   }, []);
 
   const resourceQuery = useQuery({
-    queryKey: ["resources", search, category, status],
-    queryFn: () => getResources({ search, category, status }),
+    queryKey: ["resources", debouncedSearch, category, status],
+    queryFn: () => getResources({ search: debouncedSearch, category, status }),
   });
   const resources = resourceQuery.data || [];
   const summary = useMemo(
@@ -196,6 +208,15 @@ const ResourceList = () => {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Cari nama, kode, deskripsi..."
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </label>
 
           {/* Filter Kategori */}
