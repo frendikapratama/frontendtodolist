@@ -200,14 +200,14 @@ export default function RoomDetailPage() {
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <div className="h-screen w-screen max-h-screen overflow-hidden flex flex-col justify-between bg-slate-50/60 p-3 sm:p-5 select-none font-sans text-slate-800">
-        <header class="w-full  bg-white shadow-xl rounded-2xl overflow-hidden flex flex-col lg:flex-row items-center justify-between">
-          <div class="flex items-center justify-between lg:justify-start px-6 py-4 w-full lg:w-auto ">
-            <div class="flex items-center space-x-3">
-              <div class="text-blue-600 text-3xl sm:text-4xl">
-                <i class="fa-solid fa-calendar-days"></i>
+        <header className="w-full  bg-white shadow-xl rounded-2xl overflow-hidden flex flex-col lg:flex-row items-center justify-between">
+          <div className="flex items-center justify-between lg:justify-start px-6 py-4 w-full lg:w-auto ">
+            <div className="flex items-center space-x-3">
+              <div className="text-blue-600 text-3xl sm:text-4xl">
+                <i className="fa-solid fa-calendar-days"></i>
               </div>
               <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight gradient-text leading-none">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight gradient-text leading-none">
                   <GradientText
                     colors={["#40ffaa", "#4079ff", "#40ffaa"]}
                     animationSpeed={4}
@@ -217,58 +217,58 @@ export default function RoomDetailPage() {
                     Planify
                   </GradientText>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-blue-600 font-semibold tracking-wider uppercase mt-1">
+                <p className="text-[11px] sm:text-xs text-blue-600 font-semibold tracking-wider uppercase mt-1">
                   Smart Meeting, Better Collaboration
                 </p>
               </div>
             </div>
-            <div class="hidden sm:block h-10 w-px bg-slate-300 ml-6"></div>
+            <div className="hidden sm:block h-10 w-px bg-slate-300 ml-6"></div>
           </div>
 
-          <div class="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto ">
+          <div className="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto ">
             <div>
-              <h2 class="text-lg sm:text-xl font-extrabold text-blue-950 tracking-tight capitalize">
+              <h2 className="text-lg sm:text-xl font-extrabold text-blue-950 tracking-tight capitalize">
                 {room?.nama || "Meeting Room"}
               </h2>
-              <p class="text-xs sm:text-sm text-slate-500 font-medium mt-0.5 capitalize">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5 capitalize">
                 {room?.lokasi || "Office Lantai 2 HPC"}
               </p>
             </div>
           </div>
 
-          <div class="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto border-t lg:border-t-0 ">
-            <div class="text-blue-600 text-3xl">
-              <i class="fa-regular fa-calendar-days"></i>
+          <div className="flex items-center space-x-4 px-6 py-4 w-full lg:w-auto border-t lg:border-t-0 ">
+            <div className="text-blue-600 text-3xl">
+              <i className="fa-regular fa-calendar-days"></i>
             </div>
             <div>
               <div
                 id="live-date"
-                class="text-xs sm:text-sm font-semibold text-slate-600"
+                className="text-xs sm:text-sm font-semibold text-slate-600"
               >
                 <span>{dayjs().format("dddd, D MMMM YYYY")}</span>
               </div>
               <div
                 id="live-time"
-                class="text-2xl sm:text-3xl font-extrabold text-blue-950 tracking-wider font-mono"
+                className="text-2xl sm:text-3xl font-extrabold text-blue-950 tracking-wider font-mono"
               >
                 {time}
               </div>
             </div>
           </div>
 
-          <div class="relative w-full lg:w-[360px] h-28 sm:h-32 lg:h-32 overflow-hidden bg-blue-700 flex items-center justify-start [clip-path:polygon(0_0,100%_0,100%_100%,0_100%)] lg:[clip-path:polygon(15%_0,100%_0,100%_100%,0_100%)] ml-auto rounded-lg shadow-sm">
+          <div className="relative w-full lg:w-[360px] h-28 sm:h-32 lg:h-32 overflow-hidden bg-blue-700 flex items-center justify-start [clip-path:polygon(0_0,100%_0,100%_100%,0_100%)] lg:[clip-path:polygon(15%_0,100%_0,100%_100%,0_100%)] ml-auto rounded-lg shadow-sm">
             {/* Background Image menggunakan div dengan inline style background-image */}
             <div
-              class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
               style={{ backgroundImage: `url(${bgImageHeader})` }}
             ></div>
 
             {/* Overlay gradien biru solid di kiri yang memudar ke transparan di kanan */}
-            <div class="absolute inset-0 bg-linear-to-r from-blue-700 via-blue-700/90 to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-blue-700 via-blue-700/90 to-transparent"></div>
 
             {/* Kontainer Teks */}
-            <div class="relative z-10 w-full text-left pl-10 sm:pl-12 pr-6 text-white">
-              <p class="text-xs sm:text-sm font-semibold italic tracking-wide leading-snug drop-shadow">
+            <div className="relative z-10 w-full text-left pl-10 sm:pl-12 pr-6 text-white">
+              <p className="text-xs sm:text-sm font-semibold italic tracking-wide leading-snug drop-shadow">
                 PT Alkindo Naratama Tbk.
                 <br />
                 Partnership Through Quality
@@ -394,7 +394,7 @@ export default function RoomDetailPage() {
                   <div className="flex flex-col sm:flex-row items-start justify-center gap-4 p-3 rounded-xl  my-auto">
                     <div className="w-full min-w-0">
                       <div className="w-full min-w-0">
-                        <h4 className="text-xl font-bold text-slate-800">
+                        <h4 className="text-xl font-bold text-slate-800 capitalize">
                           {currentMeeting.title}
                         </h4>
 
@@ -431,30 +431,31 @@ export default function RoomDetailPage() {
                 )}
               </div>
               <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm shrink-0 flex flex-col">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
-                    <ArrowRight size={25} />
+                <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center gap-2 ">
+                    <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
+                      <ArrowRight size={25} />
+                    </div>
+
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-800">
+                      Next Meeting
+                    </h3>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800">
-                    Next Meeting
-                  </h3>
+
+                  <div className="flex items-center gap-1.5 text-sm sm:text-lg text-violet-600 font-semibold">
+                    <CalendarDays size={14} className="shrink-0" />
+                    <span>
+                      {dayjs(nextMeeting.startTime).format("dddd, D MMMM YYYY")}
+                    </span>
+                  </div>
                 </div>
 
                 {nextMeeting ? (
                   <div className="flex flex-col sm:flex-row items-start justify-center gap-4 p-3 rounded-xl my-auto">
                     <div className="w-full min-w-0">
-                      <h4 className="text-xl font-bold text-slate-800 truncate">
+                      <h4 className="text-xl font-bold text-slate-800 truncate capitalize ">
                         {nextMeeting.title}
                       </h4>
-
-                      <div className="flex items-center gap-1.5 text-sm text-violet-600 font-semibold mt-2">
-                        <CalendarDays size={14} className="shrink-0" />
-                        <span>
-                          {dayjs(nextMeeting.startTime).format(
-                            "dddd, D MMMM YYYY",
-                          )}
-                        </span>
-                      </div>
 
                       <div className="w-full flex items-center justify-between gap-3 py-3">
                         <span className="text-xl sm:text-2xl text-slate-600 font-bold tracking-tight">
@@ -464,8 +465,8 @@ export default function RoomDetailPage() {
                       </div>
 
                       <div className="flex items-center gap-1">
-                        <Users size={18} className="text-slate-400" />
-                        <p className="text-base text-slate-500">
+                        <Users size={24} />
+                        <p className="text-xl text-slate-500">
                           <span className="font-medium text-slate-700">
                             {nextMeeting.organizer || "Admin"}
                           </span>
