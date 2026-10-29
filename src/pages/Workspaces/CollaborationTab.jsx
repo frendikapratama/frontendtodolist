@@ -7,6 +7,7 @@ import { useProgressProject } from "../../hook/useProgress";
 import { useProject } from "../../hook/useProject";
 import { useMember } from "../../hook/useMember";
 import { AuthContext } from "../../context/AuthContext";
+import { useDebounce } from "../../hook/useDebounce";
 
 const ProjectCard = ({
   project,
@@ -170,7 +171,15 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
 
   const { workspacesQuery } = useWorkspace();
   const { deleteProjectMutation } = useProject();
-  const projectsQuery = useWorkspaceProjects(workspaceId);
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 400);
+
+  // Query projects dengan filter pencarian untuk tampilan cards
+  const projectsQuery = useWorkspaceProjects(workspaceId, debouncedSearch);
+
+  // Query projects tanpa filter untuk opsi dropdown di modal kirim request
+  const allWorkspaceProjectsQuery = useWorkspaceProjects(workspaceId, "");
+
   const incomingRequests = useCollaborationRequests(
     workspaceId,
     "incoming",
@@ -184,7 +193,6 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   const [toDelete, setToDelete] = useState(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
-  const navigate = useNavigate();
 
   const handleSendRequest = (e) => {
     e.preventDefault();
@@ -203,7 +211,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
     document.getElementById("sendCollabModal").close();
   };
 
-  const handleDeleteProject = (projectId, projectName) => {
+  const handleDeleteProject = (projectId) => {
     setToDelete(projectId);
     document.getElementById("ConfirmationModal").showModal();
   };
@@ -216,6 +224,18 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
   const ownedWithCollaboration = projectsQuery.data?.ownedButCollaborated || [];
   const collaboratedFromOthers =
     projectsQuery.data?.collaboratedFromOthers || [];
+
+  const totalFilteredProjects =
+    ownedOnlyProjects.length +
+    ownedWithCollaboration.length +
+    collaboratedFromOthers.length;
+
+  // Daftar project yang selalu lengkap untuk dropdown modal kirim kolaborasi
+  const availableProjectsForModal = useMemo(() => {
+    const owned = allWorkspaceProjectsQuery.data?.owned || [];
+    const collab = allWorkspaceProjectsQuery.data?.ownedButCollaborated || [];
+    return [...owned, ...collab];
+  }, [allWorkspaceProjectsQuery.data]);
 
   const { membersWorkspaceQuery } = useMember("workspace", workspaceId);
   const { user: currentUser } = useContext(AuthContext);
@@ -307,7 +327,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
           <form onSubmit={handleSendRequest} className="space-y-4">
             <div>
               <label className="label">
-                <span className="label-text ">Project</span>
+                <span className="label-text">Project</span>
               </label>
               <select
                 className="select select-bordered w-full text-black bg-gray-300"
@@ -316,13 +336,11 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                 required
               >
                 <option value="">-- Choose the Project --</option>
-                {[...ownedOnlyProjects, ...ownedWithCollaboration].map(
-                  (project) => (
-                    <option key={project._id} value={project._id}>
-                      {project.nama}
-                    </option>
-                  ),
-                )}
+                {availableProjectsForModal.map((project) => (
+                  <option key={project._id} value={project._id}>
+                    {project.nama}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -331,7 +349,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                 <span className="label-text">Sending to department</span>
               </label>
               <select
-                className="select select-bordered w-full  text-black bg-gray-300"
+                className="select select-bordered w-full text-black bg-gray-300"
                 value={selectedWorkspace}
                 onChange={(e) => setSelectedWorkspace(e.target.value)}
                 required
@@ -370,49 +388,150 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
       </dialog>
 
       {/* Grid with 3 sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-screen lg:h-screen ">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-screen lg:h-screen">
         {/* Left Column: Projects */}
         <div
-          className={`col-span-1 lg:col-span-2 p-4 bg-white/40 borde-none rounded-lg overflow-y-auto ${
+          className={`col-span-1 lg:col-span-2 p-4 bg-white/40 border-none rounded-lg overflow-y-auto ${
             isDragOver ? "border-primary border-2" : "border-base-300"
           }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[1.1em] font-semibold text-[#EFECE3]">
-              Projects
-            </h3>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() =>
-                document.getElementById("sendCollabModal").showModal()
-              }
-            >
-              + Sending Request
-            </button>
+          <div className="flex justify-between items-center mb-4 gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <h3 className="text-[1.1em] font-semibold text-[#EFECE3]">
+                Projects
+              </h3>
+              {debouncedSearch && !projectsQuery.isLoading && (
+                <span className="badge badge-sm bg-black/30 text-[#EFECE3] border-none text-[0.7em]">
+                  {totalFilteredProjects} found
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Search Bar */}
+              <div className="relative flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 absolute left-3 text-gray-400 pointer-events-none"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search project..."
+                  className="input input-bordered input-sm bg-white text-black pl-9 pr-8 w-44 sm:w-60 focus:outline-none focus:border-primary shadow-sm rounded-lg"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
+                {searchInput ? (
+                  <button
+                    type="button"
+                    className="absolute right-2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
+                    onClick={() => setSearchInput("")}
+                    title="Clear search"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3.5 w-3.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                ) : projectsQuery.isFetching && !projectsQuery.isLoading ? (
+                  <span className="loading loading-spinner loading-xs text-gray-400 absolute right-2.5"></span>
+                ) : null}
+              </div>
+
+              <button
+                className="btn btn-primary btn-sm whitespace-nowrap"
+                onClick={() =>
+                  document.getElementById("sendCollabModal").showModal()
+                }
+              >
+                + Sending Request
+              </button>
+            </div>
           </div>
+
           {projectsQuery.isLoading ? (
-            <p>Loading...</p>
+            <div className="flex flex-col items-center justify-center py-16 text-[#EFECE3]">
+              <span className="loading loading-spinner loading-md mb-2"></span>
+              <p className="text-sm">Loading projects...</p>
+            </div>
+          ) : debouncedSearch && totalFilteredProjects === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center text-[#EFECE3]">
+              <div className="p-3 bg-white/10 rounded-full mb-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-[#EFECE3]/70"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-base font-semibold">
+                No projects found for "{debouncedSearch}"
+              </p>
+              <p className="text-xs text-[#EFECE3]/70 mt-1 max-w-sm">
+                We couldn't find any projects matching your search term. Try searching with a different keyword.
+              </p>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline text-white border-white/40 hover:bg-white/20 mt-4"
+                onClick={() => setSearchInput("")}
+              >
+                Clear Search
+              </button>
+            </div>
           ) : (
             <div className="space-y-6">
               {/* Individual Projects */}
               <div>
-                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Individual division project (Without Collaboration)
+                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Individual division project (Without Collaboration)
+                  </span>
+                  {ownedOnlyProjects.length > 0 && (
+                    <span className="text-xs text-[#EFECE3]/70">
+                      ({ownedOnlyProjects.length})
+                    </span>
+                  )}
                 </h4>
                 {ownedOnlyProjects.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -432,23 +551,32 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                   </div>
                 ) : (
                   <p className="text-[#EFECE3] text-[0.8em] italic">
-                    There is no project
+                    {debouncedSearch
+                      ? "No matching individual projects"
+                      : "There is no project"}
                   </p>
                 )}
               </div>
 
               {/* Collaboration Projects (Owner) */}
               <div>
-                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                  </svg>
-                  Project Collaboration (You are the Owner)
+                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                    </svg>
+                    Project Collaboration (You are the Owner)
+                  </span>
+                  {ownedWithCollaboration.length > 0 && (
+                    <span className="text-xs text-[#EFECE3]/70">
+                      ({ownedWithCollaboration.length})
+                    </span>
+                  )}
                 </h4>
                 {ownedWithCollaboration.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -458,6 +586,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                         project={project}
                         isOwner={true}
                         workspaceId={workspaceId}
+                        isAuthorized={isAuthorized}
                         borderColor="border-blue-500"
                         badgeColor="badge-success"
                         badgeText="Owner"
@@ -474,23 +603,32 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                   </div>
                 ) : (
                   <p className="text-[#EFECE3] text-[0.8em] italic">
-                    There is no project for Collaboration
+                    {debouncedSearch
+                      ? "No matching owned collaboration projects"
+                      : "There is no project for Collaboration"}
                   </p>
                 )}
               </div>
 
               {/* Collaboration Projects from Others */}
               <div>
-                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                  </svg>
-                  Collaboration Project from another division.
+                <h4 className="font-semibold mb-3 text-[0.9em] text-[#EFECE3] flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    </svg>
+                    Collaboration Project from another division
+                  </span>
+                  {collaboratedFromOthers.length > 0 && (
+                    <span className="text-xs text-[#EFECE3]/70">
+                      ({collaboratedFromOthers.length})
+                    </span>
+                  )}
                 </h4>
                 {collaboratedFromOthers.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -509,7 +647,9 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                   </div>
                 ) : (
                   <p className="text-[#EFECE3] text-sm italic text-[0.8em]">
-                    Haven't be part of other Collaboration
+                    {debouncedSearch
+                      ? "No matching external collaboration projects"
+                      : "Haven't be part of other Collaboration"}
                   </p>
                 )}
               </div>
@@ -537,12 +677,12 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-semibold text-[0.9em] ">
+                        <h4 className="font-semibold text-[0.9em]">
                           {request.project?.nama}
                         </h4>
                         <p className="text-[0.8em] font-medium text-gray-600">
                           From Department:{" "}
-                          <span className=" text-black/60 font-semibold">
+                          <span className="text-black/60 font-semibold">
                             {request.fromWorkspace?.nama}
                           </span>
                         </p>
@@ -551,7 +691,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                             "id-ID",
                           )}
                         </p>
-                        <div className="badge badge-warning text-[0.7em] font-bold  badge-sm mt-2">
+                        <div className="badge badge-warning text-[0.7em] font-bold badge-sm mt-2">
                           {request.status}
                         </div>
                         <p className="text-[0.8em] text-gray-400 mt-2">
@@ -593,7 +733,7 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                 {outgoingRequests.data.map((request) => (
                   <div
                     key={request._id}
-                    className="card bg-white/60 text-black border border-none p-4"
+                    className="card bg-white/60 text-black border-none p-4"
                   >
                     <h4 className="font-semibold text-[0.9em]">
                       {request.project?.nama}

@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   sendCollaborationRequest,
@@ -20,7 +25,10 @@ export const useCollaboration = () => {
     onError: (error) => {
       const message = error.response?.data?.message || "Gagal mengirim request";
 
-      if (message.toLowerCase().includes("already") || message.toLowerCase().includes("sent")) {
+      if (
+        message.toLowerCase().includes("already") ||
+        message.toLowerCase().includes("sent")
+      ) {
         toast("Request has been sent before!", {
           icon: "⚠️",
           style: { background: "#facc15", color: "#000" },
@@ -54,11 +62,12 @@ export const useCollaboration = () => {
     },
   });
 
-  const useWorkspaceProjects = (workspaceId) => {
+  const useWorkspaceProjects = (workspaceId, search = "") => {
     return useQuery({
-      queryKey: ["workspace-projects", workspaceId],
-      queryFn: () => getWorkspaceProjects(workspaceId),
+      queryKey: ["workspace-projects", workspaceId, search],
+      queryFn: () => getWorkspaceProjects(workspaceId, search),
       enabled: !!workspaceId,
+      placeholderData: keepPreviousData,
     });
   };
 

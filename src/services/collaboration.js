@@ -25,7 +25,12 @@ export async function rejectCollaboration(requestId) {
   return res.data;
 }
 
-export async function getWorkspaceProjects(workspaceId) {
-  const res = await api.get(`/collaboration/workspace/${workspaceId}/projects`);
+export async function getWorkspaceProjects(workspaceId, search = "") {
+  const res = await api.get(
+    `/collaboration/workspace/${workspaceId}/projects`,
+    {
+      params: { search },
+    },
+  );
   return res.data.data;
 }
