@@ -16,7 +16,7 @@ import GroupCard from "./GroupCard";
 import Kanban from "./Kanban";
 import CalendarView from "../Task/CalendarView";
 import GanttChart from "../../components/ui/GanttChart";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSelectedWorkspace } from "../../context/WorkspaceContext";
 import NotificationBell from "../../components/ui/NotificationBell";
 
@@ -30,6 +30,9 @@ const ProjectDetailPage = () => {
     useSelectedWorkspace();
   const [viewMode, setViewMode] = useState("table");
   const [localGroups, setLocalGroups] = useState([]);
+  const localGroupsRef = useRef(localGroups);
+  localGroupsRef.current = localGroups;
+
   const [draggedGroupIndex, setDraggedGroupIndex] = useState(null);
   const { updateGroupPositionsMutation } = useGroup();
 
@@ -43,9 +46,21 @@ const ProjectDetailPage = () => {
       data.workspace?._id || data.workspaceId || data.workspaceId?._id || null;
 
     if (workspaceId) setSelectedWorkspaceId(workspaceId);
-    
+
     if (data.groups) {
-      setLocalGroups([...data.groups].sort((a, b) => (Number(a.position) || 0) - (Number(b.position) || 0)));
+      const sorted = [...data.groups].sort((a, b) => {
+        const posA =
+          a.position !== undefined && a.position !== null
+            ? Number(a.position)
+            : 0;
+        const posB =
+          b.position !== undefined && b.position !== null
+            ? Number(b.position)
+            : 0;
+        return posA - posB;
+      });
+      setLocalGroups(sorted);
+      localGroupsRef.current = sorted;
     }
   }, [data, setSelectedWorkspaceId]);
 
@@ -103,7 +118,7 @@ const ProjectDetailPage = () => {
           setEditedName(data.nama);
           setIsEditingName(false);
         },
-      }
+      },
     );
   };
 
@@ -128,6 +143,7 @@ const ProjectDetailPage = () => {
       const newGroups = [...prev];
       const [removed] = newGroups.splice(draggedGroupIndex, 1);
       newGroups.splice(index, 0, removed);
+      localGroupsRef.current = newGroups;
       return newGroups;
     });
     setDraggedGroupIndex(index);
@@ -135,7 +151,8 @@ const ProjectDetailPage = () => {
 
   const handleGroupDragEnd = () => {
     setDraggedGroupIndex(null);
-    const newGroupIds = localGroups.map(g => g._id);
+    const currentGroups = localGroupsRef.current || localGroups;
+    const newGroupIds = currentGroups.map((g) => g._id);
     updateGroupPositionsMutation.mutate({ projectId: id, groupIds: newGroupIds });
   };
 
