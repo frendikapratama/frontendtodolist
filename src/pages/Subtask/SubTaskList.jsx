@@ -14,6 +14,7 @@ import DatePickerPopup from "../Task/DatePickerPopup";
 import toast from "react-hot-toast";
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import DoneInReviewDatesModal from "../../components/ui/DoneInReviewDatesModal";
 import { useMember } from "../../hook/useMember";
 import { createPortal } from "react-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -47,7 +48,11 @@ const SubtaskList = ({
     return `${API_BASE_URL}/uploads/users/${photoPath}`;
   };
   const calculateAutoNote = (status, due_date, finish_date) => {
-    if (status === "Done" && due_date && finish_date) {
+    if (
+      (status === "Done" || status === "Done-In review") &&
+      due_date &&
+      finish_date
+    ) {
       const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
       const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
       if (finishDate === dueDate) return "Completed - On Time";
@@ -153,6 +158,7 @@ const SubtaskList = ({
     subtaskId: null,
     userId: null,
   });
+  const [datesModalData, setDatesModalData] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   useEffect(() => {
@@ -257,6 +263,22 @@ const SubtaskList = ({
         setActivePopup(null);
         return;
       }
+
+      if (field === "status" && value === "Done-In review") {
+        const hasStartDate = Boolean(task.start_date);
+        const hasDueDate = Boolean(task.due_date);
+        const hasFinishDate = Boolean(task.finish_date);
+
+        if (!hasStartDate || !hasDueDate || !hasFinishDate) {
+          setDatesModalData({
+            isOpen: true,
+            item: task,
+          });
+          setActivePopup(null);
+          return;
+        }
+      }
+
       let updateData = { [field]: value };
       if (
         field !== "note" &&
@@ -281,6 +303,33 @@ const SubtaskList = ({
       setActivePopup(null);
     },
     [localSubtasks, updateSubTaskMutation],
+  );
+
+  const handleConfirmDatesModal = useCallback(
+    ({ startDate, dueDate, finishDate }) => {
+      if (!datesModalData?.item) return;
+      const subtask = datesModalData.item;
+      const autoNote = calculateAutoNote(
+        "Done-In review",
+        dueDate,
+        finishDate,
+      );
+      const updateData = {
+        status: "Done-In review",
+        start_date: startDate,
+        due_date: dueDate,
+        finish_date: finishDate,
+        ...(autoNote ? { note: autoNote } : {}),
+      };
+
+      const updatedSubtasks = localSubtasks.map((s) =>
+        s._id === subtask._id ? { ...s, ...updateData } : s,
+      );
+      setLocalSubtasks(updatedSubtasks);
+      updateSubTaskMutation.mutate({ subtaskId: subtask._id, data: updateData });
+      setDatesModalData(null);
+    },
+    [datesModalData, localSubtasks, updateSubTaskMutation],
   );
 
   const handleReasonChange = useCallback((subtaskId, e) => {
@@ -1195,6 +1244,15 @@ const SubtaskList = ({
           </button>
         )
       )}
+
+      <DoneInReviewDatesModal
+        isOpen={Boolean(datesModalData?.isOpen)}
+        onClose={() => setDatesModalData(null)}
+        onSubmit={handleConfirmDatesModal}
+        item={datesModalData?.item}
+        type="Subtask"
+        isLoading={updateSubTaskMutation.isPending}
+      />
     </div>
   );
 };

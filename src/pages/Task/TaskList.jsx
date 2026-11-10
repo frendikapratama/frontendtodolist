@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import DialogDetail from "../Task/DialogDetail";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import DoneInReviewDatesModal from "../../components/ui/DoneInReviewDatesModal";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
@@ -130,6 +131,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     taskId: null,
     userId: null,
   });
+  const [datesModalData, setDatesModalData] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
   const buttonRefs = useRef({});
   const STATUS_OPTIONS = [
@@ -406,7 +408,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
   );
 
   const calculateAutoNote = (status, due_date, finish_date) => {
-    if (status === "Done" && due_date && finish_date) {
+    if (
+      (status === "Done" || status === "Done-In review") &&
+      due_date &&
+      finish_date
+    ) {
       const dueDate = new Date(due_date).setHours(0, 0, 0, 0);
       const finishDate = new Date(finish_date).setHours(0, 0, 0, 0);
       if (finishDate === dueDate) {
@@ -440,6 +446,22 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
         setActivePopup(null);
         return;
       }
+
+      if (field === "status" && value === "Done-In review") {
+        const hasStartDate = Boolean(task.start_date);
+        const hasDueDate = Boolean(task.due_date);
+        const hasFinishDate = Boolean(task.finish_date);
+
+        if (!hasStartDate || !hasDueDate || !hasFinishDate) {
+          setDatesModalData({
+            isOpen: true,
+            item: task,
+          });
+          setActivePopup(null);
+          return;
+        }
+      }
+
       let updateData = { [field]: value };
       if (
         field !== "note" &&
@@ -472,6 +494,33 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
       setActivePopup(null);
     },
     [localTasks, updateTaskMutation],
+  );
+
+  const handleConfirmDatesModal = useCallback(
+    ({ startDate, dueDate, finishDate }) => {
+      if (!datesModalData?.item) return;
+      const task = datesModalData.item;
+      const autoNote = calculateAutoNote(
+        "Done-In review",
+        dueDate,
+        finishDate,
+      );
+      const updateData = {
+        status: "Done-In review",
+        start_date: startDate,
+        due_date: dueDate,
+        finish_date: finishDate,
+        ...(autoNote ? { note: autoNote } : {}),
+      };
+
+      const updatedTasks = localTasks.map((t) =>
+        t._id === task._id ? { ...t, ...updateData } : t,
+      );
+      setLocalTasks(updatedTasks);
+      updateTaskMutation.mutate({ taskId: task._id, data: updateData });
+      setDatesModalData(null);
+    },
+    [datesModalData, localTasks, updateTaskMutation],
   );
   const handleScaleChange = useCallback(
     (taskId, e) => {
@@ -1753,11 +1802,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           (showAddTask ? (
             <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
               <div className="w-5" />
-              {/* <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-gray-300"
-                  disabled
-                /> */}
+
               <input
                 type="text"
                 placeholder="Nama task"
@@ -1815,6 +1860,15 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           ))}
         <div ref={tableEndRef} className="h-1" />
       </div>
+
+      <DoneInReviewDatesModal
+        isOpen={Boolean(datesModalData?.isOpen)}
+        onClose={() => setDatesModalData(null)}
+        onSubmit={handleConfirmDatesModal}
+        item={datesModalData?.item}
+        type="Task"
+        isLoading={updateTaskMutation.isPending}
+      />
     </div>
   );
 };
