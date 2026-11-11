@@ -24,14 +24,14 @@ const DoneInReviewDatesModal = ({
   isLoading = false,
 }) => {
   const [startDate, setStartDate] = useState("");
-  // const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [finishDate, setFinishDate] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (isOpen && item) {
       setStartDate(formatDateForInput(item.start_date));
-      // setDueDate(formatDateForInput(item.due_date));
+      setDueDate(formatDateForInput(item.due_date));
       setFinishDate(formatDateForInput(item.finish_date));
       setErrorMessage("");
     }
@@ -41,11 +41,7 @@ const DoneInReviewDatesModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (
-      !startDate ||
-      // || !dueDate
-      !finishDate
-    ) {
+    if (!startDate || !dueDate || !finishDate) {
       setErrorMessage(
         "All dates (Start Date, Due Date, and Finish Date) must be filled in before changing the status to Done-In review.",
       );
@@ -55,7 +51,7 @@ const DoneInReviewDatesModal = ({
     setErrorMessage("");
     onSubmit({
       startDate,
-      // dueDate,
+      dueDate,
       finishDate,
     });
   };
@@ -140,7 +136,7 @@ const DoneInReviewDatesModal = ({
             </div>
 
             {/* Due Date */}
-            {/* <div>
+            <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                 Due Date <span className="text-red-500">*</span>
               </label>
