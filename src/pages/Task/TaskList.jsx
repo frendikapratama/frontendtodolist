@@ -1030,6 +1030,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
           const isDragging =
             dragState.index === index && dragState.fromGroup === groupId;
           const isPreview = task._isPreview;
+          const hasMissingDueDate = !task.due_date && !isPreview;
           const isHovered = hoveredRow === task._id;
           // const totalBadge =
           //   (task.comment_count || 0) +
@@ -1051,7 +1052,17 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 className={`flex items-center hover:bg-none ${
-                  isDragging ? "opacity-30 bg-gray-600" : "bg-[#EFECE3]"
+                  isDragging
+                    ? "opacity-30 bg-gray-600"
+                    : isPreview
+                      ? "bg-blue-50"
+                      : hasMissingDueDate
+                        ? "bg-amber-100"
+                        : "bg-[#EFECE3]"
+                } ${
+                  hasMissingDueDate && !isDragging
+                    ? "missing-due-date-blink"
+                    : ""
                 } ${
                   isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
@@ -1064,9 +1075,19 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     columnWidths.task
                   } gap-1 px-3 py-3.5 border-b border-gray-100 ${
                     isMember ? "cursor-grab active:cursor-grabbing" : ""
-                  } sticky left-0 bg-[#EFECE3] z-20 ${
-                    isDragging ? "bg-gray-600" : ""
-                  } ${isPreview ? "bg-blue-50" : ""}`}
+                  } sticky left-0 z-20 ${
+                    isDragging
+                      ? "bg-gray-600"
+                      : isPreview
+                        ? "bg-blue-50"
+                        : hasMissingDueDate
+                          ? "bg-amber-100"
+                          : "bg-[#efe9e3]"
+                  } ${
+                    hasMissingDueDate && !isDragging
+                        ? "missing-due-date-blink"
+                        : ""
+                  }`}
                 >
                   <button
                     onClick={() =>
