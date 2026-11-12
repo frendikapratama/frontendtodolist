@@ -107,7 +107,13 @@ const SubtaskList = ({
   }, [userRole]);
 
   const canView = useMemo(() => {
-    const allowedRoles = ["admin", "project_manager", "member", "management", "viewer"];
+    const allowedRoles = [
+      "admin",
+      "project_manager",
+      "member",
+      "management",
+      "viewer",
+    ];
     return allowedRoles.includes(userRole);
   }, [userRole]);
 
@@ -309,11 +315,7 @@ const SubtaskList = ({
     ({ startDate, dueDate, finishDate }) => {
       if (!datesModalData?.item) return;
       const subtask = datesModalData.item;
-      const autoNote = calculateAutoNote(
-        "Done-In review",
-        dueDate,
-        finishDate,
-      );
+      const autoNote = calculateAutoNote("Done-In review", dueDate, finishDate);
       const updateData = {
         status: "Done-In review",
         start_date: startDate,
@@ -326,7 +328,10 @@ const SubtaskList = ({
         s._id === subtask._id ? { ...s, ...updateData } : s,
       );
       setLocalSubtasks(updatedSubtasks);
-      updateSubTaskMutation.mutate({ subtaskId: subtask._id, data: updateData });
+      updateSubTaskMutation.mutate({
+        subtaskId: subtask._id,
+        data: updateData,
+      });
       setDatesModalData(null);
     },
     [datesModalData, localSubtasks, updateSubTaskMutation],
@@ -652,8 +657,12 @@ const SubtaskList = ({
         <div
           key={s._id}
           draggable={!readOnly && isMember}
-          onDragStart={(e) => !readOnly && isMember && handleDragStart(e, index)}
-          onDragOver={(e) => !readOnly && isMember && throttledDragOver(e, index)}
+          onDragStart={(e) =>
+            !readOnly && isMember && handleDragStart(e, index)
+          }
+          onDragOver={(e) =>
+            !readOnly && isMember && throttledDragOver(e, index)
+          }
           onDrop={!readOnly && isMember ? handleDrop : undefined}
           onDragEnd={!readOnly && isMember ? handleDragEnd : undefined}
           className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""}`}
@@ -662,7 +671,9 @@ const SubtaskList = ({
           <div
             className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 ${isMember ? "cursor-grab active:cursor-grabbing" : ""} sticky left-0 bg-[#F0E4D3] z-20`}
           >
-            <div className={`pl-3 ${isMember ? "cursor-grab active:cursor-grabbing" : ""}`}>
+            <div
+              className={`pl-3 ${isMember ? "cursor-grab active:cursor-grabbing" : ""}`}
+            >
               <svg
                 className="w-4 h-4 text-gray-400"
                 fill="none"
@@ -1180,7 +1191,9 @@ const SubtaskList = ({
                 if (isMember) {
                   setOpenDialog({ open: true, subtask: s });
                 } else {
-                  toast.error("You don't have permission to view subtask details");
+                  toast.error(
+                    "You don't have permission to view subtask details",
+                  );
                 }
               }}
             >
@@ -1234,7 +1247,8 @@ const SubtaskList = ({
           />
         </div>
       ) : (
-        showAddButton && isMember && (
+        showAddButton &&
+        isMember && (
           <button
             onClick={() => setShowForm(true)}
             className="sticky left-0 bg-[#F0E4D3] pl-4 mt-1 flex text-[0.8em] items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition"

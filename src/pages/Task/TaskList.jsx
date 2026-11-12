@@ -500,11 +500,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     ({ startDate, dueDate, finishDate }) => {
       if (!datesModalData?.item) return;
       const task = datesModalData.item;
-      const autoNote = calculateAutoNote(
-        "Done-In review",
-        dueDate,
-        finishDate,
-      );
+      const autoNote = calculateAutoNote("Done-In review", dueDate, finishDate);
       const updateData = {
         status: "Done-In review",
         start_date: startDate,

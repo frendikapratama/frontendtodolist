@@ -14,7 +14,7 @@ export const menuItems = [
   {
     id: "All Kuarter",
     label: "Quarter",
-    path: "/Kuarter",
+    path: "/kuarter",
     icon: "folderkanban",
   },
   {
@@ -61,9 +61,8 @@ export const menuBooking = [
     id: "master-data",
     label: "Master Data",
     icon: "Database",
-    //  akses control
     accessControl: {
-      allowedDivisions: [/^it$/i], // Regex untuk case insensitive
+      allowedDivisions: [/^it$/i], // Case-insensitive regex
       allowedUserIds: [
         "6a20de5c50ad9c30e06b9641", // hadi
         "6a1f97c04cf5cd6b3c82a2f4", // mia
