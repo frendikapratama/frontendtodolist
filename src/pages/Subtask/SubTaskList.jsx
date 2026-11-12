@@ -665,11 +665,24 @@ const SubtaskList = ({
           }
           onDrop={!readOnly && isMember ? handleDrop : undefined}
           onDragEnd={!readOnly && isMember ? handleDragEnd : undefined}
-          className={`flex items-center hover:bg-none transition-opacity bg-[#F0E4D3] border-b border-gray-100 ${draggedItem === index ? "opacity-40" : ""}`}
+          className={`flex items-center hover:bg-none transition-opacity border-b border-gray-100 ${
+            !s.due_date ? "bg-amber-100" : "bg-[#F0E4D3]"
+          } ${draggedItem === index ? "opacity-40" : ""} ${
+            !s.due_date && draggedItem !== index ? "missing-due-date-blink" : ""
+          }`}
+          style={
+            !s.due_date ? { "--missing-due-date-base": "#F0E4D3" } : undefined
+          }
         >
           {/* ── Name Column ── */}
           <div
-            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 ${isMember ? "cursor-grab active:cursor-grabbing" : ""} sticky left-0 bg-[#F0E4D3] z-20`}
+            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 ${isMember ? "cursor-grab active:cursor-grabbing" : ""} sticky left-0 z-20 ${
+              !s.due_date ? "bg-amber-100" : "bg-[#F0E4D3]"
+            } ${
+              !s.due_date && draggedItem !== index
+                ? "missing-due-date-blink"
+                : ""
+            }`}
           >
             <div
               className={`pl-3 ${isMember ? "cursor-grab active:cursor-grabbing" : ""}`}
@@ -833,7 +846,7 @@ const SubtaskList = ({
           >
             {s.status === "Done-In review" ? (
               <div className="flex items-center space-x-2">
-                <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-yellow-100 text-yellow-700 whitespace-nowrap">
+                <span className="px-2 py-1 text-[0.7em] font-semibold rounded-full bg-teal-100 text-teal-700 hover:bg-teal-300 cursor-pointer whitespace-nowrap">
                   {s.status}
                 </span>
                 {isAuthorized && (
@@ -861,10 +874,22 @@ const SubtaskList = ({
               <>
                 <span
                   ref={(el) => (buttonRefs.current[`status-${s._id}`] = el)}
-                  className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full bg-indigo-100 text-indigo-700 ${
-                    canEditStatus(s)
-                      ? "cursor-pointer hover:bg-indigo-200"
+                  className={`px-3 py-1.5 text-[0.8em] font-semibold rounded-full ${
+                    canEditStatus(s) && !readOnly
+                      ? "cursor-pointer"
                       : "cursor-default"
+                  } ${
+                    s.status === "To Do"
+                      ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : s.status === "In Progress"
+                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        : s.status === "Blocked"
+                          ? "text-red-800 bg-red-200 hover:bg-red-300"
+                          : s.status === "Done"
+                            ? "bg-green-200 text-green-800 hover:bg-green-300"
+                            : s.status === "Hold"
+                              ? "bg-yellow-200 text-yellow-800 hover:bg-yellow-300"
+                              : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
                   }`}
                   onClick={() =>
                     canEditStatus(s) &&

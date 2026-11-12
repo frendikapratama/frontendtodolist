@@ -7,7 +7,7 @@
     background-color: #fef3c7;
   }
   50% {
-    background-color: #efece3;
+    background-color: var(--missing-due-date-base, #efece3);
   }
 }
 

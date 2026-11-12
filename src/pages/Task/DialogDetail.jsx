@@ -762,7 +762,7 @@ const DialogDetail = ({
                       <Paperclip className="w-4 h-4" />
                       {uploadAttachmentMutation.isLoading
                         ? "Uploading..."
-                        : "Upload File"}
+                        : "Upload File (max 30 MB)"}
                     </button>
 
                     {/* ====== LETAKKAN KODE BARU DI SINI ====== */}
