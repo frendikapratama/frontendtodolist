@@ -1552,13 +1552,21 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ref={(el) =>
                       (buttonRefs.current[`finish_date-${task._id}`] = el)
                     }
-                    className={`text-[0.8em] text-gray-600 ${
-                      isMember
-                        ? "cursor-pointer hover:bg-gray-100"
-                        : "cursor-default"
+                    className={`text-[0.8em] ${
+                      isMember && task.start_date
+                        ? "text-gray-600 cursor-pointer hover:bg-gray-100"
+                        : !task.start_date
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-gray-600 cursor-default"
                     } px-1 rounded`}
+                    title={
+                      !task.start_date
+                        ? "Isi Start Date terlebih dahulu"
+                        : undefined
+                    }
                     onClick={() =>
                       isMember &&
+                      task.start_date &&
                       setActivePopup({
                         taskId: task._id,
                         field: "finish_date",
@@ -1574,9 +1582,11 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                       : "Set date"}
                   </span>
                   {activePopup?.taskId === task._id &&
-                    activePopup?.field === "finish_date" && (
+                    activePopup?.field === "finish_date" &&
+                    task.start_date && (
                       <DatePickerPopup
                         value={task.finish_date}
+                        minDate={new Date(task.start_date)}
                         onChange={(value) =>
                           handlePopupChange(task._id, "finish_date", value)
                         }

@@ -8,6 +8,7 @@ const DatePickerPopup = ({
   onClose,
   buttonRef,
   showTimeSelect = false,
+  minDate,
 }) => {
   const popupRef = useRef(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -103,6 +104,7 @@ const DatePickerPopup = ({
           selected={selectedDate}
           onChange={handleDateChange}
           inline
+          minDate={minDate}
           showTimeSelect={showTimeSelect}
           timeFormat="HH:mm"
           timeIntervals={15}
@@ -127,6 +129,7 @@ const DatePickerPopup = ({
         selected={selectedDate}
         onChange={handleDateChange}
         inline
+        minDate={minDate}
         showTimeSelect={showTimeSelect}
         timeFormat="HH:mm"
         timeIntervals={15}

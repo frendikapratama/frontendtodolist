@@ -30,9 +30,12 @@ const DoneInReviewDatesModal = ({
 
   useEffect(() => {
     if (isOpen && item) {
-      setStartDate(formatDateForInput(item.start_date));
+      const itemStartDate = formatDateForInput(item.start_date);
+      setStartDate(itemStartDate);
       setDueDate(formatDateForInput(item.due_date));
-      setFinishDate(formatDateForInput(item.finish_date));
+      setFinishDate(
+        itemStartDate ? formatDateForInput(item.finish_date) : "",
+      );
       setErrorMessage("");
     }
   }, [isOpen, item]);
@@ -45,6 +48,10 @@ const DoneInReviewDatesModal = ({
       setErrorMessage(
         "All dates (Start Date, Due Date, and Finish Date) must be filled in before changing the status to Done-In review.",
       );
+      return;
+    }
+    if (finishDate < startDate) {
+      setErrorMessage("Finish Date must be the same as or later than Start Date.");
       return;
     }
 
@@ -129,7 +136,11 @@ const DoneInReviewDatesModal = ({
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setStartDate(value);
+                  if (!value) setFinishDate("");
+                }}
                 className="w-full px-3.5 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs"
                 required
               />
@@ -158,9 +169,17 @@ const DoneInReviewDatesModal = ({
                 type="date"
                 value={finishDate}
                 onChange={(e) => setFinishDate(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs"
+                disabled={!startDate}
+                min={startDate || undefined}
+                title={!startDate ? "Isi Start Date terlebih dahulu" : undefined}
+                className="w-full px-3.5 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                 required
               />
+              {!startDate && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Isi Start Date terlebih dahulu.
+                </p>
+              )}
             </div>
           </div>
 

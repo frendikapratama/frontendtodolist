@@ -1095,9 +1095,17 @@ const SubtaskList = ({
           >
             <span
               ref={(el) => (buttonRefs.current[`finish_date-${s._id}`] = el)}
-              className="text-[0.8em] text-gray-600 cursor-pointer hover:bg-gray-100 px-1 rounded"
+              className={`text-[0.8em] px-1 rounded ${
+                !readOnly && s.start_date
+                  ? "text-gray-600 cursor-pointer hover:bg-gray-100"
+                  : "text-gray-400 cursor-not-allowed"
+              }`}
+              title={
+                !s.start_date ? "Isi Start Date terlebih dahulu" : undefined
+              }
               onClick={() =>
                 !readOnly &&
+                s.start_date &&
                 setActivePopup({ subtaskId: s._id, field: "finish_date" })
               }
             >
@@ -1110,9 +1118,11 @@ const SubtaskList = ({
                 : "Set date"}
             </span>
             {activePopup?.subtaskId === s._id &&
-              activePopup?.field === "finish_date" && (
+              activePopup?.field === "finish_date" &&
+              s.start_date && (
                 <DatePickerPopup
                   value={s.finish_date}
+                  minDate={new Date(s.start_date)}
                   onChange={(value) =>
                     handlePopupChange(s._id, "finish_date", value)
                   }
