@@ -665,25 +665,21 @@ const SubtaskList = ({
           }
           onDrop={!readOnly && isMember ? handleDrop : undefined}
           onDragEnd={!readOnly && isMember ? handleDragEnd : undefined}
-          className={`flex items-center hover:bg-none transition-opacity border-b border-gray-100 ${
-            !s.due_date ? "bg-amber-100" : "bg-[#F0E4D3]"
-          } ${draggedItem === index ? "opacity-40" : ""} ${
-            !s.due_date && draggedItem !== index ? "missing-due-date-blink" : ""
+          className={`flex items-center hover:bg-none transition-opacity border-b border-white bg-[#F0E4D3] ${
+            draggedItem === index ? "opacity-40" : ""
           }`}
-          style={
-            !s.due_date ? { "--missing-due-date-base": "#F0E4D3" } : undefined
-          }
         >
           {/* ── Name Column ── */}
           <div
-            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 ${isMember ? "cursor-grab active:cursor-grabbing" : ""} sticky left-0 z-20 ${
-              !s.due_date ? "bg-amber-100" : "bg-[#F0E4D3]"
-            } ${
-              !s.due_date && draggedItem !== index
-                ? "missing-due-date-blink"
-                : ""
-            }`}
+            className={`flex-1 flex items-center ${columnWidths.task} gap-1 px-3 py-3.5 ${isMember ? "cursor-grab active:cursor-grabbing" : ""} sticky left-0 z-20  bg-[#F0E4D3]`}
           >
+            {!s.due_date && (
+              <span
+                aria-label="Due date belum diisi"
+                title="Due date belum diisi"
+                className="missing-due-date-blink pointer-events-none absolute right-1 top-1 z-30 h-2.5 w-2.5 rounded-full bg-orange-400"
+              />
+            )}
             <div
               className={`pl-3 ${isMember ? "cursor-grab active:cursor-grabbing" : ""}`}
             >
@@ -735,7 +731,7 @@ const SubtaskList = ({
 
           {/* ── PIC Column ── */}
           <div
-            className={`${columnWidths.pic} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center shrink-0`}
+            className={`${columnWidths.pic} px-6 py-3.5  items-center flex justify-center shrink-0`}
           >
             <div className="flex items-center gap-1 relative">
               {s.pic && s.pic.length > 0 && (
@@ -842,7 +838,7 @@ const SubtaskList = ({
 
           {/* ── Status Column ── */}
           <div
-            className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+            className={`${columnWidths.status} px-6 py-3.5  items-center flex justify-center`}
           >
             {s.status === "Done-In review" ? (
               <div className="flex items-center space-x-2">
@@ -960,7 +956,7 @@ const SubtaskList = ({
 
           {/* ── Scale Column ── */}
           <div
-            className={`${columnWidths.scale} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+            className={`${columnWidths.scale} px-6 py-3.5  items-center flex justify-center`}
           >
             <input
               className="w-14 border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1157,7 +1153,7 @@ const SubtaskList = ({
 
           {/* ── Reason Column ── */}
           <div
-            className={`${columnWidths.reason} px-6 py-3.5 border-b border-gray-100 flex justify-center`}
+            className={`${columnWidths.reason} px-6 py-3.5  flex justify-center`}
           >
             {s.note === "Completed - Overdue" ? (
               editingField?.subtaskId === s._id &&
