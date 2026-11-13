@@ -1055,13 +1055,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     ? "opacity-30 bg-gray-600"
                     : isPreview
                       ? "bg-blue-50"
-                      : hasMissingDueDate
-                        ? "bg-amber-100"
-                        : "bg-[#EFECE3]"
-                } ${
-                  hasMissingDueDate && !isDragging
-                    ? "missing-due-date-blink"
-                    : ""
+                      : "bg-[#EFECE3]"
                 } ${
                   isPreview
                     ? "opacity-50 bg-blue-50 border-2 border-dashed border-blue-300"
@@ -1074,20 +1068,21 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                     columnWidths.task
                   } gap-1 px-3 py-3.5  ${
                     isMember ? "cursor-grab active:cursor-grabbing" : ""
-                  } sticky left-0 z-20 ${
+                  } sticky left-0 z-20  ${
                     isDragging
                       ? "bg-gray-600"
                       : isPreview
                         ? "bg-blue-50"
-                        : hasMissingDueDate
-                          ? "bg-amber-100"
-                          : "bg-[#efe9e3]"
-                  } ${
-                    hasMissingDueDate && !isDragging
-                      ? "missing-due-date-blink"
-                      : ""
+                        : "bg-[#efe9e3]"
                   }`}
                 >
+                  {hasMissingDueDate && (
+                    <span
+                      aria-label="Due date belum diisi"
+                      title="Due date belum diisi"
+                      className="missing-due-date-blink pointer-events-none absolute right-1 top-1 z-30 h-2.5 w-2.5 rounded-full bg-orange-400"
+                    />
+                  )}
                   <button
                     onClick={() =>
                       setOpenSubtasks((prev) => ({
