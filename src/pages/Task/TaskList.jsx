@@ -1050,7 +1050,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 onDragOver={(e) => throttledDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                className={`flex items-center hover:bg-none ${
+                className={`flex items-center hover:bg-none border-b border-white ${
                   isDragging
                     ? "opacity-30 bg-gray-600"
                     : isPreview
