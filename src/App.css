@@ -4,7 +4,7 @@
 @keyframes missing-due-date-blink {
   0%,
   100% {
-    background-color: #fef3c7;
+    background-color: #f1b04c   ;
   }
   50% {
     background-color: var(--missing-due-date-base, #efece3);
@@ -12,12 +12,12 @@
 }
 
 .missing-due-date-blink {
-  animation: missing-due-date-blink 2s ease-in-out infinite;
+  animation: missing-due-date-blink 10s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .missing-due-date-blink {
     animation: none;
-    background-color: #fef3c7;
+    background-color: #f1b04c   ;
   }
 }

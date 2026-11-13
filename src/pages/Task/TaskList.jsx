@@ -437,7 +437,6 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
     }
     return null;
   };
-
   const handlePopupChange = useCallback(
     (taskId, field, value) => {
       const task = localTasks.find((t) => t._id === taskId);
@@ -1073,7 +1072,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 <div
                   className={`flex-1 flex items-center ${
                     columnWidths.task
-                  } gap-1 px-3 py-3.5 border-b border-gray-100 ${
+                  } gap-1 px-3 py-3.5  ${
                     isMember ? "cursor-grab active:cursor-grabbing" : ""
                   } sticky left-0 z-20 ${
                     isDragging
@@ -1085,8 +1084,8 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                           : "bg-[#efe9e3]"
                   } ${
                     hasMissingDueDate && !isDragging
-                        ? "missing-due-date-blink"
-                        : ""
+                      ? "missing-due-date-blink"
+                      : ""
                   }`}
                 >
                   <button
@@ -1252,7 +1251,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* type */}
                 <div
-                  className={`${columnWidths.type} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.type} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <span
                     ref={(el) => (buttonRefs.current[`type-${task._id}`] = el)}
@@ -1285,7 +1284,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Status */}
                 <div
-                  className={`${columnWidths.status} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.status} px-6 py-3.5  items-center flex justify-center`}
                 >
                   {/* Cek jika status adalah "Done-In The review" */}
                   {task.status === "Done-In review" ? (
@@ -1373,7 +1372,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Priority */}
                 <div
-                  className={`${columnWidths.priority} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.priority} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <span
                     ref={(el) =>
@@ -1411,7 +1410,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Scale */}
                 <div
-                  className={`${columnWidths.scale} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.scale} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <input
                     className="w-14 border border-gray-300 rounded-sm text-center text-gray-600 text-sm p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1431,7 +1430,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Meeting Date */}
                 <div
-                  className={`${columnWidths.meetingDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.meetingDate} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <span
                     ref={(el) =>
@@ -1474,7 +1473,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Start Date */}
                 <div
-                  className={`${columnWidths.startDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.startDate} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <span
                     ref={(el) =>
@@ -1517,7 +1516,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Due Date */}
                 <div
-                  className={`${columnWidths.dueDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.dueDate} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <span
                     ref={(el) =>
@@ -1552,7 +1551,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Finish Date */}
                 <div
-                  className={`${columnWidths.finishDate} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.finishDate} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <span
                     ref={(el) =>
@@ -1596,7 +1595,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Keterangan */}
                 <div
-                  className={`${columnWidths.note} px-6 py-3.5 border-b border-gray-100 items-center flex justify-center`}
+                  className={`${columnWidths.note} px-6 py-3.5  items-center flex justify-center`}
                 >
                   <span
                     ref={(el) => {
@@ -1640,7 +1639,7 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                 </div>
                 {/* Reason */}
                 <div
-                  className={`${columnWidths.reason} px-6 py-3.5 border-b border-gray-100 flex justify-center`}
+                  className={`${columnWidths.reason} px-6 py-3.5  flex justify-center`}
                 >
                   {task.note === "Completed - Overdue" ? (
                     editingField?.taskId === task._id &&
@@ -1698,8 +1697,8 @@ const TaskList = ({ groupId, workspaceId, hasActiveFilters, filters = {} }) => {
                   )}
                 </div>
                 {/* Action Button */}
-                <div className="w-40 px-6 py-3.5 border-b border-gray-100 items-center flex justify-center">
-                  <div className="w-40 px-6 py-3.5 gap-2 border-b border-gray-100 items-center flex justify-center">
+                <div className="w-40 px-6 py-3.5  items-center flex justify-center">
+                  <div className="w-40 px-6 py-3.5 gap-2 items-center flex justify-center">
                     <button
                       className="bg-gray-100 rounded-xl p-1 text-black font-medium text-xs w-18 hover:bg-gray-200"
                       onClick={() => handleOpenDialog(task._id)}
