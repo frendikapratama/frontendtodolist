@@ -19,6 +19,7 @@ import { RecentUpdatesProvider } from "./context/RecentlyContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import MajorTask from "./pages/MajorTask/Index";
 import ReportPage from "./pages/Report/Index";
+import GroupReportPage from "./pages/GroupReport/GroupReportPage";
 import UserManagement from "./pages/UserManagement/UserManagement";
 import IndexFacilities from "./pages/BookingMeeting/Facilities/Index";
 import IndexRooms from "./pages/BookingMeeting/Rooms/Index";
@@ -76,6 +77,10 @@ export default function App() {
                     <Route
                       path="/project/:id"
                       element={<ProjectDetailPage />}
+                    />
+                    <Route
+                      path="/project/:projectId/group/:groupId/report"
+                      element={<GroupReportPage />}
                     />
                     <Route
                       path="/master-data/facilities"

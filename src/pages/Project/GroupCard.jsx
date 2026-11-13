@@ -1,4 +1,4 @@
-import { ChevronDown, Search, X, Filter, Calendar } from "lucide-react";
+import { ChevronDown, Search, X, Filter, Calendar, BarChart3 } from "lucide-react";
 import { useTask } from "../../hook/useTask";
 import TaskList from "../Task/TaskList";
 import { useCallback, useState, useEffect } from "react";
@@ -6,8 +6,10 @@ import { useGroup } from "../../hook/useGroups";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useProgress } from "../../hook/useProgress";
 import { useRecentUpdates } from "../../context/RecentlyContext";
+import { useNavigate } from "react-router-dom";
 
-const GroupCard = ({ group, index, workspaceId }) => {
+const GroupCard = ({ group, index, workspaceId, projectId }) => {
+  const navigate = useNavigate();
   const [isCardOpen, setIsCardOpen] = useState(group.isOpen ?? false);
 
   const { taskByGroup: allTasksQuery } = useTask(group._id, {}, { enabled: isCardOpen });
@@ -222,6 +224,15 @@ const GroupCard = ({ group, index, workspaceId }) => {
             {taskByGroup.data?.length || 0} items
           </span>
         </div>
+        <button
+          className="btn btn-sm p-1 w-10 h-6 text-white hover:bg-blue-600 bg-blue-700 text-[0.7em] border-none flex items-center justify-center"
+          title="View Group Report"
+          onClick={() =>
+            navigate(`/project/${projectId}/group/${group._id}/report`)
+          }
+        >
+          <BarChart3 size={13} />
+        </button>
         <button
           className="btn btn-sm p-1 w-12 h-6 text-white hover:bg-orange-700 bg-red-800 text-[0.7em] border-none"
           onClick={() => handleDelete(group._id, group.nama)}

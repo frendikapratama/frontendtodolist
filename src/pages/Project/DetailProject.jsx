@@ -317,6 +317,7 @@ const ProjectDetailPage = () => {
                     group={group}
                     index={index}
                     workspaceId={actualWorkspaceId}
+                    projectId={id}
                   />
                 </div>
               ))}
