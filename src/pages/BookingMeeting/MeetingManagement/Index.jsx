@@ -345,7 +345,8 @@ const IndexBooking = () => {
                           </span>
                         </div>
                         <p className="text-xs font-semibold text-white truncate leading-tight">
-                          {room.statusMessage || "Room Cleaning in Progress"}
+                          {/* {room.statusMessage || "Room Cleaning in Progress"} */}
+                          Room Cleaning in Progress
                         </p>
                         {room.bufferUntil && (
                           <div className="flex items-center gap-1 text-violet-300/80">
