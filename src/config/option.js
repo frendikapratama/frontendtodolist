@@ -1,4 +1,4 @@
-import { DEPARTEMEN_DIVISI } from "../config/departemenDivisi.js";
+import { DEPARTEMEN_DIVISI } from "./departmen.js";
 
 export function getDepartemenOptions() {
   return DEPARTEMEN_DIVISI.map((dept) => ({
@@ -9,7 +9,7 @@ export function getDepartemenOptions() {
 
 export function getDivisiOptions(departemenId) {
   const selectedDepartemen = DEPARTEMEN_DIVISI.find(
-    (dept) => dept.departemenId === departemenId
+    (dept) => dept.departemenId === departemenId,
   );
 
   return (

@@ -6,6 +6,7 @@ import { Dot, Trash2, Eye } from "lucide-react";
 import NotificationBell from "../../components/ui/NotificationBell";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { AuthContext } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 const Kuarter = () => {
   const { kuarterQuery, updatedKuarterMutation, deleteMutation } = useKuarter();
@@ -163,6 +164,15 @@ const Kuarter = () => {
   };
 
   const handleDetailKuarter = (kuarterId) => {
+    const kuarter = kuarterQuery.data?.find((item) => item._id === kuarterId);
+    const userDepartment = String(user?.departemen || "").trim().toUpperCase();
+    const kuarterDepartment = String(kuarter?.departemen || "").trim().toUpperCase();
+
+    if (userDepartment !== "OFFICE" && userDepartment !== kuarterDepartment) {
+      toast.error("Anda tidak memiliki akses ke kuarter department ini");
+      return;
+    }
+
     navigate(`/kuarter/${kuarterId}`);
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useUsersState, useDebounce } from "../../hook/useUsers";
-import { DEPARTEMEN_DIVISI } from "../../config/departemenDivisi";
+import { DEPARTMEN } from "../../config/departmen";
 import { getWorkspaces } from "../../services/workspace";
 import {
   addUserToWorkspace,
@@ -10,14 +10,12 @@ import {
 } from "../../services/userServices";
 import {
   Plus,
-  Search,
   Edit,
   Trash2,
   Shield,
   Briefcase,
   X,
   UserPlus,
-  Check,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -92,11 +90,6 @@ export default function UserManagement() {
       displayName: divisionNames.join(", ") || workspace.name || workspace.nama,
     };
   };
-
-  const selectedDepartemen = DEPARTEMEN_DIVISI.find(
-    (d) => d.departemenId === formData.departemen,
-  );
-  const availableDivisi = selectedDepartemen ? selectedDepartemen.divisi : [];
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -566,10 +559,9 @@ export default function UserManagement() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-sm font-semibold text-slate-500">
-                        Department
+                        Department *
                       </label>
-                      <input
-                        type="text"
+                      <select
                         required
                         value={formData.departemen}
                         onChange={(e) =>
@@ -578,9 +570,15 @@ export default function UserManagement() {
                             departemen: e.target.value,
                           }))
                         }
-                        placeholder="e.g. HPC, PBPG"
                         className="px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-700"
-                      />
+                      >
+                        <option value="">Select a Department...</option>
+                        {DEPARTMEN.map((dept) => (
+                          <option key={dept.name} value={dept.name}>
+                            {dept.name.toUpperCase()}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
