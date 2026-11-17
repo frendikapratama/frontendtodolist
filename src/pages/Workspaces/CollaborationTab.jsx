@@ -8,6 +8,7 @@ import { useProject } from "../../hook/useProject";
 import { useMember } from "../../hook/useMember";
 import { AuthContext } from "../../context/AuthContext";
 import { useDebounce } from "../../hook/useDebounce";
+import { Trash2 } from "lucide-react";
 
 const ProjectCard = ({
   project,
@@ -76,13 +77,13 @@ const ProjectCard = ({
     >
       {isOwner && onDelete && isAuthorized && (
         <button
-          className="btn btn-error btn-xs absolute top-2 right-2"
+          className="btn btn-error btn-xs absolute top-1 right-1 text-amber-50"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(project._id, project.nama);
           }}
         >
-          Delete
+          <Trash2 className="w-4 h-4" />
         </button>
       )}
 
@@ -497,7 +498,8 @@ const CollaborationTab = ({ workspaceId, currentKuarterId }) => {
                 No projects found for "{debouncedSearch}"
               </p>
               <p className="text-xs text-[#EFECE3]/70 mt-1 max-w-sm">
-                We couldn't find any projects matching your search term. Try searching with a different keyword.
+                We couldn't find any projects matching your search term. Try
+                searching with a different keyword.
               </p>
               <button
                 type="button"

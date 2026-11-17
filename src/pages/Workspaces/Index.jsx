@@ -66,7 +66,7 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
             setEditedName(workspace.nama);
           }
         },
-      }
+      },
     );
     setEditing(null);
   };
@@ -78,9 +78,7 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
 
   const handleDelete = (workspaceId, workspaceName) => {
     if (
-      window.confirm(
-        `Are you sure want to delete this "${workspaceName}"?`
-      )
+      window.confirm(`Are you sure want to delete this "${workspaceName}"?`)
     ) {
       deleteMutation.mutate(workspaceId);
       if (selectedCardId === workspaceId) {
@@ -112,7 +110,9 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
     <>
       <div className="bg-white/40 p-4 rounded-lg">
         <div className="flex flex-row backdrop-blur-lg rounded-2xl justify-between items-center sticky top-0 p-1 z-10">
-          <h2 className="text-[1.2em] font-bold mb-4 text-white">List Division</h2>
+          <h2 className="text-[1.2em] font-bold mb-4 text-white">
+            List Division
+          </h2>
           <button
             onClick={openCreateModal}
             className="btn btn-primary mb-2"
@@ -131,9 +131,7 @@ const WorkspaceIndex = ({ onWorkspaceSelect }) => {
         <dialog id="createModal" className="modal">
           <div className="modal-box w-11/12 max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl bg-white border-none">
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-              <h3 className="font-bold text-xl text-gray-800">
-                Add Division
-              </h3>
+              <h3 className="font-bold text-xl text-gray-800">Add Division</h3>
             </div>
             <WorkspaceForm onClose={closeModal} kuarterId={kuarterId} />
           </div>

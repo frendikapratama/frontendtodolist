@@ -52,7 +52,7 @@ const KuarterDetail = () => {
         {/* Left Panel - Quarter Information & Workspace Detail */}
         <div className="md:w-[60%] w-full card bg-white/40 shadow-xl h-[88vh] overflow-y-auto">
           <div className="card-body">
-            <h2 className="card-title text-[1.2em] text-white">
+            {/* <h2 className="card-title text-[1.2em] text-white">
               Quarter Information
             </h2>
             <div className="divider"></div>
@@ -64,10 +64,10 @@ const KuarterDetail = () => {
               <p className="text-white">
                 <strong className="text-gray-900">ID:</strong> {kuarterData._id}
               </p>
-            </div>
+            </div> */}
 
             {/* Division Details Section */}
-            <div className="divider mt-6"></div>
+            {/* <div className="divider mt-6"></div> */}
             <h2 className="card-title text-[1.2em] text-white">
               Division Details
             </h2>

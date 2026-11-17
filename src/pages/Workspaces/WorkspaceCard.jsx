@@ -6,30 +6,102 @@ import React, {
   useContext,
 } from "react";
 import { createPortal } from "react-dom";
+import { Trash } from "lucide-react";
 import ProgressBar from "../../components/ui/ProgressBar";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useWorkspaceStats } from "../../hook/useProgress";
 import { useMember } from "../../hook/useMember";
-import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { Trash } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
+import { Trash2 } from "lucide-react";
+import { Info } from "lucide-react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const getPhotoUrl = (photoPath) => {
+  if (!photoPath) return null;
+  return `${API_BASE_URL}/uploads/users/${photoPath}`;
+};
+
+const colors = [
+  "bg-gradient-to-br from-violet-500 to-purple-600",
+  "bg-gradient-to-br from-blue-500 to-cyan-500",
+  "bg-gradient-to-br from-emerald-500 to-teal-500",
+  "bg-gradient-to-br from-orange-500 to-amber-500",
+  "bg-gradient-to-br from-pink-500 to-rose-500",
+];
+
+const roleColors = {
+  admin: "bg-purple-100 text-purple-700 border-purple-200",
+  member: "bg-blue-100 text-blue-700 border-blue-200",
+  viewer: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
+const MemberAvatar = ({ member, index = 0, size = "md", className = "" }) => {
+  const [imageError, setImageError] = useState(false);
+  const photoUrl = member.user?.photo ? getPhotoUrl(member.user.photo) : null;
+  const shouldShowImage = photoUrl && !imageError;
+  const fallbackImage = "https://placehold.co/400";
+
+  const sizeClasses = {
+    sm: "w-7 h-7 text-xs",
+    md: "w-8 h-8 text-xs",
+    lg: "w-10 h-10 text-sm",
+  };
+
+  return (
+    <div
+      className={`
+        ${sizeClasses[size]} rounded-full overflow-hidden shrink-0
+        ${!shouldShowImage ? colors[index % colors.length] : ""}
+        flex items-center justify-center text-white font-semibold
+        ${className}
+      `}
+    >
+      {shouldShowImage ? (
+        <img
+          src={photoUrl}
+          alt={member.user?.username || "Avatar"}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            setImageError(true);
+            if (e.target.src !== fallbackImage) {
+              e.target.src = fallbackImage;
+            }
+          }}
+        />
+      ) : (
+        <span>{member.user?.username?.charAt(0).toUpperCase() || "?"}</span>
+      )}
+    </div>
+  );
+};
 
 const WorkspaceCard = ({
   workspace,
   isSelected,
   onCardClick,
-  onDelete,
   onDetail,
   deleteMutation,
 }) => {
   const { workspaceStats } = useWorkspaceStats(workspace._id);
   const progress = workspaceStats.data?.progress ?? 0;
+
   const { membersWorkspaceQuery, removeMemberMutation } = useMember(
     "workspace",
     workspace._id,
   );
+
   const { user } = useContext(AuthContext);
+  const isAdmin = user?.isSystemAdmin === true;
+
   const [selectedMember, setSelectedMember] = useState(null);
-  const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
+  const [popoverPos, setPopoverPos] = useState({
+    x: 0,
+    y: 0,
+    placement: "bottom",
+    maxHeight: 0,
+  });
+
   const containerRef = useRef(null);
   const [confirmDelete, setConfirmDelete] = useState({
     show: false,
@@ -47,32 +119,8 @@ const WorkspaceCard = ({
   const visibleMembers = members.slice(0, maxVisible);
   const remainingCount = members.length - maxVisible;
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-  const getPhotoUrl = (photoPath) => {
-    if (!photoPath) return null;
-    const fullUrl = `${API_BASE_URL}/uploads/users/${photoPath}`;
-    console.log("Photo URL generated:", fullUrl);
-    return fullUrl;
-  };
-
-  const colors = [
-    "bg-gradient-to-br from-violet-500 to-purple-600",
-    "bg-gradient-to-br from-blue-500 to-cyan-500",
-    "bg-gradient-to-br from-emerald-500 to-teal-500",
-    "bg-gradient-to-br from-orange-500 to-amber-500",
-    "bg-gradient-to-br from-pink-500 to-rose-500",
-  ];
-
-  const roleColors = {
-    admin: "bg-purple-100 text-purple-700 border-purple-200",
-    member: "bg-blue-100 text-blue-700 border-blue-200",
-    viewer: "bg-gray-100 text-gray-600 border-gray-200",
-  };
-
-  const isAdmin = user?.isSystemAdmin === true;
-
   const handleDelete = useCallback((workspacesId) => {
-    setConfirmDelete({ show: true, workspacesId: workspacesId });
+    setConfirmDelete({ show: true, workspacesId });
   }, []);
 
   const confirmDeleteWorkspace = useCallback(() => {
@@ -82,33 +130,49 @@ const WorkspaceCard = ({
     }
   }, [confirmDelete.workspacesId, deleteMutation]);
 
+  const getPopoverPosition = (element, preferredHeight) => {
+    const rect = element.getBoundingClientRect();
+    const halfWidth = Math.min(128, (window.innerWidth - 16) / 2);
+    const x = Math.max(
+      halfWidth + 8,
+      Math.min(rect.left + rect.width / 2, window.innerWidth - halfWidth - 8),
+    );
+    const spaceAbove = Math.max(0, rect.top - 16);
+    const spaceBelow = Math.max(0, window.innerHeight - rect.bottom - 16);
+    const placement =
+      spaceBelow >= preferredHeight || spaceBelow >= spaceAbove
+        ? "bottom"
+        : "top";
+    return {
+      x,
+      y: placement === "bottom" ? window.innerHeight - rect.bottom : rect.top,
+      placement,
+      maxHeight: placement === "bottom" ? spaceBelow : spaceAbove,
+    };
+  };
+
   const handleAvatarClick = (member, e) => {
     e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    setPopoverPos({
-      x: rect.left + rect.width / 2,
-      y: rect.bottom + 8,
-    });
+    setPopoverPos(getPopoverPosition(e.currentTarget, 200));
     setSelectedMember(selectedMember?._id === member._id ? null : member);
+  };
+
+  const handleShowAll = (e) => {
+    e.stopPropagation();
+    setSelectedMember({ showAll: true });
+    setPopoverPos(getPopoverPosition(e.currentTarget, 360));
   };
 
   const handleRemoveMemberClick = (memberId, userId, username) => {
     setConfirmDeleteMember({
       show: true,
-      memberId: memberId,
-      userId: userId,
-      username: username,
+      memberId,
+      userId,
+      username,
     });
   };
 
-  // Handler untuk konfirmasi delete member
   const confirmRemoveMember = async () => {
-    console.log(
-      "Remove member with ID:",
-      confirmDeleteMember.memberId,
-      "User ID:",
-      confirmDeleteMember.userId,
-    );
     try {
       await removeMemberMutation.mutateAsync({
         workspaceId: workspace._id,
@@ -123,18 +187,7 @@ const WorkspaceCard = ({
       });
     } catch (error) {
       console.error("Error removing member:", error);
-      alert("Failed to remove member");
     }
-  };
-
-  const handleShowAll = (e) => {
-    e.stopPropagation();
-    setSelectedMember({ showAll: true });
-    const rect = e.currentTarget.getBoundingClientRect();
-    setPopoverPos({
-      x: rect.left + rect.width / 2,
-      y: rect.bottom + 8,
-    });
   };
 
   useEffect(() => {
@@ -143,327 +196,143 @@ const WorkspaceCard = ({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const MemberAvatar = ({ member, index, size = "md", className = "" }) => {
-    const [imageError, setImageError] = useState(false);
-    const photoUrl = member.user?.photo ? getPhotoUrl(member.user.photo) : null;
-    const shouldShowImage = photoUrl && !imageError;
-    const sizeClasses = {
-      sm: "w-8 h-8 text-sm",
-      md: "w-9 h-9 text-sm",
-      lg: "w-11 h-11 text-lg",
-    };
-    const fallbackImage = "https://placehold.co/400";
-    return (
-      <div
-        className={`
-          ${sizeClasses[size]} rounded-full overflow-hidden
-          ${!shouldShowImage ? colors[index % colors.length] : ""}
-          flex items-center justify-center text-white font-semibold
-          ${className}
-        `}
-      >
-        {shouldShowImage ? (
-          <img
-            src={photoUrl}
-            alt={member.user.username}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              console.log("Image failed to load:", photoUrl);
-              setImageError(true);
-              // Coba gunakan fallback image
-              if (e.target.src !== fallbackImage) {
-                e.target.src = fallbackImage;
-              }
-            }}
-            onLoad={() => console.log("Image loaded successfully:", photoUrl)}
-          />
-        ) : (
-          <span>{member.user?.username?.charAt(0).toUpperCase() || "?"}</span>
-        )}
-      </div>
-    );
-  };
-
-  const SingleMemberPopover = () =>
-    selectedMember &&
-    !selectedMember.showAll &&
-    createPortal(
-      <div
-        className="fixed bg-white rounded-xl shadow-2xl p-4 min-w-52 border border-gray-100 z-50"
-        style={{
-          left: `${popoverPos.x}px`,
-          top: `${popoverPos.y}px`,
-          transform: "translateX(-50%)",
-          animation: "fadeSlideIn 0.2s ease-out",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          className="absolute -top-2 left-1/2 -translate-x-1/2 
-          w-4 h-4 bg-white rotate-45 rounded-sm border-l border-t border-gray-100"
-        />
-
-        <div className="relative flex items-center gap-3">
-          <MemberAvatar
-            member={selectedMember}
-            index={visibleMembers.findIndex(
-              (m) => m._id === selectedMember._id,
-            )}
-            size="lg"
-            className="ring-2 ring-gray-100"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 truncate">
-              {selectedMember.user.username}
-            </p>
-            <p className="text-sm text-gray-500 truncate">
-              {selectedMember.user.email}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-          <span
-            className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
-              roleColors[selectedMember.role] || roleColors.viewer
-            }`}
-          >
-            {selectedMember.role?.charAt(0).toUpperCase() +
-              selectedMember.role?.slice(1)}
-          </span>
-          {isAdmin && (
-            <Trash
-              className="text-red-500 hover:text-red-800 w-6 h-5 cursor-pointer"
-              onClick={() =>
-                handleRemoveMemberClick(
-                  selectedMember._id,
-                  selectedMember.user._id,
-                  selectedMember.user.username,
-                )
-              }
-            />
-          )}
-        </div>
-      </div>,
-      document.body,
-    );
-
-  // Popover component untuk all members
-  const AllMembersPopover = () =>
-    selectedMember?.showAll &&
-    createPortal(
-      <div
-        className="fixed bg-white rounded-xl shadow-2xl p-4 w-64 border border-gray-100 z-50"
-        style={{
-          left: `${popoverPos.x}px`,
-          top: `${popoverPos.y}px`,
-          transform: "translateX(-50%)",
-          animation: "fadeSlideIn 0.2s ease-out",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          className="absolute -top-2 left-1/2 -translate-x-1/2 
-          w-4 h-4 bg-white rotate-45 rounded-sm border-l border-t border-gray-100"
-        />
-
-        <h4 className="font-semibold text-gray-900 mb-3 relative">
-          All Members ({members.length})
-        </h4>
-        <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-          {members.map(
-            (member, index) =>
-              member.user && (
-                <div
-                  key={member._id}
-                  className="p-2.5 rounded-xl border border-gray-100 bg-white shadow-xs hover:border-gray-200 transition-all"
-                >
-                  {/* Baris Atas: Avatar + User Info + Tombol Trash */}
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <MemberAvatar
-                      member={member}
-                      index={index}
-                      size="sm"
-                      className="shrink-0"
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-xs truncate leading-snug">
-                        {member.user.username}
-                      </p>
-                      <p className="text-[11px] text-gray-500 truncate leading-tight">
-                        {member.user.email}
-                      </p>
-                    </div>
-
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleRemoveMemberClick(
-                            member._id,
-                            member.user._id,
-                            member.user.username,
-                          )
-                        }
-                        className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md shrink-0 transition-colors"
-                        title="Hapus"
-                      >
-                        <Trash className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Baris Bawah: Badge Role */}
-                  <div className="mt-2 pt-1.5 border-t border-gray-50 flex justify-between items-center">
-                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
-                      Role
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-medium border capitalize ${
-                        roleColors[member.role] || roleColors.viewer
-                      }`}
-                    >
-                      {member.role}
-                    </span>
-                  </div>
-                </div>
-              ),
-          )}
-        </div>
-      </div>,
-      document.body,
-    );
-
   return (
     <>
       <div
-        className={`card text-black bg-white/40 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
+        className={`card w-full min-w-0 text-black bg-white/40 shadow-md cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.01] ${
           isSelected ? "ring-2 ring-blue-500" : ""
         }`}
         onClick={() => onCardClick(workspace)}
       >
-        <div className="card-body">
-          <h2 className="card-title text-black/90">{workspace.nama}</h2>
+        <div className="card-body gap-3.5 p-4 sm:p-5">
+          {/* BARIS PERTAMA: Title dan Tombol Aksi */}
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="card-title min-w-0 wrap-break-word text-black/90 text-base sm:text-lg font-bold m-0 leading-snug">
+              {workspace.nama}
+            </h2>
 
-          <div className="flex justify-between items-start">
-            {/* Progress Section */}
-            <div className="flex mt-2 items-center">
-              <div className="w-40">
-                <p className="text-[0.8em] font-semibold mb-1 text-gray-800">
-                  Total Progress
-                </p>
-                {workspaceStats.isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <span className="loading loading-spinner loading-xs"></span>
-                    <span className="text-xs text-gray-500">Loading...</span>
-                  </div>
-                ) : (
-                  <ProgressBar progress={progress} />
-                )}
-              </div>
-            </div>
-
-            {/* Member Avatar Stack */}
-            <div className="mt-2 relative z-20" ref={containerRef}>
-              <p className="text-[0.8em] font-semibold mb-2 text-gray-800">
-                Members ({membersWorkspaceQuery.data?.totalMembers || 0})
-              </p>
-
-              {membersWorkspaceQuery.isLoading ? (
-                <span className="loading loading-spinner loading-sm"></span>
-              ) : (
-                <div className="relative">
-                  <div className="flex items-center">
-                    {visibleMembers.map(
-                      (member, index) =>
-                        member.user && (
-                          <div
-                            key={member._id}
-                            className="relative group"
-                            style={{
-                              marginLeft: index === 0 ? 0 : "-10px",
-                            }}
-                          >
-                            <button
-                              onClick={(e) => handleAvatarClick(member, e)}
-                              className={`
-                              transform transition-all duration-300 ease-out
-                              hover:scale-110 hover:-translate-y-1 
-                              ring-2 ring-white shadow-md
-                              hover:ring-2 hover:ring-blue-400
-                              rounded-full
-                              ${
-                                selectedMember?._id === member._id
-                                  ? "scale-110 -translate-y-1 ring-2 ring-blue-400"
-                                  : ""
-                              }
-                            `}
-                            >
-                              <MemberAvatar
-                                member={member}
-                                index={index}
-                                size="md"
-                              />
-                            </button>
-
-                            {/* Hover tooltip */}
-                            <div
-                              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 
-                            bg-gray-900 text-white text-xs rounded-md whitespace-nowrap
-                            opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                            pointer-events-none shadow-lg "
-                            >
-                              {member.user.username}
-                              <div
-                                className="absolute top-full left-1/2 -translate-x-1/2 
-                              border-4 border-transparent border-t-gray-900"
-                              />
-                            </div>
-                          </div>
-                        ),
-                    )}
-
-                    {remainingCount > 0 && (
-                      <button
-                        onClick={handleShowAll}
-                        className="
-                          w-9 h-9 rounded-full bg-gray-600
-                          flex items-center justify-center text-white font-semibold text-xs
-                          ring-2 ring-white shadow-md
-                          transform transition-all duration-300 ease-out
-                          hover:scale-110 hover:-translate-y-1 hover:bg-gray-500
-                        "
-                        style={{ marginLeft: "-10px" }}
-                      >
-                        +{remainingCount}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Delete & Detail buttons */}
-            <div className="card-actions justify-end flex flex-row items-center mt-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               {isAdmin && (
                 <button
-                  className="btn btn-sm w-14 btn-warning text-orange-900"
-                  onClick={() => handleDelete(workspace._id, workspace.nama)}
+                  type="button"
+                  className="btn btn-xs sm:btn-sm btn-error text-slate-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(workspace._id);
+                  }}
                 >
-                  Delete
+                  <Trash2 className="w-4 h-4" />
+                  {/* Delete */}
                 </button>
               )}
               <button
-                className="btn btn-primary btn-sm w-14"
+                type="button"
+                className="btn btn-primary btn-xs sm:btn-sm text-amber-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDetail(workspace._id);
                 }}
               >
-                Detail
+                <Info className="w-4 h-4" />
+                {/* Detail */}
               </button>
             </div>
+          </div>
+
+          {/* <div className="border-t border-black/5 my-0.5" /> */}
+
+          {/* BARIS KEDUA: Progress Bar */}
+          <div className="w-full flex flex-col justify-center">
+            <span className="text-[0.75em] font-semibold text-gray-700 mb-1">
+              Total Progress
+            </span>
+            {workspaceStats.isLoading ? (
+              <div className="flex items-center gap-2 py-0.5">
+                <span className="loading loading-spinner loading-xs"></span>
+                <span className="text-xs text-gray-500">Loading...</span>
+              </div>
+            ) : (
+              <ProgressBar progress={progress} />
+            )}
+          </div>
+
+          {/* BARIS KETIGA: Member (Label dan Avatar Berjajar Rapi) */}
+          <div
+            className="w-full flex items-center justify-between pt-1"
+            ref={containerRef}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="text-[0.75em] font-semibold text-gray-700">
+              Members ({membersWorkspaceQuery.data?.totalMembers || 0})
+            </span>
+
+            {membersWorkspaceQuery.isLoading ? (
+              <span className="loading loading-spinner loading-xs"></span>
+            ) : (
+              <div className="flex items-center">
+                {visibleMembers.map(
+                  (member, index) =>
+                    member.user && (
+                      <div
+                        key={member._id}
+                        className="relative group shrink-0"
+                        style={{
+                          marginLeft: index === 0 ? 0 : "-8px",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => handleAvatarClick(member, e)}
+                          className={`
+                            transform transition-all duration-200 ease-out
+                            hover:scale-110 hover:-translate-y-0.5 
+                            ring-2 ring-white shadow-sm
+                            rounded-full focus:outline-none
+                            ${
+                              selectedMember?._id === member._id
+                                ? "scale-110 -translate-y-0.5 ring-2 ring-blue-400 z-10"
+                                : ""
+                            }
+                          `}
+                        >
+                          <MemberAvatar
+                            member={member}
+                            index={index}
+                            size="md"
+                          />
+                        </button>
+
+                        {/* Hover Tooltip */}
+                        <div
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 
+                          bg-gray-900 text-white text-[10px] rounded whitespace-nowrap
+                          opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                          pointer-events-none shadow-md z-30"
+                        >
+                          {member.user.username}
+                        </div>
+                      </div>
+                    ),
+                )}
+
+                {remainingCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleShowAll}
+                    className="
+                      w-8 h-8 rounded-full bg-gray-600
+                      flex items-center justify-center text-white font-semibold text-[10px]
+                      ring-2 ring-white shadow-sm shrink-0
+                      transform transition-all duration-200 ease-out
+                      hover:scale-110 hover:bg-gray-500 focus:outline-none
+                    "
+                    style={{ marginLeft: "-8px" }}
+                  >
+                    +{remainingCount}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -481,9 +350,146 @@ const WorkspaceCard = ({
         `}</style>
       </div>
 
-      {/* Render popovers di luar card */}
-      <SingleMemberPopover />
-      <AllMembersPopover />
+      {/* Single Member Popover */}
+      {selectedMember &&
+        !selectedMember.showAll &&
+        createPortal(
+          <div
+            className="fixed w-64 max-w-[calc(100vw-1rem)] bg-white rounded-xl shadow-2xl p-3.5 border border-gray-100 z-50"
+            style={{
+              left: `${popoverPos.x}px`,
+              top:
+                popoverPos.placement === "bottom"
+                  ? `${popoverPos.y + 8}px`
+                  : "auto",
+              bottom:
+                popoverPos.placement === "top"
+                  ? `${window.innerHeight - popoverPos.y + 8}px`
+                  : "auto",
+              transform: "translateX(-50%)",
+              animation: "fadeSlideIn 0.2s ease-out",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative flex items-center gap-2.5">
+              <MemberAvatar
+                member={selectedMember}
+                index={visibleMembers.findIndex(
+                  (m) => m._id === selectedMember._id,
+                )}
+                size="lg"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 text-sm truncate">
+                  {selectedMember.user.username}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {selectedMember.user.email}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2.5 mt-2.5 border-t border-gray-100">
+              <span
+                className={`px-2 py-0.5 rounded text-[11px] font-medium border ${roleColors[selectedMember.role] || roleColors.viewer}`}
+              >
+                {selectedMember.role}
+              </span>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleRemoveMemberClick(
+                      selectedMember._id,
+                      selectedMember.user._id,
+                      selectedMember.user.username,
+                    )
+                  }
+                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                  title="Remove member"
+                >
+                  <Trash className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* All Members Popover */}
+      {selectedMember?.showAll &&
+        createPortal(
+          <div
+            className="fixed w-64 max-w-[calc(100vw-1rem)] bg-white rounded-xl shadow-2xl p-3.5 border border-gray-100 z-50"
+            style={{
+              left: `${popoverPos.x}px`,
+              top:
+                popoverPos.placement === "bottom"
+                  ? `${popoverPos.y + 8}px`
+                  : "auto",
+              bottom:
+                popoverPos.placement === "top"
+                  ? `${window.innerHeight - popoverPos.y + 8}px`
+                  : "auto",
+              transform: "translateX(-50%)",
+              animation: "fadeSlideIn 0.2s ease-out",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4 className="font-semibold text-gray-900 text-xs mb-2.5">
+              All Members ({members.length})
+            </h4>
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              {members.map(
+                (member, index) =>
+                  member.user && (
+                    <div
+                      key={member._id}
+                      className="p-2 rounded-lg border border-gray-100 bg-white flex items-center justify-between gap-2"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <MemberAvatar member={member} index={index} size="sm" />
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 text-xs truncate">
+                            {member.user.username}
+                          </p>
+                          <p className="text-[10px] text-gray-500 truncate">
+                            {member.user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-medium border uppercase ${roleColors[member.role] || roleColors.viewer}`}
+                        >
+                          {member.role}
+                        </span>
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleRemoveMemberClick(
+                                member._id,
+                                member.user._id,
+                                member.user.username,
+                              )
+                            }
+                            className="p-1 text-gray-400 hover:text-red-600 rounded"
+                            title="Hapus"
+                          >
+                            <Trash className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ),
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* Konfirmasi Dialog */}
       <ConfirmDialog
         show={confirmDelete.show}
         onClose={() => setConfirmDelete({ show: false, workspacesId: null })}
