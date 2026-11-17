@@ -22,7 +22,6 @@ const theme = {
   accentText: "text-teal-300",
 };
 
-// Status badge dibuat custom (bukan daisyUI badge-*) biar selaras palet teal/blue
 const STATUS_STYLES = {
   scheduled: {
     label: "Scheduled",
@@ -54,19 +53,20 @@ const StatusBadge = ({ status }) => {
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${s.className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${s.className}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`}></span>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}`}></span>
       {s.label}
     </span>
   );
 };
 
-const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = null }) => {
+const TableMeeting = ({
+  compact = false,
+  fixedStatus = null,
+  fixedStatuses = null,
+}) => {
   const visibleStatuses = fixedStatuses || (fixedStatus ? [fixedStatus] : null);
-  console.log("[TableMeeting] mounted", {
-    compact,
-  });
   const today = dayjs().format("YYYY-MM-DD");
 
   const [page, setPage] = useState(1);
@@ -86,17 +86,19 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
   });
 
   const { meetingsQuery } = useMeetings();
-  const { data, isLoading, dataUpdatedAt, isError, error, isFetching } =
-    meetingsQuery(fixedStatuses ? 1 : page, visibleStatuses ? 100 : limit, {
+  const { data, isLoading } = meetingsQuery(
+    fixedStatuses ? 1 : page,
+    visibleStatuses ? 100 : limit,
+    {
       ...filters,
       ...(fixedStatus ? { status: fixedStatus } : {}),
       ...(visibleStatuses && !fixedStatus ? { status: "all" } : {}),
-    });
+    },
+  );
 
   const { roomsQuery } = useRooms();
   const rooms = roomsQuery.data || [];
 
-  // Sizing yang menyesuaikan compact / normal, terpusat juga
   const sizing = {
     cellPad: compact ? "py-3 px-2" : "py-4 px-4",
     headText: compact ? "text-xs" : "text-sm",
@@ -108,14 +110,14 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
 
   const formatMeetingType = (type) => {
     if (!type) return "";
-
     return type
-      .replace(/_/g, " ") // ganti underscore jadi spasi
-      .replace(/-/g, " ") // ganti dash jadi spasi
+      .replace(/_/g, " ")
+      .replace(/-/g, " ")
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
   };
+
   const handleFilterChange = (key, value) => {
     setPage(1);
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -155,12 +157,16 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
 
   const fetchedMeetings = data?.data || [];
   const matchingMeetings = visibleStatuses
-    ? fetchedMeetings.filter((meeting) => visibleStatuses.includes(meeting.status))
+    ? fetchedMeetings.filter((meeting) =>
+        visibleStatuses.includes(meeting.status),
+      )
     : fetchedMeetings;
   const meetings = fixedStatuses
     ? matchingMeetings.slice((page - 1) * limit, page * limit)
     : matchingMeetings;
-  const totalMeetings = fixedStatuses ? matchingMeetings.length : data?.pagination?.total || 0;
+  const totalMeetings = fixedStatuses
+    ? matchingMeetings.length
+    : data?.pagination?.total || 0;
   const totalPages = fixedStatuses
     ? Math.ceil(totalMeetings / limit)
     : data?.pagination?.totalPages || 1;
@@ -185,6 +191,7 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
       minute: "2-digit",
     });
   };
+
   const formatTime = (dateStr) => {
     if (!dateStr) return "-";
     const d = new Date(dateStr);
@@ -193,7 +200,9 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
       minute: "2-digit",
     });
   };
+
   const colCount = compact ? 4 : 6;
+
   return (
     <div className="flex flex-col h-full min-h-0 space-y-4">
       {/* Header */}
@@ -264,7 +273,6 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
                 : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
             }`}
           >
-            {/* Room */}
             <div className="flex flex-col gap-1 min-w-0">
               <label className="text-xs font-medium text-slate-400">Room</label>
               <select
@@ -281,7 +289,6 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
               </select>
             </div>
 
-            {/* Status (disembunyikan jika fixedStatus) */}
             {!visibleStatuses && (
               <div className="flex flex-col gap-1 min-w-0">
                 <label className="text-xs font-medium text-slate-400">
@@ -301,7 +308,6 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
               </div>
             )}
 
-            {/* Start Date */}
             <div className="flex flex-col gap-1 min-w-0">
               <label className="text-xs font-medium text-slate-400">
                 Start Date
@@ -316,7 +322,6 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
               />
             </div>
 
-            {/* End Date */}
             <div className="flex flex-col gap-1 min-w-0">
               <label className="text-xs font-medium text-slate-400">
                 End Date
@@ -413,11 +418,6 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
                       >
                         {meeting.title}
                       </div>
-                      {/* {meeting.description && (
-                        <div className="text-xs text-slate-400 font-normal mt-1 wrap-break-word line-clamp-2">
-                          {meeting.description}
-                        </div>
-                      )} */}
                     </td>
                     <td className={sizing.cellPad}>
                       <div className="flex items-center gap-1.5 text-slate-200">
@@ -453,8 +453,9 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
                         {formatMeetingType(meeting.meetingType) || "-"}
                       </td>
                     )}
+                    {/* Perbaikan pada cell status agar flex dan badge sejajar sempurna */}
                     <td className={sizing.cellPad}>
-                      <div className="flex items">
+                      <div className="flex items-center">
                         <StatusBadge status={meeting.status} />
                       </div>
                     </td>
@@ -508,7 +509,7 @@ const TableMeeting = ({ compact = false, fixedStatus = null, fixedStatuses = nul
         )}
       </div>
 
-      {/* Main Modal untuk Edit/Reschedule/Cancel */}
+      {/* Main Modal */}
       <dialog id="meetingManagementModal" className="modal">
         <div className="modal-box w-11/12 max-w-xl bg-[#0f2c47] text-white rounded-2xl shadow-2xl border border-white/10">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
