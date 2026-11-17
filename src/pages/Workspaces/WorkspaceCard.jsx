@@ -143,9 +143,11 @@ const WorkspaceCard = ({
       spaceBelow >= preferredHeight || spaceBelow >= spaceAbove
         ? "bottom"
         : "top";
+
     return {
       x,
-      y: placement === "bottom" ? window.innerHeight - rect.bottom : rect.top,
+      // Perbaikan perhitungan posisi y agar akurat dan tidak terlalu jauh
+      y: placement === "bottom" ? rect.bottom + 6 : rect.top - 6,
       placement,
       maxHeight: placement === "bottom" ? spaceBelow : spaceAbove,
     };
@@ -222,7 +224,6 @@ const WorkspaceCard = ({
                   }}
                 >
                   <Trash2 className="w-4 h-4" />
-                  {/* Delete */}
                 </button>
               )}
               <button
@@ -234,12 +235,9 @@ const WorkspaceCard = ({
                 }}
               >
                 <Info className="w-4 h-4" />
-                {/* Detail */}
               </button>
             </div>
           </div>
-
-          {/* <div className="border-t border-black/5 my-0.5" /> */}
 
           {/* BARIS KEDUA: Progress Bar */}
           <div className="w-full flex flex-col justify-center">
@@ -360,11 +358,11 @@ const WorkspaceCard = ({
               left: `${popoverPos.x}px`,
               top:
                 popoverPos.placement === "bottom"
-                  ? `${popoverPos.y + 8}px`
+                  ? `${popoverPos.y}px`
                   : "auto",
               bottom:
                 popoverPos.placement === "top"
-                  ? `${window.innerHeight - popoverPos.y + 8}px`
+                  ? `${window.innerHeight - popoverPos.y}px`
                   : "auto",
               transform: "translateX(-50%)",
               animation: "fadeSlideIn 0.2s ease-out",
@@ -425,11 +423,11 @@ const WorkspaceCard = ({
               left: `${popoverPos.x}px`,
               top:
                 popoverPos.placement === "bottom"
-                  ? `${popoverPos.y + 8}px`
+                  ? `${popoverPos.y}px`
                   : "auto",
               bottom:
                 popoverPos.placement === "top"
-                  ? `${window.innerHeight - popoverPos.y + 8}px`
+                  ? `${window.innerHeight - popoverPos.y}px`
                   : "auto",
               transform: "translateX(-50%)",
               animation: "fadeSlideIn 0.2s ease-out",
