@@ -1,31 +1,45 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { API_URL } from "../../../api/axios";
 import { AuthContext } from "../../../context/AuthContext";
-import { submitAttendance } from "../../../services/BookingMeeting/attendance";
+import {
+  getAttendanceOptions,
+  submitAttendance,
+} from "../../../services/BookingMeeting/attendance";
 
 export default function AttendanceForm() {
   const { meetingId } = useParams();
   const { user } = useContext(AuthContext);
   const [name, setName] = useState(user?.nama || user?.username || "");
+  const [participantId, setParticipantId] = useState("");
+  const [showNameSuggestions, setShowNameSuggestions] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [cameraError, setCameraError] = useState("");
   const [cameraReady, setCameraReady] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const userPrefillDoneRef = useRef(false);
   const photoPreview = useMemo(
     () => (photo ? URL.createObjectURL(photo) : ""),
     [photo],
+  );
+  const optionsQuery = useQuery({
+    queryKey: ["meetingAttendanceOptions", meetingId],
+    queryFn: () => getAttendanceOptions(meetingId),
+  });
+  const participants = optionsQuery.data?.data || [];
+  const nameSuggestions = participants.filter((person) =>
+    String(person.name || "")
+      .toLowerCase()
+      .includes(name.trim().toLowerCase()),
   );
   const mutation = useMutation({
     mutationFn: (body) => submitAttendance(meetingId, body),
     onSuccess: () => toast.success("Absensi berhasil direkap."),
     onError: (error) =>
-      toast.error(
-        error.response?.data?.message || "Absensi gagal dikirim.",
-      ),
+      toast.error(error.response?.data?.message || "Absensi gagal dikirim."),
   });
 
   const submit = (event) => {
@@ -33,6 +47,7 @@ export default function AttendanceForm() {
     const body = new FormData();
     body.append("name", name);
     body.append("photo", photo);
+    if (participantId) body.append("participantId", participantId);
     mutation.mutate(body);
   };
 
@@ -42,14 +57,29 @@ export default function AttendanceForm() {
     setCameraReady(false);
   };
 
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-  }, []);
+  useEffect(
+    () => () => {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!photoPreview) return undefined;
     return () => URL.revokeObjectURL(photoPreview);
   }, [photoPreview]);
+
+  useEffect(() => {
+    if (!user || !optionsQuery.isSuccess || userPrefillDoneRef.current) return;
+    userPrefillDoneRef.current = true;
+    const currentUser = participants.find(
+      (person) => person.userId === (user._id || user.id),
+    );
+    if (currentUser && !currentUser.attended) {
+      setName(currentUser.name);
+      setParticipantId(currentUser.participantId || "");
+    }
+  }, [user, participants, optionsQuery.isSuccess]);
 
   const startCamera = async () => {
     setCameraError("");
@@ -70,7 +100,9 @@ export default function AttendanceForm() {
       }
     } catch {
       stopCamera();
-      setCameraError("Kamera tidak dapat diakses. Izinkan akses kamera lalu coba lagi.");
+      setCameraError(
+        "Kamera tidak dapat diakses. Izinkan akses kamera lalu coba lagi.",
+      );
     }
   };
 
@@ -79,16 +111,27 @@ export default function AttendanceForm() {
     if (!video?.videoWidth) return;
     const canvas = document.createElement("canvas");
     const maxDimension = 1600;
-    const scale = Math.min(1, maxDimension / Math.max(video.videoWidth, video.videoHeight));
+    const scale = Math.min(
+      1,
+      maxDimension / Math.max(video.videoWidth, video.videoHeight),
+    );
     canvas.width = Math.round(video.videoWidth * scale);
     canvas.height = Math.round(video.videoHeight * scale);
     canvas.getContext("2d").drawImage(video, 0, 0);
-    canvas.toBlob((blob) => {
-      if (blob) {
-        setPhoto(new File([blob], `attendance-${Date.now()}.jpg`, { type: "image/jpeg" }));
-        stopCamera();
-      }
-    }, "image/jpeg", 0.9);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          setPhoto(
+            new File([blob], `attendance-${Date.now()}.jpg`, {
+              type: "image/jpeg",
+            }),
+          );
+          stopCamera();
+        }
+      },
+      "image/jpeg",
+      0.9,
+    );
   };
 
   if (mutation.isSuccess) {
@@ -125,13 +168,63 @@ export default function AttendanceForm() {
         </div>
         <label className="block space-y-2 text-sm">
           Nama
-          <input
-            required
-            maxLength={120}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="input input-bordered w-full bg-slate-950"
-          />
+          <div className="relative">
+            <input
+              required
+              maxLength={120}
+              value={name}
+              onFocus={() => setShowNameSuggestions(true)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setName(value);
+                const match = participants.find(
+                  (person) =>
+                    !person.attended &&
+                    String(person.name || "").toLowerCase() ===
+                      value.trim().toLowerCase(),
+                );
+                setParticipantId(match?.participantId || "");
+                setShowNameSuggestions(true);
+              }}
+              onBlur={() =>
+                setTimeout(() => setShowNameSuggestions(false), 120)
+              }
+              className="input input-bordered w-full bg-slate-950"
+              autoComplete="off"
+            />
+            {showNameSuggestions && nameSuggestions.length > 0 && (
+              <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-slate-900 p-1 shadow-xl">
+                {nameSuggestions.map((person) => (
+                  <li key={person.participantId}>
+                    <button
+                      type="button"
+                      disabled={person.attended}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setName(person.name);
+                        setParticipantId(person.participantId || "");
+                        setShowNameSuggestions(false);
+                      }}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <span>{person.name}</span>
+                      {person.attended && (
+                        <span className="ml-2 text-xs text-slate-400">
+                          Sudah absen
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {optionsQuery.isError && (
+            <span role="alert" className="block text-xs text-rose-300">
+              {optionsQuery.error?.response?.data?.message ||
+                "Daftar undangan gagal dimuat."}
+            </span>
+          )}
         </label>
         <div className="space-y-2 text-sm">
           Foto
@@ -152,7 +245,12 @@ export default function AttendanceForm() {
             </div>
           ) : (
             <div className="space-y-3">
-              <video ref={videoRef} muted playsInline className={`w-full rounded-xl bg-black ${cameraReady ? "block" : "hidden"}`} />
+              <video
+                ref={videoRef}
+                muted
+                playsInline
+                className={`w-full rounded-xl bg-black ${cameraReady ? "block" : "hidden"}`}
+              />
               {!cameraReady && (
                 <button
                   type="button"

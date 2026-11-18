@@ -45,7 +45,7 @@ export default function App() {
             <BrowserRouter>
               <Routes>
                 <Route path="/schedule-today" element={<ScheduleToday />} />
-                <Route element={<ProtectedRoute />}><Route path="/attendance/:meetingId" element={<AttendanceForm />} /></Route>
+                <Route path="/attendance/:meetingId" element={<AttendanceForm />} />
                 <Route path="/forgot-password" element={<AuthPages />} />
                 <Route path="/verify-reset-password" element={<AuthPages />} />
                 {/* <Route path="/room/:roomId" element={<RoomDetailPage />} /> */}
