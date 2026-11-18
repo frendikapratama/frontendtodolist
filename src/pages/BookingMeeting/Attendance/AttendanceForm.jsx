@@ -257,7 +257,7 @@ export default function AttendanceForm() {
                 ref={videoRef}
                 muted
                 playsInline
-                className={`mx-auto max-h-[55svh] w-full -scale-x-100 rounded-xl bg-black object-contain ${
+                className={`mx-auto max-h-[55svh] w-full rounded-xl bg-black object-contain ${
                   cameraReady ? "block" : "hidden"
                 }`}
               />
