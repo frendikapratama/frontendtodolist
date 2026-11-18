@@ -37,9 +37,11 @@ export default function AttendanceForm() {
   );
   const mutation = useMutation({
     mutationFn: (body) => submitAttendance(meetingId, body),
-    onSuccess: () => toast.success("Absensi berhasil direkap."),
+    onSuccess: () => toast.success("Attendance successfully recorded."),
     onError: (error) =>
-      toast.error(error.response?.data?.message || "Absensi gagal dikirim."),
+      toast.error(
+        error.response?.data?.message || "Attendance submission failed.",
+      ),
   });
 
   const submit = (event) => {
@@ -84,7 +86,7 @@ export default function AttendanceForm() {
   const startCamera = async () => {
     setCameraError("");
     if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraError("Browser ini tidak mendukung akses kamera.");
+      setCameraError("This browser does not support camera access.");
       return;
     }
     try {
@@ -101,7 +103,7 @@ export default function AttendanceForm() {
     } catch {
       stopCamera();
       setCameraError(
-        "Kamera tidak dapat diakses. Izinkan akses kamera lalu coba lagi.",
+        "Camera cannot be accessed. Please allow camera access and try again.",
       );
     }
   };
@@ -139,15 +141,15 @@ export default function AttendanceForm() {
     return (
       <main className="grid min-h-screen place-items-center bg-slate-950 p-6 text-white">
         <section className="max-w-md rounded-2xl border border-emerald-400/20 bg-slate-900 p-8 text-center">
-          <h1 className="text-2xl font-bold">Absensi Tercatat</h1>
+          <h1 className="text-2xl font-bold">Attendance Recorded</h1>
           <img
             src={`${API_URL}${record.photo}`}
-            alt={`Foto ${record.name}`}
+            alt={`Photo ${record.name}`}
             className="mx-auto mt-5 h-32 w-32 rounded-xl object-cover"
           />
           <p className="mt-4 text-lg font-semibold">{record.name}</p>
           <p className="mt-1 text-sm text-slate-400">
-            Absensi dan foto Anda sudah masuk ke rekap meeting.
+            Attendance and your photo have been recorded in the meeting recap.
           </p>
         </section>
       </main>
@@ -161,13 +163,14 @@ export default function AttendanceForm() {
         className="w-full max-w-md space-y-5 rounded-2xl border border-white/10 bg-slate-900 p-7"
       >
         <div>
-          <h1 className="text-2xl font-bold">Form Absensi Meeting</h1>
+          <h1 className="text-2xl font-bold">Meeting Attendance Form</h1>
           <p className="mt-1 text-sm text-slate-400">
-            Isi nama dan ambil foto menggunakan kamera untuk mencatat kehadiran.
+            Fill in your name and take a photo using the camera to record your
+            attendance.
           </p>
         </div>
         <label className="block space-y-2 text-sm">
-          Nama
+          Name
           <div className="relative">
             <input
               required
@@ -210,7 +213,7 @@ export default function AttendanceForm() {
                       <span>{person.name}</span>
                       {person.attended && (
                         <span className="ml-2 text-xs text-slate-400">
-                          Sudah absen
+                          Already checked in
                         </span>
                       )}
                     </button>
@@ -227,7 +230,7 @@ export default function AttendanceForm() {
           )}
         </label>
         <div className="space-y-2 text-sm">
-          Foto
+          Photo
           {photo ? (
             <div className="space-y-3">
               <img
@@ -240,7 +243,7 @@ export default function AttendanceForm() {
                 onClick={() => setPhoto(null)}
                 className="btn btn-outline btn-sm w-full"
               >
-                Ambil Ulang Foto
+                Take Another Photo
               </button>
             </div>
           ) : (
@@ -257,7 +260,7 @@ export default function AttendanceForm() {
                   onClick={startCamera}
                   className="btn btn-outline w-full"
                 >
-                  Buka Kamera
+                  Open Camera
                 </button>
               )}
               {cameraReady && (
@@ -266,7 +269,7 @@ export default function AttendanceForm() {
                   onClick={capturePhoto}
                   className="btn btn-primary w-full"
                 >
-                  Ambil Foto
+                  Take Photo
                 </button>
               )}
               {cameraError && (
@@ -277,14 +280,14 @@ export default function AttendanceForm() {
             </div>
           )}
           <span className="block text-xs text-slate-500">
-            Foto harus diambil langsung menggunakan kamera.
+            Photo must be taken directly using the camera.
           </span>
         </div>
         <button
           disabled={!photo || mutation.isPending}
           className="btn btn-primary w-full"
         >
-          {mutation.isPending ? "Mengirim..." : "Kirim Absensi"}
+          {mutation.isPending ? "Sending..." : "Submit Attendance"}
         </button>
       </form>
     </main>
