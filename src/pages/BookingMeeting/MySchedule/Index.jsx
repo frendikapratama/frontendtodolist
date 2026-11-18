@@ -8,8 +8,10 @@ import {
   Search,
   X,
   Calendar,
+  QrCode,
 } from "lucide-react";
 import MeetingResultsModal from "./MeetingResultsModal";
+import AttendanceModal from "../Attendance/AttendanceModal";
 import CancelMeetingDialog from "../MeetingManagement/CancelMeetingDialog";
 import UpdateMeetingForm from "../MeetingManagement/UpdateMeetingForm";
 import RescheduleMeetingForm from "../MeetingManagement/RescheduleMeetingForm";
@@ -34,6 +36,8 @@ const IndexMySchedule = () => {
 
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [modalType, setModalType] = useState(null);
+  const [attendanceMeeting, setAttendanceMeeting] = useState(null);
+  const [attendanceMode, setAttendanceMode] = useState("qr");
 
   // Ref untuk menjaga fokus pada input search
   const searchInputRef = useRef(null);
@@ -58,6 +62,12 @@ const IndexMySchedule = () => {
   const closeResultsModal = () => {
     setSelectedMeeting(null);
     document.getElementById("meetingResultsModal").close();
+  };
+
+  const openAttendanceModal = (mode, meeting) => {
+    setAttendanceMode(mode);
+    setAttendanceMeeting(meeting);
+    document.getElementById("meetingAttendanceModal").showModal();
   };
 
   const formatTimeOnly = (dateStr) => {
@@ -127,6 +137,7 @@ const IndexMySchedule = () => {
             placeholder="Search by title, or description"
             className="w-full pl-10 pr-9 py-2.5 rounded-xl text-xs text-white placeholder:text-slate-500 bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:bg-white/10 transition-all duration-200"
           />
+
           {search && (
             <button
               type="button"
@@ -263,57 +274,82 @@ const IndexMySchedule = () => {
                     </div>
 
                     <div className="grid grid-cols-4 gap-1 pt-1">
-                      <button
-                        onClick={() => openResultsModal(item)}
-                        className="flex items-center justify-center p-2 rounded-lg text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-300 active:scale-95 transition-all cursor-pointer"
-                        title={
-                          isOwner
-                            ? "View Meeting Results"
-                            : "Only organizer can edit"
-                        }
-                      >
-                        <FileText size={15} />
-                      </button>
+                      <div className="col-span-5 flex items-center justify-between gap-2">
+                        {isProgress && isOwner && (
+                          <button
+                            onClick={() => openAttendanceModal("qr", item)}
+                            className="col-span-4 flex items-center justify-center gap-2 p-2 mt-1 rounded-lg text-white bg-blue-600 hover:bg-blue-500 active:scale-[0.99] transition-all cursor-pointer shadow-lg shadow-red-600/20"
+                            title="QR Code Attendance Now"
+                          >
+                            <QrCode size={15} />
+                            <span className="text-xs font-semibold">
+                              QR Code Attendance
+                            </span>
+                          </button>
+                        )}
+                        {isCompleted && isOwner && (
+                          <button
+                            onClick={() => openAttendanceModal("recap", item)}
+                            className="flex items-center justify-center gap-2 p-2 rounded-lg text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20"
+                            title="Lihat rekap absensi"
+                          >
+                            <FileText size={15} />
+                            <span className="text-xs font-semibold">
+                              Rekap Absensi
+                            </span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => openResultsModal(item)}
+                          className="flex items-center justify-center p-2 rounded-lg text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-300 active:scale-95 transition-all cursor-pointer"
+                          title={
+                            isOwner
+                              ? "View Meeting Results"
+                              : "Only organizer can edit"
+                          }
+                        >
+                          <FileText size={15} />
+                        </button>
 
-                      <button
-                        onClick={() => openModal("edit", item)}
-                        className="flex items-center justify-center p-2 rounded-lg text-blue-400 bg-blue-500/5 border border-blue-500/10 hover:bg-blue-500/20 hover:text-blue-300 active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:bg-transparent disabled:border-white/5 cursor-pointer"
-                        disabled={disabledActions}
-                        title={
-                          isOwner
-                            ? "Edit Meeting Details"
-                            : "Only organizer can edit"
-                        }
-                      >
-                        <Edit size={15} />
-                      </button>
+                        <button
+                          onClick={() => openModal("edit", item)}
+                          className="flex items-center justify-center p-2 rounded-lg text-blue-400 bg-blue-500/5 border border-blue-500/10 hover:bg-blue-500/20 hover:text-blue-300 active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:bg-transparent disabled:border-white/5 cursor-pointer"
+                          disabled={disabledActions}
+                          title={
+                            isOwner
+                              ? "Edit Meeting Details"
+                              : "Only organizer can edit"
+                          }
+                        >
+                          <Edit size={15} />
+                        </button>
 
-                      <button
-                        onClick={() => openModal("reschedule", item)}
-                        className="flex items-center justify-center p-2 rounded-lg text-amber-400 bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/20 hover:text-amber-300 active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:bg-transparent disabled:border-white/5 cursor-pointer"
-                        disabled={disabledActions}
-                        title={
-                          isOwner
-                            ? "Reschedule Meeting"
-                            : "Only organizer can reschedule"
-                        }
-                      >
-                        <RotateCcw size={15} />
-                      </button>
+                        <button
+                          onClick={() => openModal("reschedule", item)}
+                          className="flex items-center justify-center p-2 rounded-lg text-amber-400 bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/20 hover:text-amber-300 active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:bg-transparent disabled:border-white/5 cursor-pointer"
+                          disabled={disabledActions}
+                          title={
+                            isOwner
+                              ? "Reschedule Meeting"
+                              : "Only organizer can reschedule"
+                          }
+                        >
+                          <RotateCcw size={15} />
+                        </button>
 
-                      <button
-                        onClick={() => openModal("cancel", item)}
-                        className="flex items-center justify-center p-2 rounded-lg text-rose-400 bg-rose-500/5 border border-rose-500/10 hover:bg-rose-500/20 hover:text-rose-300 active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:bg-transparent disabled:border-white/5 cursor-pointer"
-                        disabled={disabledActions}
-                        title={
-                          isOwner
-                            ? "Cancel Meeting"
-                            : "Only organizer can cancel"
-                        }
-                      >
-                        <XCircle size={15} />
-                      </button>
-
+                        <button
+                          onClick={() => openModal("cancel", item)}
+                          className="flex items-center justify-center p-2 rounded-lg text-rose-400 bg-rose-500/5 border border-rose-500/10 hover:bg-rose-500/20 hover:text-rose-300 active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:bg-transparent disabled:border-white/5 cursor-pointer"
+                          disabled={disabledActions}
+                          title={
+                            isOwner
+                              ? "Cancel Meeting"
+                              : "Only organizer can cancel"
+                          }
+                        >
+                          <XCircle size={15} />
+                        </button>
+                      </div>
                       {isProgress && isOwner && (
                         <button
                           onClick={() => openModal("end", item)}
@@ -498,6 +534,15 @@ const IndexMySchedule = () => {
         </div>
         <form method="dialog" className="modal-backdrop">
           <button onClick={closeResultsModal}>close</button>
+        </form>
+      </dialog>
+
+      <dialog id="meetingAttendanceModal" className="modal">
+        <div className="modal-box max-w-xl bg-slate-900 border border-white/10 p-0">
+          <AttendanceModal meeting={attendanceMeeting} mode={attendanceMode} />
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={() => setAttendanceMeeting(null)}>close</button>
         </form>
       </dialog>
     </div>

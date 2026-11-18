@@ -29,6 +29,7 @@ import MeetingRecapPage from "./pages/BookingMeeting/MeetingRecap/Index";
 import ScheduleToday from "./pages/BookingMeeting/ScheduleToday";
 import RoomDetailPage from "./pages/BookingMeeting/Rooms/DetailRoom";
 import NewRoomDetailPage from "./pages/BookingMeeting/Rooms/NewRoomDetailPage";
+import AttendanceForm from "./pages/BookingMeeting/Attendance/AttendanceForm";
 
 export default function App() {
   if (import.meta.env.MODE === "development") {
@@ -44,6 +45,7 @@ export default function App() {
             <BrowserRouter>
               <Routes>
                 <Route path="/schedule-today" element={<ScheduleToday />} />
+                <Route element={<ProtectedRoute />}><Route path="/attendance/:meetingId" element={<AttendanceForm />} /></Route>
                 <Route path="/forgot-password" element={<AuthPages />} />
                 <Route path="/verify-reset-password" element={<AuthPages />} />
                 {/* <Route path="/room/:roomId" element={<RoomDetailPage />} /> */}
