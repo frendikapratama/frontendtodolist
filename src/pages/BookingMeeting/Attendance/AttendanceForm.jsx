@@ -92,7 +92,11 @@ export default function AttendanceForm() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: { ideal: "environment" } },
+        video: {
+          facingMode: { ideal: "user" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -119,7 +123,7 @@ export default function AttendanceForm() {
     );
     canvas.width = Math.round(video.videoWidth * scale);
     canvas.height = Math.round(video.videoHeight * scale);
-    canvas.getContext("2d").drawImage(video, 0, 0);
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -135,17 +139,16 @@ export default function AttendanceForm() {
       0.9,
     );
   };
-
   if (mutation.isSuccess) {
     const record = mutation.data.data;
     return (
-      <main className="grid min-h-screen place-items-center bg-slate-950 p-6 text-white">
-        <section className="max-w-md rounded-2xl border border-emerald-400/20 bg-slate-900 p-8 text-center">
-          <h1 className="text-2xl font-bold">Attendance Recorded</h1>
+      <main className="grid min-h-dvh place-items-center bg-slate-950 px-4 py-6 text-white sm:p-6">
+        <section className="w-full max-w-sm rounded-2xl border border-emerald-400/20 bg-slate-900 p-6 text-center sm:max-w-md sm:p-8">
+          <h1 className="text-xl font-bold sm:text-2xl">Attendance Recorded</h1>
           <img
             src={`${API_URL}${record.photo}`}
             alt={`Photo ${record.name}`}
-            className="mx-auto mt-5 h-32 w-32 rounded-xl object-cover"
+            className="mx-auto mt-5 h-28 w-28 rounded-xl object-cover sm:h-32 sm:w-32"
           />
           <p className="mt-4 text-lg font-semibold">{record.name}</p>
           <p className="mt-1 text-sm text-slate-400">
@@ -157,14 +160,16 @@ export default function AttendanceForm() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 p-6 text-white">
+    <main className="grid min-h-dvh place-items-center bg-slate-950 px-4 py-6 text-white sm:p-6">
       <form
         onSubmit={submit}
-        className="w-full max-w-md space-y-5 rounded-2xl border border-white/10 bg-slate-900 p-7"
+        className="w-full max-w-md space-y-4 rounded-2xl border border-white/10 bg-slate-900 p-5 sm:space-y-5 sm:p-7"
       >
         <div>
-          <h1 className="text-2xl font-bold">Meeting Attendance Form</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-xl font-bold sm:text-2xl">
+            Meeting Attendance Form
+          </h1>
+          <p className="mt-1 text-xs text-slate-400 sm:text-sm">
             Fill in your name and take a photo using the camera to record your
             attendance.
           </p>
@@ -196,7 +201,7 @@ export default function AttendanceForm() {
               autoComplete="off"
             />
             {showNameSuggestions && nameSuggestions.length > 0 && (
-              <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-slate-900 p-1 shadow-xl">
+              <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-40 overflow-y-auto rounded-xl border border-white/10 bg-slate-900 p-1 shadow-xl sm:max-h-52">
                 {nameSuggestions.map((person) => (
                   <li key={person.participantId}>
                     <button
@@ -236,7 +241,7 @@ export default function AttendanceForm() {
               <img
                 src={photoPreview}
                 alt="Foto absensi"
-                className="max-h-72 w-full rounded-xl bg-black object-contain"
+                className="mx-auto max-h-[55svh] w-full rounded-xl bg-black object-contain"
               />
               <button
                 type="button"
@@ -252,7 +257,9 @@ export default function AttendanceForm() {
                 ref={videoRef}
                 muted
                 playsInline
-                className={`w-full rounded-xl bg-black ${cameraReady ? "block" : "hidden"}`}
+                className={`mx-auto max-h-[55svh] w-full -scale-x-100 rounded-xl bg-black object-contain ${
+                  cameraReady ? "block" : "hidden"
+                }`}
               />
               {!cameraReady && (
                 <button
